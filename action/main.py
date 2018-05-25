@@ -1,3 +1,4 @@
+from Kamisu66 import EthicsCommittee
 import traceback
 
 def main_action(data):

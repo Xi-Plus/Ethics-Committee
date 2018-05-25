@@ -32,9 +32,7 @@ class EthicsCommittee:
 			query["chat_id"] = self.chat_id
 			if parse_mode != "":
 				parse_mode = "&parse_mode="+parse_mode
-			if reply == True:
-				query["reply_to_message_id"] = self.message_id
-			elif type(reply) == str or type(reply) == int:
+			if type(reply) == str or type(reply) == int:
 				query["reply_to_message_id"] = reply
 			if reply_markup != None:
 				query["reply_markup"] = reply_markup
