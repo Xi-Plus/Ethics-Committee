@@ -1,6 +1,9 @@
 from Kamisu66 import EthicsCommittee
 import traceback
 import importlib
+import os
+import sys
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 
 def main_action(data):
 	EC = EthicsCommittee("error", "error")

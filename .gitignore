@@ -1,2 +1,2 @@
 config.ini
-action/main_config.py
+action/*config.py
