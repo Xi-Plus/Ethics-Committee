@@ -25,7 +25,7 @@ def main_action(data):
 				module = importlib.import_module("."+module_name, "action")
 				module.main(data)
 			except ImportError as e:
-				EC.log("module '{}' does not exist".format(module_name))
+				EC.log(traceback.format_exc())
 			except AttributeError as e:
 				if str(e) == "'module' object has no attribute 'main'":
 					EC.log("modue '{}' does not contain main function".format(module_name))
