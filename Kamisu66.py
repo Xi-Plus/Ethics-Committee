@@ -33,7 +33,7 @@ class EthicsCommittee:
 			if chat_id is not None:
 				query["chat_id"] = chat_id
 			if parse_mode != "":
-				parse_mode = "&parse_mode="+parse_mode
+				query["parse_mode"] = parse_mode
 			if type(reply) == str or type(reply) == int:
 				query["reply_to_message_id"] = reply
 			if reply_markup != None:
