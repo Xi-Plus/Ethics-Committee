@@ -26,10 +26,12 @@ class EthicsCommittee:
 		self.cur = self.db.cursor()
 		self.tableprefix = config.get('database', 'tableprefix')
 
-	def sendmessage(self, message, parse_mode="Markdown", reply=False, reply_markup=None):
+	def sendmessage(self, message, parse_mode="Markdown", reply=False, reply_markup=None, chat_id=None):
 		try:
 			query = {}
 			query["chat_id"] = self.chat_id
+			if chat_id is not None:
+				query["chat_id"] = chat_id
 			if parse_mode != "":
 				parse_mode = "&parse_mode="+parse_mode
 			if type(reply) == str or type(reply) == int:
