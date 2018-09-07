@@ -46,12 +46,15 @@ class EthicsCommittee:
 			res = urllib.request.urlopen(url).read().decode("utf8")
 			res = json.loads(res)
 			if res["ok"]:
+				from_first_name = ""
+				if "from" in res["result"]:
+					from_first_name =  res["result"]["from"]["first_name"]
 				reply_to_message_id = ""
 				reply_to_user_id = ""
 				if "reply_to_message" in res["result"]:
 					reply_to_message_id = res["result"]["reply_to_message"]["message_id"]
 					reply_to_user_id = res["result"]["reply_to_message"]["from"]["id"]
-				self.addmessage(self.botid, res["result"]["message_id"], res["result"]["from"]["first_name"], "text", res["result"]["text"], res["result"]["date"], reply_to_message_id, reply_to_user_id)
+				self.addmessage(self.botid, res["result"]["message_id"], from_first_name, "text", res["result"]["text"], res["result"]["date"], reply_to_message_id, reply_to_user_id)
 		except urllib.error.HTTPError as e:
 			self.log("send msg error: "+str(e.code)+" "+str(e.read().decode("utf8")))
 			self.log(traceback.format_exc())
