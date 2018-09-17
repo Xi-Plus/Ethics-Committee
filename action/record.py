@@ -146,6 +146,9 @@ def main(data):
             traceback.print_exc()
             EC.log("[record] "+traceback.format_exc())
 
+    elif "edited_channel_post" in data:
+        pass
+
     else:
         EC = EthicsCommittee("unknown", "unknown")
         EC.log("[record] "+json.dumps(data))
