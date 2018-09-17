@@ -77,9 +77,9 @@ class EthicsCommittee:
 				self.log("del msg error: "+str(chat_id)+" "+str(message_id)+" "+str(e.code)+" "+str(e.msg)+" "+str(e.hdrs)+" "+str(datastr))
 				self.log(traceback.format_exc())
 
-	def addmessage(self, user_id, message_id, first_name, type, text, date, reply_to_message_id, reply_to_user_id):
-		self.cur.execute("""INSERT INTO `EC_message` (`chat_id`, `user_id`, `message_id`, `first_name`, `type`, `text`, `date`, `reply_to_message_id`, `reply_to_user_id`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
-			(str(self.chat_id), str(user_id), str(message_id), first_name, type, text, str(date), reply_to_message_id, reply_to_user_id) )
+	def addmessage(self, user_id, message_id, full_name, type, text, date, reply_to_message_id, reply_to_user_id):
+		self.cur.execute("""INSERT INTO `EC_message` (`chat_id`, `user_id`, `message_id`, `full_name`, `type`, `text`, `date`, `reply_to_message_id`, `reply_to_user_id`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+			(str(self.chat_id), str(user_id), str(message_id), full_name, type, text, str(date), reply_to_message_id, reply_to_user_id) )
 		self.db.commit()
 
 	def log(self, message):
