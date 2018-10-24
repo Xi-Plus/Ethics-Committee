@@ -61,6 +61,32 @@ class EthicsCommittee:
 		except Exception as e:
 			self.log(traceback.format_exc())
 
+	def editmessage(self, message_id, message, parse_mode="Markdown", reply_markup=None, chat_id=None):
+		try:
+			query = {}
+			query["chat_id"] = self.chat_id
+			if chat_id is not None:
+				query["chat_id"] = chat_id
+			if parse_mode != "":
+				query["parse_mode"] = parse_mode
+			if reply_markup != None:
+				query["reply_markup"] = reply_markup
+			query["disable_web_page_preview"] = 1
+			query["message_id"] = message_id
+			query["text"] = message
+
+			query = urllib.parse.urlencode(query)
+			url = "https://api.telegram.org/bot"+self.token+"/editMessageText?"+query
+			res = urllib.request.urlopen(url).read().decode("utf8")
+			res = json.loads(res)
+			if res["ok"]:
+				pass
+		except urllib.error.HTTPError as e:
+			self.log("edit msg error: code={} res={}".format(e.code, e.read().decode("utf8")))
+			self.log(traceback.format_exc())
+		except Exception as e:
+			self.log(traceback.format_exc())
+
 	def deletemessage(self, chat_id, message_id):
 		try:
 			url = "https://api.telegram.org/bot"+self.token+"/deleteMessage?chat_id="+str(chat_id)+"&message_id="+str(message_id)
