@@ -56,7 +56,7 @@ class EthicsCommittee:
 					reply_to_user_id = res["result"]["reply_to_message"]["from"]["id"]
 				self.addmessage(self.botid, res["result"]["message_id"], from_first_name, "text", res["result"]["text"], res["result"]["date"], reply_to_message_id, reply_to_user_id)
 		except urllib.error.HTTPError as e:
-			self.log("send msg error: "+str(e.code)+" "+str(e.read().decode("utf8")))
+			self.log("send msg error: code={} res={}".format(e.code, e.read().decode("utf8")))
 			self.log(traceback.format_exc())
 		except Exception as e:
 			self.log(traceback.format_exc())
@@ -74,7 +74,7 @@ class EthicsCommittee:
 				self.cur.execute("""UPDATE `EC_message` SET `deleted` = 1 WHERE `chat_id` = %s AND `message_id` = %s""", (chat_id, message_id))
 				self.db.commit()
 			else :
-				self.log("del msg error: "+str(chat_id)+" "+str(message_id)+" "+str(e.code)+" "+str(e.msg)+" "+str(e.hdrs)+" "+str(datastr))
+				self.log("del msg error: chat_id={} message_id={} code={} msg={} datastr={}".format(chat_id, message_id, e.code, e.msg, datastr))
 				self.log(traceback.format_exc())
 
 	def addmessage(self, user_id, message_id, full_name, type, text, date, reply_to_message_id, reply_to_user_id):
