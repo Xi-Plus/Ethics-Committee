@@ -36,5 +36,8 @@ except urllib.error.HTTPError as e:
 res = json.loads(res)
 
 link = res["result"]
+text = group["message"]["text"].format(link)
 
-EC.editmessage(group["message"]["message_id"], group["message"]["text"].format(link), chat_id=group["message"]["chat_id"])
+print(text)
+
+EC.editmessage(group["message"]["message_id"], text, chat_id=group["message"]["chat_id"], parse_mode="")
