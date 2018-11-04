@@ -61,7 +61,7 @@ def main(data):
                             EC.log("[spam_ban] kick {} in {}".format(ban_user_id, ban_chat_id))
 
                             url = "https://api.telegram.org/bot"+EC.token+"/kickChatMember?chat_id="+str(ban_chat_id)+"&user_id="+str(ban_user_id)+"&until_date="+str(int(time.time()+86400*7))
-                            response = requests.get(url)
+                            subprocess.Popen(['curl', '-s', url])
 
                         message = '#封 所有群組 <a href="tg://user?id={0}">{1}</a> via ECbot banned <a href="tg://user?id={2}">{2}</a>\n理由：{3}'.format(
                                 user_id,
@@ -82,7 +82,7 @@ def main(data):
                             EC.log("[spam_ban] kick {} in {} {}".format(user_id, chat_id, text))
 
                             url = "https://api.telegram.org/bot"+EC.token+"/kickChatMember?chat_id="+str(chat_id)+"&user_id="+str(user_id)+"&until_date="+str(int(time.time()+86400*7))
-                            response = requests.get(url)
+                            subprocess.Popen(['curl', '-s', url])
 
                             message = '#封 #自動 {0} ECbot banned <a href="tg://user?id={1}">{1}</a>\n理由：宣傳文字'.format(
                                     groups_name[chat_id],
