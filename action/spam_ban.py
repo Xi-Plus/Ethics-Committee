@@ -52,7 +52,7 @@ def main(data):
                     if ban_user_id != "":
                         EC.deletemessage(EC.chat_id, message_id)
 
-                        EC.cur.execute("""SELECT `chat_id`, `message_id` FROM `EC_message` WHERE `user_id` = %s AND `type` = 'new_chat_member'""", (ban_user_id))
+                        EC.cur.execute("""SELECT `chat_id`, `message_id`, `type` FROM `EC_message` WHERE `user_id` = %s AND `date` > %s""", (ban_user_id, int(time.time()-3600)))
                         rows = EC.cur.fetchall()
                         for row in rows:
                             EC.log("[spam_ban] delete {} in {}".format(row[1], row[0]))
