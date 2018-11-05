@@ -47,7 +47,7 @@ def main(data):
                     elif "reply_to_message" in message:
                         ban_user_id = message["reply_to_message"]["from"]["id"]
                         m = re.match(r"/globalban@Kamisu66EthicsCommitteeBot(?:\n(.+))?", text)
-                        if m is not None and m.group(1) != "":
+                        if m is not None and m.group(1) is not None and m.group(1) != "":
                             reason = m.group(1)
                     if ban_user_id != "":
                         EC.deletemessage(EC.chat_id, message_id)
