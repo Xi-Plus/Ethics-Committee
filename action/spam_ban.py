@@ -14,7 +14,7 @@ def main(data):
         chat_id = message["chat"]["id"]
         user_id = message["from"]["id"]
 
-        if chat_id not in (ban_username_chat+warn_username_chat+ban_text_chat+warn_text_chat):
+        if chat_id not in (ban_username_chat+warn_username_chat+ban_text_chat+warn_text_chat+test_chat):
             return
 
         mode = []
@@ -87,7 +87,7 @@ def main(data):
             if "text" in mode:
                 EC.cur.execute("""SELECT COUNT(*) FROM `EC_message` WHERE `chat_id` = %s AND `user_id` = %s""", (chat_id, user_id))
                 cnt = int(EC.cur.fetchall()[0][0])
-                if cnt < 5 or chat_id in [groups['xiplustestbot']]:
+                if cnt < 5:
                     if chat_id in ban_text_chat and re.search(ban_text_regex, text):
                         EC.log("[spam_ban] kick {} in {} {}".format(user_id, chat_id, text))
 
@@ -104,6 +104,19 @@ def main(data):
                     elif chat_id in warn_text_chat and re.search(warn_text_regex, text):
                         EC.log("[spam_ban] warn {} in {} {}".format(user_id, chat_id, text))
                         EC.sendmessage(warn_text, reply=message_id)
+
+                if chat_id in test_chat:
+                    spam_type = []
+                    if re.search(ban_username_regex, text):
+                        spam_type.append("ban_username")
+                    if re.search(warn_username_regex, text):
+                        spam_type.append("warn_username")
+                    if re.search(ban_text_regex, text):
+                        spam_type.append("ban_text")
+                    if re.search(warn_text_regex, text):
+                        spam_type.append("warn_text")
+                    if len(spam_type) > 0:
+                        EC.sendmessage("spam type = {}".format(", ".join(spam_type)), reply=message_id, parse_mode="")
 
             if "username" in mode:
                 if chat_id in ban_username_chat and re.search(ban_username_regex, text):
