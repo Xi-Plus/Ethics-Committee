@@ -14,25 +14,26 @@ def main(data):
         chat_id = message["chat"]["id"]
         user_id = message["from"]["id"]
 
-        if chat_id not in (ban_username_chat+warn_username_chat+ban_text_chat+warn_text_chat+test_chat):
+        all_chat = list(set(ban_username_chat + warn_username_chat + ban_text_chat + warn_text_chat))
+        if chat_id not in (all_chat + test_chat):
             return
 
         mode = []
+        text = ""
         if "text" in message:
-            text = message["text"]
+            text += message["text"]
             mode.append("text")
-        elif "caption" in message:
-            text = message["caption"]
+        if "caption" in message:
+            text += message["caption"]
             mode.append("text")
-        elif "new_chat_member" in message:
-            text = message["from"]["first_name"]
+        if "new_chat_member" in message:
+            text += message["from"]["first_name"]
             if "last_name" in message["from"]:
                 text += " " + message["from"]["last_name"]
             mode.append("username")
-        elif "forward_from_chat" in message:
-            text = ""
+        if "forward_from_chat" in message:
             mode.append("forward")
-        else:
+        if len(mode) == 0:
             return
 
         EC = EthicsCommittee(chat_id, user_id)
@@ -63,8 +64,9 @@ def main(data):
                             if int(row[1]) in ban_username_chat:
                                 EC.log("[spam_ban] delete {} ({}) in {}".format(row[1], row[2], row[0]))
                                 EC.deletemessage(row[0], row[1])
-                        for ban_chat_id in ban_username_chat:
-                            EC.log("[spam_ban] kick {} in {}".format(ban_user_id, ban_chat_id))
+
+                        EC.log("[spam_ban] kick {} in {}".format(ban_user_id, ", ".join(map(str, all_chat))))
+                        for ban_chat_id in all_chat:
 
                             url = "https://api.telegram.org/bot"+EC.token+"/kickChatMember?chat_id="+str(ban_chat_id)+"&user_id="+str(ban_user_id)+"&until_date="+str(int(time.time()+86400*7))
                             subprocess.Popen(['curl', '-s', url])
@@ -85,14 +87,22 @@ def main(data):
                 if cnt < 5:
                     EC.sendmessage("@xiplus", reply=message_id)
             if "text" in mode:
-                EC.cur.execute("""SELECT COUNT(*) FROM `EC_message` WHERE `chat_id` = %s AND `user_id` = %s""", (chat_id, user_id))
+                EC.cur.execute("""SELECT COUNT(*) FROM `EC_message` WHERE `user_id` = %s""", (user_id))
                 cnt = int(EC.cur.fetchall()[0][0])
                 if cnt < 5:
                     if chat_id in ban_text_chat and re.search(ban_text_regex, text):
-                        EC.log("[spam_ban] kick {} in {} {}".format(user_id, chat_id, text))
+                        EC.cur.execute("""SELECT `chat_id`, `message_id`, `type` FROM `EC_message` WHERE `user_id` = %s AND `date` > %s""", (user_id, int(time.time()-3600)))
+                        rows = EC.cur.fetchall()
+                        EC.log("[spam_ban] find {} messages to delete".format(len(rows)))
+                        for row in rows:
+                            if int(row[1]) in ban_text_chat:
+                                EC.log("[spam_ban] delete {} ({}) in {}".format(row[1], row[2], row[0]))
+                                EC.deletemessage(row[0], row[1])
 
-                        url = "https://api.telegram.org/bot"+EC.token+"/kickChatMember?chat_id="+str(chat_id)+"&user_id="+str(user_id)+"&until_date="+str(int(time.time()+86400*7))
-                        subprocess.Popen(['curl', '-s', url])
+                        EC.log("[spam_ban] kick {} in {}".format(user_id, ", ".join(map(str, ban_text_chat))))
+                        for ban_chat_id in ban_text_chat:
+                            url = "https://api.telegram.org/bot"+EC.token+"/kickChatMember?chat_id="+str(ban_chat_id)+"&user_id="+str(user_id)+"&until_date="+str(int(time.time()+86400*7))
+                            subprocess.Popen(['curl', '-s', url])
 
                         message = '#封 #自動 {0} ECbot banned <a href="tg://user?id={1}">{1}</a>\n理由：宣傳文字'.format(
                                 groups_name[chat_id],
@@ -122,9 +132,8 @@ def main(data):
                 if chat_id in ban_username_chat and re.search(ban_username_regex, text):
                     EC.deletemessage(chat_id, message_id)
 
+                    EC.log("[spam_ban] kick {} in {}".format(user_id, ", ".join(map(str, ban_username_chat))))
                     for ban_chat_id in ban_username_chat:
-                        EC.log("[spam_ban] kick {} in {} {}".format(user_id, ban_chat_id, text))
-
                         url = "https://api.telegram.org/bot"+EC.token+"/kickChatMember?chat_id="+str(ban_chat_id)+"&user_id="+str(user_id)+"&until_date="+str(int(time.time()+86400*7))
                         subprocess.Popen(['curl', '-s', url])
 
