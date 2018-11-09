@@ -61,13 +61,12 @@ def main(data):
                         rows = EC.cur.fetchall()
                         EC.log("[spam_ban] find {} messages to delete".format(len(rows)))
                         for row in rows:
-                            if int(row[1]) in ban_username_chat:
+                            if int(row[0]) in all_chat:
                                 EC.log("[spam_ban] delete {} ({}) in {}".format(row[1], row[2], row[0]))
                                 EC.deletemessage(row[0], row[1])
 
                         EC.log("[spam_ban] kick {} in {}".format(ban_user_id, ", ".join(map(str, all_chat))))
                         for ban_chat_id in all_chat:
-
                             url = "https://api.telegram.org/bot"+EC.token+"/kickChatMember?chat_id="+str(ban_chat_id)+"&user_id="+str(ban_user_id)+"&until_date="+str(int(time.time()+86400*7))
                             subprocess.Popen(['curl', '-s', url])
 
@@ -95,7 +94,7 @@ def main(data):
                         rows = EC.cur.fetchall()
                         EC.log("[spam_ban] find {} messages to delete".format(len(rows)))
                         for row in rows:
-                            if int(row[1]) in ban_text_chat:
+                            if int(row[0]) in all_chat:
                                 EC.log("[spam_ban] delete {} ({}) in {}".format(row[1], row[2], row[0]))
                                 EC.deletemessage(row[0], row[1])
 
