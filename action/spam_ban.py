@@ -100,11 +100,11 @@ def main(data):
                                 EC.deletemessage(row[0], row[1])
 
                         EC.log("[spam_ban] kick {} in {}".format(user_id, ", ".join(map(str, ban_text_chat))))
-                        for ban_chat_id in ban_text_chat:
+                        for ban_chat_id in all_chat:
                             url = "https://api.telegram.org/bot"+EC.token+"/kickChatMember?chat_id="+str(ban_chat_id)+"&user_id="+str(user_id)+"&until_date="+str(int(time.time()+86400*7))
                             subprocess.Popen(['curl', '-s', url])
 
-                        message = '#封 #自動 {0} ECbot banned <a href="tg://user?id={1}">{1}</a>\n理由：宣傳文字'.format(
+                        message = '#封 #自動 所有群組(from {0}) ECbot banned <a href="tg://user?id={1}">{1}</a>\n理由：宣傳文字'.format(
                                 groups_name[chat_id],
                                 user_id
                             )
@@ -133,7 +133,7 @@ def main(data):
                     EC.deletemessage(chat_id, message_id)
 
                     EC.log("[spam_ban] kick {} in {}".format(user_id, ", ".join(map(str, ban_username_chat))))
-                    for ban_chat_id in ban_username_chat:
+                    for ban_chat_id in all_chat:
                         url = "https://api.telegram.org/bot"+EC.token+"/kickChatMember?chat_id="+str(ban_chat_id)+"&user_id="+str(user_id)+"&until_date="+str(int(time.time()+86400*7))
                         subprocess.Popen(['curl', '-s', url])
 
