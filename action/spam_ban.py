@@ -89,7 +89,7 @@ def main(data):
                 EC.cur.execute("""SELECT COUNT(*) FROM `EC_message` WHERE `user_id` = %s""", (user_id))
                 cnt = int(EC.cur.fetchall()[0][0])
                 if cnt < 5:
-                    if chat_id in ban_text_chat and re.search(ban_text_regex, text):
+                    if chat_id in ban_text_chat and re.search(ban_text_regex, text, flags=re.I):
                         EC.cur.execute("""SELECT `chat_id`, `message_id`, `type` FROM `EC_message` WHERE `user_id` = %s AND `date` > %s""", (user_id, int(time.time()-3600)))
                         rows = EC.cur.fetchall()
                         EC.log("[spam_ban] find {} messages to delete".format(len(rows)))
@@ -110,25 +110,25 @@ def main(data):
                         EC.log("[spam_ban] message {}".format(message))
                         EC.sendmessage(chat_id=log_chat_id, message=message, parse_mode="HTML")
 
-                    elif chat_id in warn_text_chat and re.search(warn_text_regex, text):
+                    elif chat_id in warn_text_chat and re.search(warn_text_regex, text, flags=re.I):
                         EC.log("[spam_ban] warn {} in {} {}".format(user_id, chat_id, text))
                         EC.sendmessage(warn_text, reply=message_id)
 
                 if chat_id in test_chat:
                     spam_type = []
-                    if re.search(ban_username_regex, text):
+                    if re.search(ban_username_regex, text, flags=re.I):
                         spam_type.append("ban_username")
-                    if re.search(warn_username_regex, text):
+                    if re.search(warn_username_regex, text, flags=re.I):
                         spam_type.append("warn_username")
-                    if re.search(ban_text_regex, text):
+                    if re.search(ban_text_regex, text, flags=re.I):
                         spam_type.append("ban_text")
-                    if re.search(warn_text_regex, text):
+                    if re.search(warn_text_regex, text, flags=re.I):
                         spam_type.append("warn_text")
                     if len(spam_type) > 0:
                         EC.sendmessage("spam type = {}".format(", ".join(spam_type)), reply=message_id, parse_mode="")
 
             if "username" in mode:
-                if chat_id in ban_username_chat and re.search(ban_username_regex, text):
+                if chat_id in ban_username_chat and re.search(ban_username_regex, text, flags=re.I):
                     EC.deletemessage(chat_id, message_id)
 
                     EC.log("[spam_ban] kick {} in {}".format(user_id, ", ".join(map(str, ban_username_chat))))
@@ -143,7 +143,7 @@ def main(data):
                     EC.log("[spam_ban] message {}".format(message))
                     EC.sendmessage(chat_id=log_chat_id, message=message, parse_mode="HTML")
 
-                elif chat_id in warn_username_chat and re.search(warn_username_regex, text):
+                elif chat_id in warn_username_chat and re.search(warn_username_regex, text, flags=re.I):
                     EC.log("[spam_ban] warn {} in {} {}".format(user_id, chat_id, text))
                     EC.sendmessage(warn_text, reply=message_id)
 
