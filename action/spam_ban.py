@@ -57,7 +57,7 @@ def main(data):
                     if ban_user_id != "":
                         EC.deletemessage(EC.chat_id, message_id)
 
-                        EC.cur.execute("""SELECT `chat_id`, `message_id`, `type` FROM `EC_message` WHERE `user_id` = %s AND `date` > %s""", (ban_user_id, int(time.time()-3600)))
+                        EC.cur.execute("""SELECT `chat_id`, `message_id`, `type` FROM `EC_message` WHERE `user_id` = %s AND `date` > %s""", (ban_user_id, int(time.time()-delete_limit)))
                         rows = EC.cur.fetchall()
                         EC.log("[spam_ban] find {} messages to delete".format(len(rows)))
                         for row in rows:
@@ -90,7 +90,7 @@ def main(data):
                 cnt = int(EC.cur.fetchall()[0][0])
                 if cnt < 5:
                     if chat_id in ban_text_chat and re.search(ban_text_regex, text, flags=re.I):
-                        EC.cur.execute("""SELECT `chat_id`, `message_id`, `type` FROM `EC_message` WHERE `user_id` = %s AND `date` > %s""", (user_id, int(time.time()-3600)))
+                        EC.cur.execute("""SELECT `chat_id`, `message_id`, `type` FROM `EC_message` WHERE `user_id` = %s AND `date` > %s""", (user_id, int(time.time()-delete_limit)))
                         rows = EC.cur.fetchall()
                         EC.log("[spam_ban] find {} messages to delete".format(len(rows)))
                         for row in rows:
