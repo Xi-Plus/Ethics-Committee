@@ -173,3 +173,44 @@ def main(data):
         except Exception as e:
             traceback.print_exc()
             EC.log("[spam_ban] "+traceback.format_exc())
+
+
+def web():
+    html = """
+        <style>
+            table {
+                border-collapse: collapse;
+            }
+            th, td {
+                vertical-align: top;
+                border: 1px solid black;
+                padding: 3px;
+            }
+        </style>
+       <table>
+       <tr>
+       <td>variable</td>
+       <td>value</td>
+       </tr>
+       """
+    html += "<tr><td>ban_text_regex</td><td>{}</td></td>".format(ban_text_regex)
+    html += "<tr><td>ban_text_chat</td><td>{}</td></td>".format("<br>".join(map(str, ban_text_chat)))
+
+    html += "<tr><td>ban_username_regex</td><td>{}</td></td>".format(ban_username_regex)
+    html += "<tr><td>ban_username_chat</td><td>{}</td></td>".format("<br>".join(map(str, ban_username_chat)))
+
+    html += "<tr><td>warn_text_regex</td><td>{}</td></td>".format(warn_text_regex)
+    html += "<tr><td>warn_text_chat</td><td>{}</td></td>".format("<br>".join(map(str, warn_text_chat)))
+
+    html += "<tr><td>warn_username_regex</td><td>{}</td></td>".format(warn_username_regex)
+    html += "<tr><td>warn_username_chat</td><td>{}</td></td>".format("<br>".join(map(str, warn_username_chat)))
+
+    html += "<tr><td>warn_text</td><td>{}</td></td>".format(warn_text)
+
+    html += "<tr><td>ban_photo_chat</td><td>{}</td></td>".format("<br>".join(map(str, ban_photo_chat)))
+
+    html += "<tr><td>log_chat_id</td><td>{}</td></td>".format(log_chat_id)
+    html += "<tr><td>delete_limit</td><td>{}</td></td>".format(delete_limit)
+    html += "<tr><td>globalbanuser</td><td>{}</td></td>".format("<br>".join(map(str, globalbanuser)))
+
+    return html
