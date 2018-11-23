@@ -24,6 +24,8 @@ def main(data):
         if "text" in message:
             text += message["text"]
             mode.append("text")
+        if "photo" in message:
+            mode.append("photo")
         if "caption" in message:
             text += message["caption"]
             mode.append("text")
@@ -150,6 +152,23 @@ def main(data):
                 elif chat_id in warn_username_chat and re.search(warn_username_regex, text, flags=re.I):
                     EC.log("[spam_ban] warn {} in {} {}".format(user_id, chat_id, text))
                     EC.sendmessage(warn_text, reply=message_id)
+
+            if "photo" in mode:
+                if chat_id in ban_photo_chat:
+                    EC.cur.execute("""SELECT COUNT(*) FROM `EC_message` WHERE `user_id` = %s""", (user_id))
+                    cnt = int(EC.cur.fetchall()[0][0])
+                    if cnt < 5:
+                        EC.log("[spam_ban] kick {} in {}".format(user_id, ", ".join(map(str, ban_photo_chat))))
+                        for ban_chat_id in all_chat:
+                            url = "https://api.telegram.org/bot"+EC.token+"/kickChatMember?chat_id="+str(ban_chat_id)+"&user_id="+str(user_id)+"&until_date="+str(int(time.time()+86400*7))
+                            subprocess.Popen(['curl', '-s', url])
+
+                        message = '#封 #自動 所有群組(from {0}) ECbot banned <a href="tg://user?id={1}">{1}</a>\n理由：於 @wikipedia_zh 發送圖片'.format(
+                                groups_name[chat_id],
+                                user_id
+                            )
+                        EC.log("[spam_ban] message {}".format(message))
+                        EC.sendmessage(chat_id=log_chat_id, message=message, parse_mode="HTML")
 
         except Exception as e:
             traceback.print_exc()
