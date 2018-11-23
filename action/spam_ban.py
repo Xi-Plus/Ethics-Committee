@@ -4,6 +4,7 @@ import traceback
 import requests
 import subprocess
 import time
+import json
 from groups import *
 from spam_ban_config import *
 
@@ -32,6 +33,8 @@ def main(data):
                 text += " " + message["from"]["last_name"]
             mode.append("username")
         if "forward_from_chat" in message:
+            mode.append("forward")
+        if "forward_from" in message:
             mode.append("forward")
         if len(mode) == 0:
             return
@@ -85,6 +88,7 @@ def main(data):
                 cnt = int(EC.cur.fetchall()[0][0])
                 if cnt < 5:
                     EC.sendmessage("@xiplus", reply=message_id)
+                    EC.log("[spam_ban] forward {}".format(json.dumps(message)))
             if "text" in mode:
                 EC.cur.execute("""SELECT COUNT(*) FROM `EC_message` WHERE `user_id` = %s""", (user_id))
                 cnt = int(EC.cur.fetchall()[0][0])
