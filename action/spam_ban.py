@@ -45,21 +45,22 @@ def main(data):
         message_id = message["message_id"]
         date = message["date"]
         try:
-            if "text" in mode and re.match(r"/globalban@Kamisu66EthicsCommitteeBot", text):
+            if "text" in mode and re.match(r"/(globalban|globalunban)@Kamisu66EthicsCommitteeBot", text):
                 if user_id in globalbanuser:
-                    m = re.match(r"/globalban@Kamisu66EthicsCommitteeBot (\d+)(?:\n(.+))?", text)
+                    m = re.match(r"/(globalban|globalunban)@Kamisu66EthicsCommitteeBot (\d+)(?:\n(.+))?", text)
+                    action = m.group(1)
                     ban_user_id = ""
                     reason = "未給理由"
                     if m is not None:
-                        ban_user_id = int(m.group(1))
-                        if m.group(2) is not None and m.group(2) != "":
-                            reason = m.group(2)
+                        ban_user_id = int(m.group(2))
+                        if m.group(3) is not None and m.group(3) != "":
+                            reason = m.group(3)
                     elif "reply_to_message" in message:
                         ban_user_id = message["reply_to_message"]["from"]["id"]
-                        m = re.match(r"/globalban@Kamisu66EthicsCommitteeBot(?:\n(.+))?", text)
-                        if m is not None and m.group(1) is not None and m.group(1) != "":
-                            reason = m.group(1)
-                    if ban_user_id != "":
+                        m = re.match(r"/(globalban|globalunban)@Kamisu66EthicsCommitteeBot(?:\n(.+))?", text)
+                        if m is not None and m.group(2) is not None and m.group(2) != "":
+                            reason = m.group(2)
+                    if ban_user_id != "" and action == "globalban":
                         EC.deletemessage(EC.chat_id, message_id)
 
                         EC.cur.execute("""SELECT `chat_id`, `message_id`, `type` FROM `EC_message` WHERE `user_id` = %s AND `date` > %s""", (ban_user_id, int(time.time()-delete_limit)))
@@ -76,6 +77,20 @@ def main(data):
                             subprocess.Popen(['curl', '-s', url])
 
                         message = '#封 所有群組 <a href="tg://user?id={0}">{1}</a> via ECbot banned <a href="tg://user?id={2}">{2}</a>\n理由：{3}'.format(
+                                user_id,
+                                message["from"]["first_name"],
+                                ban_user_id,
+                                reason
+                            )
+                        EC.log("[spam_ban] message {}".format(message))
+                        EC.sendmessage(chat_id=log_chat_id, message=message, parse_mode="HTML")
+                    elif ban_user_id != "" and action == "globalunban":
+                        EC.log("[spam_ban] unban {} in {}".format(ban_user_id, ", ".join(map(str, all_chat))))
+                        for ban_chat_id in all_chat:
+                            url = "https://api.telegram.org/bot"+EC.token+"/unbanChatMember?chat_id="+str(ban_chat_id)+"&user_id="+str(ban_user_id)
+                            subprocess.Popen(['curl', '-s', url])
+
+                        message = '#解 所有群組 <a href="tg://user?id={0}">{1}</a> via ECbot unbanned <a href="tg://user?id={2}">{2}</a>\n理由：{3}'.format(
                                 user_id,
                                 message["from"]["first_name"],
                                 ban_user_id,
