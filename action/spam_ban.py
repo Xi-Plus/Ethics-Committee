@@ -48,18 +48,21 @@ def main(data):
             if "text" in mode and re.match(r"/(globalban|globalunban)@Kamisu66EthicsCommitteeBot", text):
                 if user_id in globalbanuser:
                     m = re.match(r"/(globalban|globalunban)@Kamisu66EthicsCommitteeBot (\d+)(?:\n(.+))?", text)
-                    action = m.group(1)
+                    action = ""
                     ban_user_id = ""
                     reason = "未給理由"
                     if m is not None:
+                        action = m.group(1)
                         ban_user_id = int(m.group(2))
                         if m.group(3) is not None and m.group(3) != "":
                             reason = m.group(3)
                     elif "reply_to_message" in message:
                         ban_user_id = message["reply_to_message"]["from"]["id"]
                         m = re.match(r"/(globalban|globalunban)@Kamisu66EthicsCommitteeBot(?:\n(.+))?", text)
-                        if m is not None and m.group(2) is not None and m.group(2) != "":
-                            reason = m.group(2)
+                        if m is not None:
+                            action = m.group(1)
+                            if m.group(2) is not None and m.group(2) != "":
+                                reason = m.group(2)
                     if ban_user_id != "" and action == "globalban":
                         EC.deletemessage(EC.chat_id, message_id)
 
