@@ -114,7 +114,7 @@ def main(data):
                 EC.cur.execute("""SELECT COUNT(*) FROM `EC_message` WHERE `user_id` = %s""", (user_id))
                 cnt = int(EC.cur.fetchall()[0][0])
                 if cnt < 5:
-                    EC.sendmessage("@xiplus", reply=message_id)
+                    EC.sendmessage('https://t.me/{}/{}'.format(message["chat"]["username"], message_id), chat_id=warn_forward_chat_id, parse_mode="HTML")
                     EC.log("[spam_ban] forward {}".format(json.dumps(message)))
             if "text" in mode:
                 EC.cur.execute("""SELECT COUNT(*) FROM `EC_message` WHERE `user_id` = %s""", (user_id))
