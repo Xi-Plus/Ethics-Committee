@@ -113,5 +113,5 @@ class EthicsCommittee:
 			(self.chat_id, str(message)) )
 		self.db.commit()
 
-	def __exit__(self):
+	def __del__(self):
 		self.db.close()
