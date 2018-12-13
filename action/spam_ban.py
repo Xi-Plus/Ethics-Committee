@@ -111,15 +111,15 @@ def main(data):
                 else:
                     EC.log("[spam_ban] {} /globalban not premission".format(user_id))
             if "forward" in mode:
-                EC.cur.execute("""SELECT COUNT(*) FROM `EC_message` WHERE `user_id` = %s""", (user_id))
+                EC.cur.execute("""SELECT COUNT(*) FROM `EC_message` WHERE `user_id` = %s AND `type` != 'new_chat_member'""", (user_id))
                 cnt = int(EC.cur.fetchall()[0][0])
-                if cnt < 5:
+                if cnt <= 5:
                     EC.sendmessage('https://t.me/{}/{}'.format(message["chat"]["username"], message_id), chat_id=warn_forward_chat_id, parse_mode="HTML")
                     EC.log("[spam_ban] forward {}".format(json.dumps(message)))
             if "text" in mode:
-                EC.cur.execute("""SELECT COUNT(*) FROM `EC_message` WHERE `user_id` = %s""", (user_id))
+                EC.cur.execute("""SELECT COUNT(*) FROM `EC_message` WHERE `user_id` = %s AND `type` != 'new_chat_member'""", (user_id))
                 cnt = int(EC.cur.fetchall()[0][0])
-                if cnt < 5:
+                if cnt <= 5:
                     if chat_id in ban_text_chat and re.search(ban_text_regex, textnorm, flags=re.I):
                         EC.cur.execute("""SELECT `chat_id`, `message_id`, `type` FROM `EC_message` WHERE `user_id` = %s AND `date` > %s""", (user_id, int(time.time()-delete_limit)))
                         rows = EC.cur.fetchall()
@@ -181,9 +181,9 @@ def main(data):
 
             if "photo" in mode:
                 if chat_id in ban_photo_chat:
-                    EC.cur.execute("""SELECT COUNT(*) FROM `EC_message` WHERE `user_id` = %s""", (user_id))
+                    EC.cur.execute("""SELECT COUNT(*) FROM `EC_message` WHERE `user_id` = %s AND `type` != 'new_chat_member'""", (user_id))
                     cnt = int(EC.cur.fetchall()[0][0])
-                    if cnt < 5:
+                    if cnt <= 5:
                         EC.log("[spam_ban] kick {} in {}".format(user_id, ", ".join(map(str, ban_photo_chat))))
                         for ban_chat_id in all_chat:
                             url = "https://api.telegram.org/bot"+EC.token+"/kickChatMember?chat_id="+str(ban_chat_id)+"&user_id="+str(user_id)+"&until_date="+str(int(time.time()+86400*7))
