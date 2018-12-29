@@ -27,6 +27,8 @@ def main(data):
             mode.append("text")
         if "photo" in message:
             mode.append("photo")
+        if "document" in message:
+            mode.append("photo")
         if "caption" in message:
             text += message["caption"]
             mode.append("text")
