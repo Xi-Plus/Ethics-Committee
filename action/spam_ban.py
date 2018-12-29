@@ -220,16 +220,40 @@ def web():
        </tr>
        """
     html += "<tr><td>ban_text_regex</td><td>{}</td></td>".format(ban_text_regex)
-    html += "<tr><td>ban_text_chat</td><td>{}</td></td>".format("<br>".join(map(str, ban_text_chat)))
+    temp = []
+    for chat_id in ban_text_chat:
+        if chat_id in groups_name:
+            temp.append("{} ({})".format(chat_id, groups_name[chat_id]))
+        else:
+            temp.append("{}".format(chat_id))
+    html += "<tr><td>ban_text_chat</td><td>{}</td></td>".format("<br>".join(temp))
 
     html += "<tr><td>ban_username_regex</td><td>{}</td></td>".format(ban_username_regex)
-    html += "<tr><td>ban_username_chat</td><td>{}</td></td>".format("<br>".join(map(str, ban_username_chat)))
+    temp = []
+    for chat_id in ban_username_chat:
+        if chat_id in groups_name:
+            temp.append("{} ({})".format(chat_id, groups_name[chat_id]))
+        else:
+            temp.append("{}".format(chat_id))
+    html += "<tr><td>ban_username_chat</td><td>{}</td></td>".format("<br>".join(temp))
 
     html += "<tr><td>warn_text_regex</td><td>{}</td></td>".format(warn_text_regex)
-    html += "<tr><td>warn_text_chat</td><td>{}</td></td>".format("<br>".join(map(str, warn_text_chat)))
+    temp = []
+    for chat_id in warn_text_chat:
+        if chat_id in groups_name:
+            temp.append("{} ({})".format(chat_id, groups_name[chat_id]))
+        else:
+            temp.append("{}".format(chat_id))
+    html += "<tr><td>warn_text_chat</td><td>{}</td></td>".format("<br>".join(temp))
 
     html += "<tr><td>warn_username_regex</td><td>{}</td></td>".format(warn_username_regex)
-    html += "<tr><td>warn_username_chat</td><td>{}</td></td>".format("<br>".join(map(str, warn_username_chat)))
+    temp = []
+    for chat_id in warn_username_chat:
+        if chat_id in groups_name:
+            temp.append("{} ({})".format(chat_id, groups_name[chat_id]))
+        else:
+            temp.append("{}".format(chat_id))
+    html += "<tr><td>warn_username_chat</td><td>{}</td></td>".format("<br>".join(temp))
 
     html += "<tr><td>warn_text</td><td>{}</td></td>".format(warn_text)
 
