@@ -85,13 +85,13 @@ def main(data):
                         EC.log("[spam_ban] delete {} ({}) in {}".format(row[1], row[2], row[0]))
                         EC.deletemessage(row[0], row[1])
 
-            def action_warn(message_id):
+            def action_warn(message_id=None, text=warn_text):
                 if message_deleted:
                     EC.log("[spam_ban] warn {} in {} {} skiped, msg deleted.".format(user_id, chat_id, textnorm))
                     return
 
                 EC.log("[spam_ban] warn {} in {} {}".format(user_id, chat_id, textnorm))
-                EC.sendmessage(warn_text, reply=message_id)
+                EC.sendmessage(text, reply=message_id)
 
             def action_log_admin(hashtag, admin_user_id, admin_name, action, ban_user_id, reason):
                 message = '{0} 所有群組 <a href="tg://user?id={1}">{2}</a> via ECbot {3} <a href="tg://user?id={4}">{4}</a>\n理由：{5}'.format(
