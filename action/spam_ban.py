@@ -257,7 +257,13 @@ def web():
 
     html += "<tr><td>warn_text</td><td>{}</td></td>".format(warn_text)
 
-    html += "<tr><td>ban_photo_chat</td><td>{}</td></td>".format("<br>".join(map(str, ban_photo_chat)))
+    temp = []
+    for chat_id in ban_photo_chat:
+        if chat_id in groups_name:
+            temp.append("{} ({})".format(chat_id, groups_name[chat_id]))
+        else:
+            temp.append("{}".format(chat_id))
+    html += "<tr><td>ban_photo_chat</td><td>{}</td></td>".format("<br>".join(temp))
 
     html += "<tr><td>log_chat_id</td><td>{}</td></td>".format(log_chat_id)
     html += "<tr><td>delete_limit</td><td>{}</td></td>".format(delete_limit)
