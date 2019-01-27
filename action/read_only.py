@@ -36,7 +36,7 @@ def main(data):
 			if isDelete:
 				EC.deletemessage(chat_id, message_id)
 				if isBan and chat_id in banGroupIds and user_id not in adminList:
-					EC.cur.execute("""SELECT COUNT(*) FROM `EC_message` WHERE `chat_id` = %s AND `user_id` = %s AND `date` > %s""", (chat_id, user_id, int(time.time()-86400)))
+					EC.cur.execute("""SELECT COUNT(*) FROM `message` WHERE `chat_id` = %s AND `user_id` = %s AND `date` > %s""", (chat_id, user_id, int(time.time()-86400)))
 					cnt = int(EC.cur.fetchall()[0][0])
 					url = "https://api.telegram.org/bot"+EC.token+"/restrictChatMember?chat_id="+str(chat_id)+"&user_id="+str(user_id)+"&until_date="+str(int(time.time()+random.randint(120, 300)*(1.5**cnt)))
 					response = requests.get(url)

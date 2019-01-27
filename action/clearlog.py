@@ -12,6 +12,6 @@ EC = EthicsCommittee("", "")
 print(limit)
 timestamp = datetime.datetime.fromtimestamp(int(time.time()-limit)).strftime('%Y-%m-%d %H:%M:%S')
 
-rows = EC.cur.execute("""DELETE FROM EC_log WHERE `time` < %s""", (timestamp))
+rows = EC.cur.execute("""DELETE FROM log WHERE `time` < %s""", (timestamp))
 EC.db.commit()
 print(f"delete {rows} rows")

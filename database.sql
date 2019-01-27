@@ -9,13 +9,13 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 
-CREATE TABLE `EC_log` (
+CREATE TABLE `log` (
   `chat_id` varchar(20) COLLATE utf8_bin NOT NULL,
   `message` text COLLATE utf8_bin NOT NULL,
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
-CREATE TABLE `EC_message` (
+CREATE TABLE `message` (
   `chat_id` varchar(20) COLLATE utf8_bin NOT NULL,
   `user_id` varchar(20) COLLATE utf8_bin NOT NULL,
   `message_id` int(11) NOT NULL,
@@ -30,7 +30,7 @@ CREATE TABLE `EC_message` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 
-ALTER TABLE `EC_message`
+ALTER TABLE `message`
   ADD PRIMARY KEY (`chat_id`,`message_id`,`type`);
 COMMIT;
 

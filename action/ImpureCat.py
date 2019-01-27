@@ -13,14 +13,14 @@ EC = EthicsCommittee("ImpureCat", "ImpureCat")
 
 dellimit = int(time.time()-86400*2)
 
-EC.cur.execute("""DELETE FROM `EC_message` WHERE `date` < %s""", (int(time.time()-86400*14)))
+EC.cur.execute("""DELETE FROM `message` WHERE `date` < %s""", (int(time.time()-86400*14)))
 EC.db.commit()
 
 for delconfig in delconfigs:
 	chat_id = delconfig[0]
 	deltime = int(time.time()-delconfig[1])
 	print(chat_id, deltime)
-	EC.cur.execute("""SELECT * FROM `EC_message` WHERE `chat_id` = %s AND `date` < %s AND `date` > %s AND `deleted` = 0 ORDER BY `date`""", (chat_id, str(deltime), str(dellimit)))
+	EC.cur.execute("""SELECT * FROM `message` WHERE `chat_id` = %s AND `date` < %s AND `date` > %s AND `deleted` = 0 ORDER BY `date`""", (chat_id, str(deltime), str(dellimit)))
 	rows = EC.cur.fetchall()
 	for row in rows:
 		message_id = row[2]

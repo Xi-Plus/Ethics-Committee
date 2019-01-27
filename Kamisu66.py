@@ -24,7 +24,6 @@ class EthicsCommittee:
 								  db=config.get('database', 'db'),
 								  charset=config.get('database', 'charset'))
 		self.cur = self.db.cursor()
-		self.tableprefix = config.get('database', 'tableprefix')
 
 	def sendmessage(self, message, parse_mode="Markdown", reply=False, reply_markup=None, chat_id=None):
 		try:
@@ -91,25 +90,25 @@ class EthicsCommittee:
 		try:
 			url = "https://api.telegram.org/bot"+self.token+"/deleteMessage?chat_id="+str(chat_id)+"&message_id="+str(message_id)
 			urllib.request.urlopen(url)
-			self.cur.execute("""UPDATE `EC_message` SET `deleted` = 1 WHERE `chat_id` = %s AND `message_id` = %s""", (chat_id, message_id))
+			self.cur.execute("""UPDATE `message` SET `deleted` = 1 WHERE `chat_id` = %s AND `message_id` = %s""", (chat_id, message_id))
 			self.db.commit()
 		except urllib.error.HTTPError as e:
 			datastr = e.read().decode("utf8")
 			data = json.loads(datastr)
 			if data["description"] == "Bad Request: message to delete not found":
-				self.cur.execute("""UPDATE `EC_message` SET `deleted` = 1 WHERE `chat_id` = %s AND `message_id` = %s""", (chat_id, message_id))
+				self.cur.execute("""UPDATE `message` SET `deleted` = 1 WHERE `chat_id` = %s AND `message_id` = %s""", (chat_id, message_id))
 				self.db.commit()
 			else :
 				self.log("del msg error: chat_id={} message_id={} code={} msg={} datastr={}".format(chat_id, message_id, e.code, e.msg, datastr))
 				self.log(traceback.format_exc())
 
 	def addmessage(self, user_id, message_id, full_name, type, text, date, reply_to_message_id, reply_to_user_id):
-		self.cur.execute("""INSERT INTO `EC_message` (`chat_id`, `user_id`, `message_id`, `full_name`, `type`, `text`, `date`, `reply_to_message_id`, `reply_to_user_id`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+		self.cur.execute("""INSERT INTO `message` (`chat_id`, `user_id`, `message_id`, `full_name`, `type`, `text`, `date`, `reply_to_message_id`, `reply_to_user_id`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
 			(str(self.chat_id), str(user_id), str(message_id), full_name, type, text, str(date), reply_to_message_id, reply_to_user_id) )
 		self.db.commit()
 
 	def log(self, message):
-		self.cur.execute("""INSERT INTO `EC_log` (`chat_id`, `message`) VALUES (%s, %s)""",
+		self.cur.execute("""INSERT INTO `log` (`chat_id`, `message`) VALUES (%s, %s)""",
 			(self.chat_id, str(message)) )
 		self.db.commit()
 

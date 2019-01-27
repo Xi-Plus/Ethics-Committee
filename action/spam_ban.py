@@ -57,7 +57,7 @@ def main(data):
             message_id = message["message_id"]
             date = message["date"]
 
-            EC.cur.execute("""SELECT COUNT(*) FROM `EC_message` WHERE `user_id` = %s AND `type` != 'new_chat_member'""", (user_id))
+            EC.cur.execute("""SELECT COUNT(*) FROM `message` WHERE `user_id` = %s AND `type` != 'new_chat_member'""", (user_id))
             user_msg_cnt = int(EC.cur.fetchall()[0][0])
 
             message_deleted = False
@@ -79,7 +79,7 @@ def main(data):
                 global message_deleted
                 message_deleted = True
 
-                EC.cur.execute("""SELECT `chat_id`, `message_id`, `type` FROM `EC_message` WHERE `user_id` = %s AND `date` > %s""", (user_id, int(time.time()-delete_limit)))
+                EC.cur.execute("""SELECT `chat_id`, `message_id`, `type` FROM `message` WHERE `user_id` = %s AND `date` > %s""", (user_id, int(time.time()-delete_limit)))
                 rows = EC.cur.fetchall()
                 EC.log("[spam_ban] find {} messages to delete".format(len(rows)))
                 for row in rows:
