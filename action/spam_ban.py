@@ -16,8 +16,7 @@ def main(data):
         chat_id = message["chat"]["id"]
         user_id = message["from"]["id"]
 
-        all_chat = list(set(ban_username_chat + warn_username_chat + ban_text_chat + warn_text_chat))
-        if chat_id not in (all_chat + test_chat):
+        if chat_id not in (global_ban_chat + test_chat):
             return
 
         mode = []
@@ -64,14 +63,14 @@ def main(data):
 
             # action list start
             def action_ban_all_chat(user_id):
-                EC.log("[spam_ban] kick {} in {}".format(user_id, ", ".join(map(str, all_chat))))
-                for ban_chat_id in all_chat:
+                EC.log("[spam_ban] kick {} in {}".format(user_id, ", ".join(map(str, global_ban_chat))))
+                for ban_chat_id in global_ban_chat:
                     url = "https://api.telegram.org/bot"+EC.token+"/kickChatMember?chat_id="+str(ban_chat_id)+"&user_id="+str(user_id)+"&until_date="+str(int(time.time()+86400*7))
                     subprocess.Popen(['curl', '-s', url])
 
             def action_unban_all_chat(user_id):
-                EC.log("[spam_ban] unban {} in {}".format(user_id, ", ".join(map(str, all_chat))))
-                for ban_chat_id in all_chat:
+                EC.log("[spam_ban] unban {} in {}".format(user_id, ", ".join(map(str, global_ban_chat))))
+                for ban_chat_id in global_ban_chat:
                     url = "https://api.telegram.org/bot"+EC.token+"/unbanChatMember?chat_id="+str(ban_chat_id)+"&user_id="+str(user_id)
                     subprocess.Popen(['curl', '-s', url])
 
@@ -83,7 +82,7 @@ def main(data):
                 rows = EC.cur.fetchall()
                 EC.log("[spam_ban] find {} messages to delete".format(len(rows)))
                 for row in rows:
-                    if int(row[0]) in all_chat:
+                    if int(row[0]) in global_ban_chat:
                         EC.log("[spam_ban] delete {} ({}) in {}".format(row[1], row[2], row[0]))
                         EC.deletemessage(row[0], row[1])
 
@@ -119,7 +118,7 @@ def main(data):
             # action list end
 
             if "text" in mode and re.match(r"/(globalban|globalunban)@Kamisu66EthicsCommitteeBot", text):
-                if user_id in globalbanuser:
+                if user_id in global_ban_admin:
                     m = re.match(r"/(globalban|globalunban)@Kamisu66EthicsCommitteeBot (\d+)(?:\n(.+))?", text)
                     action = ""
                     ban_user_id = ""
@@ -265,8 +264,17 @@ def web():
             temp.append("{}".format(chat_id))
     html += "<tr><td>ban_photo_chat</td><td>{}</td></td>".format("<br>".join(temp))
 
+    temp = []
+    for chat_id in global_ban_chat:
+        if chat_id in groups_name:
+            temp.append("{} ({})".format(chat_id, groups_name[chat_id]))
+        else:
+            temp.append("{}".format(chat_id))
+    html += "<tr><td>global_ban_chat</td><td>{}</td></td>".format("<br>".join(temp))
+
+    html += "<tr><td>global_ban_admin</td><td>{}</td></td>".format("<br>".join(map(str, global_ban_admin)))
+
     html += "<tr><td>log_chat_id</td><td>{}</td></td>".format(log_chat_id)
     html += "<tr><td>delete_limit</td><td>{}</td></td>".format(delete_limit)
-    html += "<tr><td>globalbanuser</td><td>{}</td></td>".format("<br>".join(map(str, globalbanuser)))
 
     return html
