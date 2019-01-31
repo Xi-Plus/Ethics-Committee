@@ -187,7 +187,7 @@ def main(data):
                                         action_unban_all_chat(ban_user_id)
                                         action_log_admin('#解', user_id, message["from"]["first_name"], 'unbanned', ban_user_id, reason)
                                     
-                                    # EC.deletemessage(chat_id, message_id)
+                                    EC.deletemessage(chat_id, message_id)
                             else:
                                 EC.log('[spam_ban] {} /globalban not premission'.format(user_id))
                                 EC.sendmessage('你沒有權限', reply=message_id)
