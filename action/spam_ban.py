@@ -98,23 +98,25 @@ def main(data):
                 EC.log("[spam_ban] warn {} in {} {}".format(user_id, chat_id, textnorm))
                 EC.sendmessage(text, reply=message_id)
 
-            def action_log_admin(hashtag, admin_user_id, admin_name, action, ban_user_id, reason):
-                message = '{0} 所有群組 <a href="tg://user?id={1}">{2}</a> via ECbot {3} <a href="tg://user?id={4}">{4}</a>\n理由：{5}'.format(
+            def action_log_admin(hashtag, admin_user_id, admin_name, action, ban_user_id, reason, duration):
+                message = '{0} 所有群組 <a href="tg://user?id={1}">{2}</a> via ECbot {3} <a href="tg://user?id={4}">{4}</a> 期限為{6}\n理由：{5}'.format(
                         hashtag,
                         admin_user_id,
                         admin_name,
                         action,
                         ban_user_id,
-                        reason
+                        reason,
+                        duration
                     )
                 EC.log("[spam_ban] message {}".format(message))
                 EC.sendmessage(chat_id=log_chat_id, message=message, parse_mode="HTML")
 
-            def action_log_bot(ban_user_id, reason):
-                message = '#封 #自動 所有群組(from {0}) ECbot banned <a href="tg://user?id={1}">{1}</a>\n理由：{2}'.format(
+            def action_log_bot(ban_user_id, reason, duration):
+                message = '#封 #自動 所有群組(from {0}) ECbot banned <a href="tg://user?id={1}">{1}</a> 期限為{3}\n理由：{2}'.format(
                         groups_name[chat_id],
                         ban_user_id,
-                        reason
+                        reason,
+                        duration
                     )
                 EC.log("[spam_ban] message {}".format(message))
                 EC.sendmessage(chat_id=log_chat_id, message=message, parse_mode="HTML")
@@ -143,6 +145,23 @@ def main(data):
                     }
                     return number * multiple[unit]
                 return None
+
+            def duration_text(duration):
+                if duration == 0:
+                    return '永久'
+                res = ""
+                if duration // (60*60*24) >= 1:
+                    res += '{}日'.format(int(duration // (60*60*24)))
+                    duration %= 60*60*24
+                if duration // (60*60) >= 1:
+                    res += '{}小時'.format(int(duration // (60*60)))
+                    duration %= 60*60
+                if duration // 60 >= 1:
+                    res += '{}分'.format(int(duration // 60))
+                    duration %= 60
+                if duration >= 1:
+                    res += '{}秒'.format(int(duration))
+                return res
 
             # function end
 
@@ -181,11 +200,21 @@ def main(data):
                                     elif action == "globalban":
                                         action_ban_all_chat(ban_user_id, duration)
                                         action_del_all_msg(ban_user_id)
-                                        action_log_admin('#封', user_id, message["from"]["first_name"], 'banned', ban_user_id, reason)
+                                        action_log_admin(
+                                            '#封', user_id,
+                                            message["from"]["first_name"],
+                                            'banned', ban_user_id, reason,
+                                            duration_text(duration)
+                                        )
 
                                     elif action == "globalunban":
                                         action_unban_all_chat(ban_user_id)
-                                        action_log_admin('#解', user_id, message["from"]["first_name"], 'unbanned', ban_user_id, reason)
+                                        action_log_admin(
+                                            '#解', user_id,
+                                            message["from"]["first_name"],
+                                            'unbanned', ban_user_id, reason,
+                                            duration_text(duration)
+                                        )
                                     
                                     EC.deletemessage(chat_id, message_id)
                             else:
@@ -195,9 +224,9 @@ def main(data):
             if "text" in mode:
                 if user_msg_cnt <= 5:
                     if chat_id in ban_text_chat and re.search(ban_text_regex, textnorm, flags=re.I):
-                        action_ban_all_chat(user_id)
+                        action_ban_all_chat(user_id, 604800)
                         action_del_all_msg(user_id)
-                        action_log_bot(user_id, '宣傳文字')
+                        action_log_bot(user_id, '宣傳文字', duration_text(604800))
 
                     elif chat_id in warn_text_chat and re.search(warn_text_regex, textnorm, flags=re.I):
                         action_warn(message_id)
@@ -218,9 +247,9 @@ def main(data):
 
             if "username" in mode:
                 if chat_id in ban_username_chat and re.search(ban_username_regex, textnorm, flags=re.I):
-                    action_ban_all_chat(user_id)
+                    action_ban_all_chat(user_id, 604800)
                     action_del_all_msg(user_id)
-                    action_log_bot(user_id, '宣傳性用戶名')
+                    action_log_bot(user_id, '宣傳性用戶名', duration_text(604800))
 
                 elif chat_id in warn_username_chat and re.search(warn_username_regex, textnorm, flags=re.I):
                     action_warn(message_id)
@@ -228,8 +257,8 @@ def main(data):
             if "photo" in mode:
                 if chat_id in ban_photo_chat:
                     if user_msg_cnt <= 5:
-                        action_ban_all_chat(user_id)
-                        action_log_bot(user_id, '於 @wikipedia_zh 發送圖片')
+                        action_ban_all_chat(user_id, 604800)
+                        action_log_bot(user_id, '於 @wikipedia_zh 發送圖片', duration_text(604800))
 
             if "forward" in mode and not message_deleted:
                 if user_msg_cnt <= 5:
