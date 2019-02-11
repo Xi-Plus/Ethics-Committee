@@ -1,16 +1,18 @@
-from Kamisu66 import EthicsCommittee
-import re
-import traceback
-import requests
-import subprocess
-import time
-import json
 import argparse
-import shlex
 import contextlib
 import io
+import json
+import re
+import shlex
+import subprocess
+import time
+import traceback
+
+import requests
+
 from Equivset import Equivset
-from groups import *
+from groups import groups_name
+from Kamisu66 import EthicsCommittee
 from spam_ban_config import *
 
 
@@ -52,74 +54,86 @@ def main(data):
             textnorm = Equivset(text)
             # EC.log("[spam_ban] Equivset ok {}".format(text2))
             textnorm = text + "\n" + textnorm
-        except Exception as e:
+        except Exception:
             # EC.log("[spam_ban] Equivset fail {}".format(text))
             EC.log(traceback.format_exc())
 
         try:
             message_id = message["message_id"]
-            date = message["date"]
+            # date = message["date"]
 
-            EC.cur.execute("""SELECT COUNT(*) FROM `message` WHERE `user_id` = %s AND `type` != 'new_chat_member'""", (user_id))
+            EC.cur.execute(
+                """SELECT COUNT(*) FROM `message` WHERE `user_id` = %s AND `type` != 'new_chat_member'""", (user_id))
             user_msg_cnt = int(EC.cur.fetchall()[0][0])
 
             message_deleted = False
 
             # action list start
             def action_ban_all_chat(user_id, duration=604800):
-                EC.log("[spam_ban] kick {} in {}".format(user_id, ", ".join(map(str, global_ban_chat))))
+                EC.log("[spam_ban] kick {} in {}".format(
+                    user_id, ", ".join(map(str, global_ban_chat))))
                 for ban_chat_id in global_ban_chat:
-                    url = "https://api.telegram.org/bot"+EC.token+"/kickChatMember?chat_id="+str(ban_chat_id)+"&user_id="+str(user_id)+"&until_date="+str(int(time.time()+duration))
+                    url = "https://api.telegram.org/bot"+EC.token+"/kickChatMember?chat_id=" + \
+                        str(ban_chat_id)+"&user_id="+str(user_id) + \
+                        "&until_date="+str(int(time.time()+duration))
                     subprocess.Popen(['curl', '-s', url])
 
             def action_unban_all_chat(user_id):
-                EC.log("[spam_ban] unban {} in {}".format(user_id, ", ".join(map(str, global_ban_chat))))
+                EC.log("[spam_ban] unban {} in {}".format(
+                    user_id, ", ".join(map(str, global_ban_chat))))
                 for ban_chat_id in global_ban_chat:
-                    url = "https://api.telegram.org/bot"+EC.token+"/unbanChatMember?chat_id="+str(ban_chat_id)+"&user_id="+str(user_id)
+                    url = "https://api.telegram.org/bot{0}/unbanChatMember?chat_id={1}&user_id={2}".format(
+                        EC.token, ban_chat_id, user_id)
                     subprocess.Popen(['curl', '-s', url])
 
             def action_del_all_msg(user_id):
                 global message_deleted
                 message_deleted = True
 
-                EC.cur.execute("""SELECT `chat_id`, `message_id`, `type` FROM `message` WHERE `user_id` = %s AND `date` > %s""", (user_id, int(time.time()-delete_limit)))
+                EC.cur.execute("""SELECT `chat_id`, `message_id`, `type` FROM `message` WHERE `user_id` = %s AND `date` > %s""", (user_id, int(
+                    time.time()-delete_limit)))
                 rows = EC.cur.fetchall()
                 EC.log("[spam_ban] find {} messages to delete".format(len(rows)))
                 for row in rows:
                     if int(row[0]) in global_ban_chat:
-                        EC.log("[spam_ban] delete {} ({}) in {}".format(row[1], row[2], row[0]))
+                        EC.log("[spam_ban] delete {} ({}) in {}".format(
+                            row[1], row[2], row[0]))
                         EC.deletemessage(row[0], row[1])
 
             def action_warn(message_id=None, text=warn_text):
                 if message_deleted:
-                    EC.log("[spam_ban] warn {} in {} {} skiped, msg deleted.".format(user_id, chat_id, textnorm))
+                    EC.log("[spam_ban] warn {} in {} {} skiped, msg deleted.".format(
+                        user_id, chat_id, textnorm))
                     return
 
-                EC.log("[spam_ban] warn {} in {} {}".format(user_id, chat_id, textnorm))
+                EC.log("[spam_ban] warn {} in {} {}".format(
+                    user_id, chat_id, textnorm))
                 EC.sendmessage(text, reply=message_id)
 
             def action_log_admin(hashtag, admin_user_id, admin_name, action, ban_user_id, reason, duration):
                 message = '{0} 所有群組 <a href="tg://user?id={1}">{2}</a> via ECbot {3} <a href="tg://user?id={4}">{4}</a> 期限為{6}\n理由：{5}'.format(
-                        hashtag,
-                        admin_user_id,
-                        admin_name,
-                        action,
-                        ban_user_id,
-                        reason,
-                        duration
-                    )
+                    hashtag,
+                    admin_user_id,
+                    admin_name,
+                    action,
+                    ban_user_id,
+                    reason,
+                    duration
+                )
                 EC.log("[spam_ban] message {}".format(message))
-                EC.sendmessage(chat_id=log_chat_id, message=message, parse_mode="HTML")
+                EC.sendmessage(chat_id=log_chat_id,
+                               message=message, parse_mode="HTML")
 
             def action_log_bot(ban_user_id, reason, duration):
                 message = '#封 #自動 所有群組(from {0}) ECbot banned <a href="tg://user?id={1}">{1}</a> 期限為{3}\n理由：{2}'.format(
-                        groups_name[chat_id],
-                        ban_user_id,
-                        reason,
-                        duration
-                    )
+                    groups_name[chat_id],
+                    ban_user_id,
+                    reason,
+                    duration
+                )
                 EC.log("[spam_ban] message {}".format(message))
-                EC.sendmessage(chat_id=log_chat_id, message=message, parse_mode="HTML")
+                EC.sendmessage(chat_id=log_chat_id,
+                               message=message, parse_mode="HTML")
 
             # action list end
             # function start
@@ -174,31 +188,39 @@ def main(data):
                 action = re.sub(r'@Kamisu66EthicsCommitteeBot$', '', action)
                 action = action.lower()
                 if action in ['globalban', 'globalunban']:
-                    parser = argparse.ArgumentParser(prog='/{0}@Kamisu66EthicsCommitteeBot'.format(action), usage='%(prog)s user [-d 時長] [-r 原因] [-h]')
-                    parser.add_argument('user', type=str, default=None, nargs='?', help='被用戶ID，不指定時需回覆訊息')
-                    parser.add_argument('-d', type=str, metavar='時長', default='1w', help='接受單位為秒的整數，或是<整數><單位>的格式，例如：60s, 1min, 2h, 3d, 4w, 5m。預設：%(default)s')
-                    parser.add_argument('-r', type=str, metavar='原因', default='未給理由', help='預設：%(default)s')
+                    parser = argparse.ArgumentParser(prog='/{0}@Kamisu66EthicsCommitteeBot'.format(
+                        action), usage='%(prog)s user [-d 時長] [-r 原因] [-h]')
+                    parser.add_argument(
+                        'user', type=str, default=None, nargs='?', help='被用戶ID，不指定時需回覆訊息')
+                    parser.add_argument('-d', type=str, metavar='時長', default='1w',
+                                        help='接受單位為秒的整數，或是<整數><單位>的格式，例如：60s, 1min, 2h, 3d, 4w, 5m。預設：%(default)s')
+                    parser.add_argument(
+                        '-r', type=str, metavar='原因', default='未給理由', help='預設：%(default)s')
                     with io.StringIO() as buf, contextlib.redirect_stdout(buf):
                         try:
                             args = parser.parse_args(cmd)
-                        except SystemExit as e:
+                        except SystemExit:
                             output = buf.getvalue()
-                            EC.sendmessage(output, reply=message_id, parse_mode='')
+                            EC.sendmessage(
+                                output, reply=message_id, parse_mode='')
                         else:
                             if user_id in global_ban_admin:
                                 ban_user_id = args.user
                                 if ban_user_id is None and "reply_to_message" in message:
                                     ban_user_id = message["reply_to_message"]["from"]["id"]
                                 if ban_user_id is None:
-                                    EC.sendmessage('需要回覆訊息或用參數指定封鎖目標', reply=message_id)
+                                    EC.sendmessage(
+                                        '需要回覆訊息或用參數指定封鎖目標', reply=message_id)
                                 else:
                                     reason = args.r
                                     duration = parse_duration(args.d)
                                     if duration is None:
-                                        EC.sendmessage('指定的時長無效', reply=message_id)
-                                    
+                                        EC.sendmessage(
+                                            '指定的時長無效', reply=message_id)
+
                                     elif action == "globalban":
-                                        action_ban_all_chat(ban_user_id, duration)
+                                        action_ban_all_chat(
+                                            ban_user_id, duration)
                                         action_del_all_msg(ban_user_id)
                                         action_log_admin(
                                             '#封', user_id,
@@ -215,12 +237,13 @@ def main(data):
                                             'unbanned', ban_user_id, reason,
                                             duration_text(duration)
                                         )
-                                    
+
                                     EC.deletemessage(chat_id, message_id)
                             else:
-                                EC.log('[spam_ban] {} /globalban not premission'.format(user_id))
+                                EC.log(
+                                    '[spam_ban] {} /globalban not premission'.format(user_id))
                                 EC.sendmessage('你沒有權限', reply=message_id)
-                            
+
             if "text" in mode:
                 if user_msg_cnt <= 5:
                     if chat_id in ban_text_chat and re.search(ban_text_regex, textnorm, flags=re.I):
@@ -242,8 +265,10 @@ def main(data):
                     if re.search(warn_text_regex, textnorm, flags=re.I):
                         spam_type.append("warn_text")
                     if len(spam_type) > 0:
-                        EC.log("[spam_ban] test pass text={} type={}".format(textnorm, ", ".join(spam_type)))
-                        EC.sendmessage("spam type = {}".format(", ".join(spam_type)), reply=message_id, parse_mode="")
+                        EC.log("[spam_ban] test pass text={} type={}".format(
+                            textnorm, ", ".join(spam_type)))
+                        EC.sendmessage("spam type = {}".format(
+                            ", ".join(spam_type)), reply=message_id, parse_mode="")
 
             if "username" in mode:
                 if chat_id in ban_username_chat and re.search(ban_username_regex, textnorm, flags=re.I):
@@ -258,16 +283,18 @@ def main(data):
                 if chat_id in ban_photo_chat:
                     if user_msg_cnt <= 5:
                         action_ban_all_chat(user_id, 604800)
-                        action_log_bot(user_id, '於 @wikipedia_zh 發送圖片', duration_text(604800))
+                        action_log_bot(
+                            user_id, '於 @wikipedia_zh 發送圖片', duration_text(604800))
 
             if "forward" in mode and not message_deleted:
                 if user_msg_cnt <= 5:
-                    EC.sendmessage('https://t.me/{}/{}'.format(message["chat"]["username"], message_id), chat_id=warn_forward_chat_id, parse_mode="HTML")
+                    EC.sendmessage('https://t.me/{}/{}'.format(
+                        message["chat"]["username"], message_id), chat_id=warn_forward_chat_id, parse_mode="HTML")
                     EC.log("[spam_ban] forward {}".format(json.dumps(message)))
                     if "forward_from_chat" in message and message["forward_from_message_id"] < 10:
                         action_warn(message_id)
 
-        except Exception as e:
+        except Exception:
             traceback.print_exc()
             EC.log("[spam_ban] "+traceback.format_exc())
 
@@ -290,41 +317,49 @@ def web():
        <td>value</td>
        </tr>
        """
-    html += "<tr><td>ban_text_regex</td><td>{}</td></td>".format(ban_text_regex)
+    html += "<tr><td>ban_text_regex</td><td>{}</td></td>".format(
+        ban_text_regex)
     temp = []
     for chat_id in ban_text_chat:
         if chat_id in groups_name:
             temp.append("{} ({})".format(chat_id, groups_name[chat_id]))
         else:
             temp.append("{}".format(chat_id))
-    html += "<tr><td>ban_text_chat</td><td>{}</td></td>".format("<br>".join(temp))
+    html += "<tr><td>ban_text_chat</td><td>{}</td></td>".format(
+        "<br>".join(temp))
 
-    html += "<tr><td>ban_username_regex</td><td>{}</td></td>".format(ban_username_regex)
+    html += "<tr><td>ban_username_regex</td><td>{}</td></td>".format(
+        ban_username_regex)
     temp = []
     for chat_id in ban_username_chat:
         if chat_id in groups_name:
             temp.append("{} ({})".format(chat_id, groups_name[chat_id]))
         else:
             temp.append("{}".format(chat_id))
-    html += "<tr><td>ban_username_chat</td><td>{}</td></td>".format("<br>".join(temp))
+    html += "<tr><td>ban_username_chat</td><td>{}</td></td>".format(
+        "<br>".join(temp))
 
-    html += "<tr><td>warn_text_regex</td><td>{}</td></td>".format(warn_text_regex)
+    html += "<tr><td>warn_text_regex</td><td>{}</td></td>".format(
+        warn_text_regex)
     temp = []
     for chat_id in warn_text_chat:
         if chat_id in groups_name:
             temp.append("{} ({})".format(chat_id, groups_name[chat_id]))
         else:
             temp.append("{}".format(chat_id))
-    html += "<tr><td>warn_text_chat</td><td>{}</td></td>".format("<br>".join(temp))
+    html += "<tr><td>warn_text_chat</td><td>{}</td></td>".format(
+        "<br>".join(temp))
 
-    html += "<tr><td>warn_username_regex</td><td>{}</td></td>".format(warn_username_regex)
+    html += "<tr><td>warn_username_regex</td><td>{}</td></td>".format(
+        warn_username_regex)
     temp = []
     for chat_id in warn_username_chat:
         if chat_id in groups_name:
             temp.append("{} ({})".format(chat_id, groups_name[chat_id]))
         else:
             temp.append("{}".format(chat_id))
-    html += "<tr><td>warn_username_chat</td><td>{}</td></td>".format("<br>".join(temp))
+    html += "<tr><td>warn_username_chat</td><td>{}</td></td>".format(
+        "<br>".join(temp))
 
     html += "<tr><td>warn_text</td><td>{}</td></td>".format(warn_text)
 
@@ -334,7 +369,8 @@ def web():
             temp.append("{} ({})".format(chat_id, groups_name[chat_id]))
         else:
             temp.append("{}".format(chat_id))
-    html += "<tr><td>ban_photo_chat</td><td>{}</td></td>".format("<br>".join(temp))
+    html += "<tr><td>ban_photo_chat</td><td>{}</td></td>".format(
+        "<br>".join(temp))
 
     temp = []
     for chat_id in global_ban_chat:
@@ -342,9 +378,11 @@ def web():
             temp.append("{} ({})".format(chat_id, groups_name[chat_id]))
         else:
             temp.append("{}".format(chat_id))
-    html += "<tr><td>global_ban_chat</td><td>{}</td></td>".format("<br>".join(temp))
+    html += "<tr><td>global_ban_chat</td><td>{}</td></td>".format(
+        "<br>".join(temp))
 
-    html += "<tr><td>global_ban_admin</td><td>{}</td></td>".format("<br>".join(map(str, global_ban_admin)))
+    html += "<tr><td>global_ban_admin</td><td>{}</td></td>".format(
+        "<br>".join(map(str, global_ban_admin)))
 
     html += "<tr><td>log_chat_id</td><td>{}</td></td>".format(log_chat_id)
     html += "<tr><td>delete_limit</td><td>{}</td></td>".format(delete_limit)
