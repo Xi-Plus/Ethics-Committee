@@ -113,4 +113,5 @@ class EthicsCommittee:
 		self.db.commit()
 
 	def __del__(self):
-		self.db.close()
+		if hasattr(self, 'db'):
+			self.db.close()
