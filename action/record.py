@@ -45,10 +45,10 @@ def main(data):
                 EC.addmessage(user_id, message_id, full_name, "document",
                               message["document"]["file_id"], date,
                               reply_to_message_id, reply_to_user_id)
-                if "caption" in message:
-                    EC.addmessage(user_id, message_id, full_name, "caption",
-                                  message["caption"], date,
-                                  reply_to_message_id, reply_to_user_id)
+            elif "audio" in message:
+                EC.addmessage(user_id, message_id, full_name, "audio",
+                              message["audio"]["file_id"], date,
+                              reply_to_message_id, reply_to_user_id)
             elif "voice" in message:
                 EC.addmessage(user_id, message_id, full_name, "voice",
                               message["voice"]["file_id"], date,
@@ -57,18 +57,14 @@ def main(data):
                 EC.addmessage(user_id, message_id, full_name, "photo",
                               message["photo"][-1]["file_id"], date,
                               reply_to_message_id, reply_to_user_id)
-                if "caption" in message:
-                    EC.addmessage(user_id, message_id, full_name, "caption",
-                                  message["caption"], date,
-                                  reply_to_message_id, reply_to_user_id)
             elif "video" in message:
                 EC.addmessage(user_id, message_id, full_name, "video",
                               message["video"]["file_id"], date,
                               reply_to_message_id, reply_to_user_id)
-                if "caption" in message:
-                    EC.addmessage(user_id, message_id, full_name, "caption",
-                                  message["caption"], date,
-                                  reply_to_message_id, reply_to_user_id)
+            elif "caption" in message:
+                EC.addmessage(user_id, message_id, full_name, "caption",
+                              message["caption"], date,
+                              reply_to_message_id, reply_to_user_id)
             elif "video_note" in message:
                 EC.addmessage(user_id, message_id, full_name, "video_note",
                               message["video_note"]["file_id"], date,
@@ -119,7 +115,7 @@ def main(data):
                               reply_to_user_id)
         except Exception as e:
             traceback.print_exc()
-            EC.log("[record] "+traceback.format_exc())
+            EC.log("[record] " + traceback.format_exc())
 
     elif "edited_message" in data:
         pass
@@ -143,14 +139,14 @@ def main(data):
                               message["text"], date, reply_to_message_id,
                               reply_to_user_id)
             else:
-                EC.log("[record] "+json.dumps(data))
+                EC.log("[record] " + json.dumps(data))
         except Exception as e:
             traceback.print_exc()
-            EC.log("[record] "+traceback.format_exc())
+            EC.log("[record] " + traceback.format_exc())
 
     elif "edited_channel_post" in data:
         pass
 
     else:
         EC = EthicsCommittee("unknown", "unknown")
-        EC.log("[record] "+json.dumps(data))
+        EC.log("[record] " + json.dumps(data))
