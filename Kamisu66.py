@@ -18,6 +18,8 @@ class EthicsCommittee:
 		config.read(configpath)
 		self.token = config.get('telegram', 'token')
 		self.botid = config.getint('telegram', 'botid')
+		self.url = config.get('telegram', 'url')
+		self.max_connections = config.get('telegram', 'max_connections')
 		self.db = pymysql.connect(host=config.get('database', 'host'),
 								  user=config.get('database', 'user'),
 								  passwd=config.get('database', 'passwd'),

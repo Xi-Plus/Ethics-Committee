@@ -11,14 +11,14 @@ sys.path.insert(0, os.path.realpath(
 from Kamisu66 import EthicsCommittee
 
 
+EC = EthicsCommittee("setWebhook", "setWebhook")
+
 parser = argparse.ArgumentParser()
 parser.add_argument('action', default='set')
-parser.add_argument('--url')
-parser.add_argument('--max_connections', default=40)
+parser.add_argument('--url', default=EC.url)
+parser.add_argument('--max_connections', default=EC.max_connections)
 args = parser.parse_args()
 print(args)
-
-EC = EthicsCommittee("setWebhook", "setWebhook")
 
 if args.action == 'set':
     url = "https://api.telegram.org/bot{0}/setWebhook?url={1}&max_connections={2}".format(
