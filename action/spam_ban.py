@@ -8,8 +8,6 @@ import subprocess
 import time
 import traceback
 
-import requests
-
 from Equivset import Equivset
 from groups import groups_name
 from Kamisu66 import EthicsCommittee
@@ -73,9 +71,9 @@ def main(data):
                 EC.log("[spam_ban] kick {} in {}".format(
                     user_id, ", ".join(map(str, global_ban_chat))))
                 for ban_chat_id in global_ban_chat:
-                    url = "https://api.telegram.org/bot"+EC.token+"/kickChatMember?chat_id=" + \
-                        str(ban_chat_id)+"&user_id="+str(user_id) + \
-                        "&until_date="+str(int(time.time()+duration))
+                    url = "https://api.telegram.org/bot" + EC.token + "/kickChatMember?chat_id=" + \
+                        str(ban_chat_id) + "&user_id=" + str(user_id) + \
+                        "&until_date=" + str(int(time.time() + duration))
                     subprocess.Popen(['curl', '-s', url])
 
             def action_unban_all_chat(user_id):
@@ -91,7 +89,7 @@ def main(data):
                 message_deleted = True
 
                 EC.cur.execute("""SELECT `chat_id`, `message_id`, `type` FROM `message` WHERE `user_id` = %s AND `date` > %s""", (user_id, int(
-                    time.time()-delete_limit)))
+                    time.time() - delete_limit)))
                 rows = EC.cur.fetchall()
                 EC.log("[spam_ban] find {} messages to delete".format(len(rows)))
                 for row in rows:
@@ -152,10 +150,10 @@ def main(data):
                     multiple = {
                         's': 1,
                         'min': 60,
-                        'h': 60*60,
-                        'd': 60*60*24,
-                        'w': 60*60*24*7,
-                        'm': 60*60*24*30
+                        'h': 60 * 60,
+                        'd': 60 * 60 * 24,
+                        'w': 60 * 60 * 24 * 7,
+                        'm': 60 * 60 * 24 * 30
                     }
                     return number * multiple[unit]
                 return None
@@ -164,12 +162,12 @@ def main(data):
                 if duration == 0:
                     return '永久'
                 res = ""
-                if duration // (60*60*24) >= 1:
-                    res += '{}日'.format(int(duration // (60*60*24)))
-                    duration %= 60*60*24
-                if duration // (60*60) >= 1:
-                    res += '{}小時'.format(int(duration // (60*60)))
-                    duration %= 60*60
+                if duration // (60 * 60 * 24) >= 1:
+                    res += '{}日'.format(int(duration // (60 * 60 * 24)))
+                    duration %= 60 * 60 * 24
+                if duration // (60 * 60) >= 1:
+                    res += '{}小時'.format(int(duration // (60 * 60)))
+                    duration %= 60 * 60
                 if duration // 60 >= 1:
                     res += '{}分'.format(int(duration // 60))
                     duration %= 60
@@ -296,7 +294,7 @@ def main(data):
 
         except Exception:
             traceback.print_exc()
-            EC.log("[spam_ban] "+traceback.format_exc())
+            EC.log("[spam_ban] " + traceback.format_exc())
 
 
 def web():
@@ -317,69 +315,55 @@ def web():
        <td>value</td>
        </tr>
        """
+
+    temp = """<table>
+        <tr>
+        <td>chat</td>
+        <td>ban_text</td>
+        <td>ban_username</td>
+        <td>warn_text</td>
+        <td>warn_username</td>
+        <td>ban_photo</td>
+        <td>global_ban</td>
+        </tr>
+        """
+
+    chats = list(set(ban_username_chat + warn_username_chat + ban_text_chat
+                     + warn_text_chat + ban_photo_chat + global_ban_chat))
+    groups_keys = list(groups.keys())
+    groups_values = list(groups.values())
+    chats.sort(key=lambda v: groups_keys[groups_values.index(v)].lower())
+    for chat_id in chats:
+        temp += '<tr>'
+        if chat_id in groups_name:
+            temp += '<td>{} ({})</td>'.format(chat_id, groups_name[chat_id])
+        else:
+            temp += '<td>{}</td>'.format(chat_id)
+        for chat_setting in [ban_text_chat, ban_username_chat,
+                             warn_text_chat, warn_username_chat,
+                             ban_photo_chat, global_ban_chat]:
+            temp += '<td>'
+            if chat_id in chat_setting:
+                temp += '&#10003;'
+            temp += '</td>'
+        temp += '</tr>'
+    temp += '</table>'
+
+    html += '<tr><td>chats</td><td>{}</td></td>'.format(temp)
+
     html += "<tr><td>ban_text_regex</td><td>{}</td></td>".format(
         ban_text_regex)
-    temp = []
-    for chat_id in ban_text_chat:
-        if chat_id in groups_name:
-            temp.append("{} ({})".format(chat_id, groups_name[chat_id]))
-        else:
-            temp.append("{}".format(chat_id))
-    html += "<tr><td>ban_text_chat</td><td>{}</td></td>".format(
-        "<br>".join(temp))
 
     html += "<tr><td>ban_username_regex</td><td>{}</td></td>".format(
         ban_username_regex)
-    temp = []
-    for chat_id in ban_username_chat:
-        if chat_id in groups_name:
-            temp.append("{} ({})".format(chat_id, groups_name[chat_id]))
-        else:
-            temp.append("{}".format(chat_id))
-    html += "<tr><td>ban_username_chat</td><td>{}</td></td>".format(
-        "<br>".join(temp))
 
     html += "<tr><td>warn_text_regex</td><td>{}</td></td>".format(
         warn_text_regex)
-    temp = []
-    for chat_id in warn_text_chat:
-        if chat_id in groups_name:
-            temp.append("{} ({})".format(chat_id, groups_name[chat_id]))
-        else:
-            temp.append("{}".format(chat_id))
-    html += "<tr><td>warn_text_chat</td><td>{}</td></td>".format(
-        "<br>".join(temp))
 
     html += "<tr><td>warn_username_regex</td><td>{}</td></td>".format(
         warn_username_regex)
-    temp = []
-    for chat_id in warn_username_chat:
-        if chat_id in groups_name:
-            temp.append("{} ({})".format(chat_id, groups_name[chat_id]))
-        else:
-            temp.append("{}".format(chat_id))
-    html += "<tr><td>warn_username_chat</td><td>{}</td></td>".format(
-        "<br>".join(temp))
 
     html += "<tr><td>warn_text</td><td>{}</td></td>".format(warn_text)
-
-    temp = []
-    for chat_id in ban_photo_chat:
-        if chat_id in groups_name:
-            temp.append("{} ({})".format(chat_id, groups_name[chat_id]))
-        else:
-            temp.append("{}".format(chat_id))
-    html += "<tr><td>ban_photo_chat</td><td>{}</td></td>".format(
-        "<br>".join(temp))
-
-    temp = []
-    for chat_id in global_ban_chat:
-        if chat_id in groups_name:
-            temp.append("{} ({})".format(chat_id, groups_name[chat_id]))
-        else:
-            temp.append("{}".format(chat_id))
-    html += "<tr><td>global_ban_chat</td><td>{}</td></td>".format(
-        "<br>".join(temp))
 
     html += "<tr><td>global_ban_admin</td><td>{}</td></td>".format(
         "<br>".join(map(str, global_ban_admin)))
