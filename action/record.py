@@ -1,15 +1,16 @@
 from Kamisu66 import EthicsCommittee
 import traceback
-import re
-import sys
-import time
-import random
 import json
 
 
 def main(data):
-    if "message" in data:
-        message = data["message"]
+    if "message" in data or "edited_message" in data:
+        if "message" in data:
+            message = data["message"]
+            date = message["date"]
+        elif "edited_message" in data:
+            message = data["edited_message"]
+            date = message["edit_date"]
         chat_id = message["chat"]["id"]
         user_id = message["from"]["id"]
         EC = EthicsCommittee(chat_id, user_id)
@@ -31,94 +32,111 @@ def main(data):
                 reply_to_last_name = reply_to_message["from"]["last_name"]
             else:
                 reply_to_last_name = ""
-        date = message["date"]
+        if chat_id in [-1001294063397, -376220552]:
+            EC.log("[record] " + json.dumps(message))
         try:
+            mtype = []
             if "text" in message:
+                mtype.append("text")
                 EC.addmessage(user_id, message_id, full_name, "text",
                               message["text"], date, reply_to_message_id,
                               reply_to_user_id)
-            elif "sticker" in message:
+            if "sticker" in message:
+                mtype.append("sticker")
                 EC.addmessage(user_id, message_id, full_name, "sticker",
                               message["sticker"]["file_id"], date,
                               reply_to_message_id, reply_to_user_id)
-            elif "document" in message:
+            if "document" in message:
+                mtype.append("document")
                 EC.addmessage(user_id, message_id, full_name, "document",
                               message["document"]["file_id"], date,
                               reply_to_message_id, reply_to_user_id)
-            elif "audio" in message:
+            if "audio" in message:
+                mtype.append("audio")
                 EC.addmessage(user_id, message_id, full_name, "audio",
                               message["audio"]["file_id"], date,
                               reply_to_message_id, reply_to_user_id)
-            elif "voice" in message:
+            if "voice" in message:
+                mtype.append("voice")
                 EC.addmessage(user_id, message_id, full_name, "voice",
                               message["voice"]["file_id"], date,
                               reply_to_message_id, reply_to_user_id)
-            elif "photo" in message:
+            if "photo" in message:
+                mtype.append("photo")
                 EC.addmessage(user_id, message_id, full_name, "photo",
                               message["photo"][-1]["file_id"], date,
                               reply_to_message_id, reply_to_user_id)
-            elif "video" in message:
+            if "video" in message:
+                mtype.append("video")
                 EC.addmessage(user_id, message_id, full_name, "video",
                               message["video"]["file_id"], date,
                               reply_to_message_id, reply_to_user_id)
-            elif "caption" in message:
+            if "caption" in message:
+                mtype.append("caption")
                 EC.addmessage(user_id, message_id, full_name, "caption",
                               message["caption"], date,
                               reply_to_message_id, reply_to_user_id)
-            elif "video_note" in message:
+            if "video_note" in message:
+                mtype.append("video_note")
                 EC.addmessage(user_id, message_id, full_name, "video_note",
                               message["video_note"]["file_id"], date,
                               reply_to_message_id, reply_to_user_id)
-            elif "contact" in message:
+            if "contact" in message:
+                mtype.append("contact")
                 EC.addmessage(user_id, message_id, full_name, "contact",
                               json.dumps(message["contact"]), date,
                               reply_to_message_id, reply_to_user_id)
-            elif "venue" in message:
+            if "venue" in message:
+                mtype.append("venue")
                 EC.addmessage(user_id, message_id, full_name, "venue",
                               json.dumps(message["venue"]), date,
                               reply_to_message_id, reply_to_user_id)
-            elif "location" in message:
+            if "location" in message:
+                mtype.append("location")
                 EC.addmessage(user_id, message_id, full_name, "location",
                               json.dumps(message["location"]), date,
                               reply_to_message_id, reply_to_user_id)
-            elif "new_chat_member" in message:
+            if "new_chat_member" in message:
+                mtype.append("new_chat_member")
                 EC.addmessage(user_id, message_id, full_name,
                               "new_chat_member",
                               message["new_chat_member"]["id"], date,
                               reply_to_message_id, reply_to_user_id)
-            elif "left_chat_member" in message:
+            if "left_chat_member" in message:
+                mtype.append("left_chat_member")
                 EC.addmessage(user_id, message_id, full_name,
                               "left_chat_member",
                               message["left_chat_member"]["id"], date,
                               reply_to_message_id, reply_to_user_id)
-            elif "pinned_message" in message:
+            if "pinned_message" in message:
+                mtype.append("pinned_message")
                 EC.addmessage(user_id, message_id, full_name,
                               "pinned_message",
                               message["pinned_message"]["message_id"], date,
                               reply_to_message_id, reply_to_user_id)
-            elif "new_chat_title" in message:
+            if "new_chat_title" in message:
+                mtype.append("new_chat_title")
                 EC.addmessage(user_id, message_id, full_name,
                               "new_chat_title", message["new_chat_title"],
                               date, reply_to_message_id, reply_to_user_id)
-            elif "new_chat_photo" in message:
+            if "new_chat_photo" in message:
+                mtype.append("new_chat_photo")
                 EC.addmessage(user_id, message_id, full_name,
                               "new_chat_photo",
                               message["new_chat_photo"][-1]["file_id"], date,
                               reply_to_message_id, reply_to_user_id)
-            elif "delete_chat_photo" in message:
+            if "delete_chat_photo" in message:
+                mtype.append("delete_chat_photo")
                 EC.addmessage(user_id, message_id, full_name,
                               "delete_chat_photo", "", date,
                               reply_to_message_id, reply_to_user_id)
-            else:
+            if len(mtype) == 0:
                 EC.addmessage(user_id, message_id, full_name, "unknown",
                               json.dumps(message), date, reply_to_message_id,
                               reply_to_user_id)
         except Exception as e:
             traceback.print_exc()
             EC.log("[record] " + traceback.format_exc())
-
-    elif "edited_message" in data:
-        pass
 
     elif "channel_post" in data:
         message = data["channel_post"]
