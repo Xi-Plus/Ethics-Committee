@@ -8,9 +8,11 @@ def main(data):
         if "message" in data:
             message = data["message"]
             date = message["date"]
+            type_prefix = ''
         elif "edited_message" in data:
             message = data["edited_message"]
             date = message["edit_date"]
+            type_prefix = 'edited_'
         chat_id = message["chat"]["id"]
         user_id = message["from"]["id"]
         EC = EthicsCommittee(chat_id, user_id)
@@ -38,100 +40,101 @@ def main(data):
             mtype = []
             if "text" in message:
                 mtype.append("text")
-                EC.addmessage(user_id, message_id, full_name, "text",
+                EC.addmessage(user_id, message_id, full_name, type_prefix + "text",
                               message["text"], date, reply_to_message_id,
                               reply_to_user_id)
             if "sticker" in message:
                 mtype.append("sticker")
-                EC.addmessage(user_id, message_id, full_name, "sticker",
+                EC.addmessage(user_id, message_id, full_name, type_prefix + "sticker",
                               message["sticker"]["file_id"], date,
                               reply_to_message_id, reply_to_user_id)
             if "document" in message:
                 mtype.append("document")
-                EC.addmessage(user_id, message_id, full_name, "document",
+                EC.addmessage(user_id, message_id, full_name, type_prefix + "document",
                               message["document"]["file_id"], date,
                               reply_to_message_id, reply_to_user_id)
             if "audio" in message:
                 mtype.append("audio")
-                EC.addmessage(user_id, message_id, full_name, "audio",
+                EC.addmessage(user_id, message_id, full_name, type_prefix + "audio",
                               message["audio"]["file_id"], date,
                               reply_to_message_id, reply_to_user_id)
             if "voice" in message:
                 mtype.append("voice")
-                EC.addmessage(user_id, message_id, full_name, "voice",
+                EC.addmessage(user_id, message_id, full_name, type_prefix + "voice",
                               message["voice"]["file_id"], date,
                               reply_to_message_id, reply_to_user_id)
             if "photo" in message:
                 mtype.append("photo")
-                EC.addmessage(user_id, message_id, full_name, "photo",
+                EC.addmessage(user_id, message_id, full_name, type_prefix + "photo",
                               message["photo"][-1]["file_id"], date,
                               reply_to_message_id, reply_to_user_id)
             if "video" in message:
                 mtype.append("video")
-                EC.addmessage(user_id, message_id, full_name, "video",
+                EC.addmessage(user_id, message_id, full_name, type_prefix + "video",
                               message["video"]["file_id"], date,
                               reply_to_message_id, reply_to_user_id)
             if "caption" in message:
                 mtype.append("caption")
-                EC.addmessage(user_id, message_id, full_name, "caption",
+                EC.addmessage(user_id, message_id, full_name, type_prefix + "caption",
                               message["caption"], date,
                               reply_to_message_id, reply_to_user_id)
             if "video_note" in message:
                 mtype.append("video_note")
-                EC.addmessage(user_id, message_id, full_name, "video_note",
+                EC.addmessage(user_id, message_id, full_name, type_prefix + "video_note",
                               message["video_note"]["file_id"], date,
                               reply_to_message_id, reply_to_user_id)
             if "contact" in message:
                 mtype.append("contact")
-                EC.addmessage(user_id, message_id, full_name, "contact",
+                EC.addmessage(user_id, message_id, full_name, type_prefix + "contact",
                               json.dumps(message["contact"]), date,
                               reply_to_message_id, reply_to_user_id)
             if "venue" in message:
                 mtype.append("venue")
-                EC.addmessage(user_id, message_id, full_name, "venue",
+                EC.addmessage(user_id, message_id, full_name, type_prefix + "venue",
                               json.dumps(message["venue"]), date,
                               reply_to_message_id, reply_to_user_id)
             if "location" in message:
                 mtype.append("location")
-                EC.addmessage(user_id, message_id, full_name, "location",
+                EC.addmessage(user_id, message_id, full_name, type_prefix + "location",
                               json.dumps(message["location"]), date,
                               reply_to_message_id, reply_to_user_id)
             if "new_chat_member" in message:
                 mtype.append("new_chat_member")
                 EC.addmessage(user_id, message_id, full_name,
-                              "new_chat_member",
+                              type_prefix + "new_chat_member",
                               message["new_chat_member"]["id"], date,
                               reply_to_message_id, reply_to_user_id)
             if "left_chat_member" in message:
                 mtype.append("left_chat_member")
                 EC.addmessage(user_id, message_id, full_name,
-                              "left_chat_member",
+                              type_prefix + "left_chat_member",
                               message["left_chat_member"]["id"], date,
                               reply_to_message_id, reply_to_user_id)
             if "pinned_message" in message:
                 mtype.append("pinned_message")
                 EC.addmessage(user_id, message_id, full_name,
-                              "pinned_message",
+                              type_prefix + "pinned_message",
                               message["pinned_message"]["message_id"], date,
                               reply_to_message_id, reply_to_user_id)
             if "new_chat_title" in message:
                 mtype.append("new_chat_title")
                 EC.addmessage(user_id, message_id, full_name,
+                              type_prefix +
                               "new_chat_title", message["new_chat_title"],
                               date, reply_to_message_id, reply_to_user_id)
             if "new_chat_photo" in message:
                 mtype.append("new_chat_photo")
                 EC.addmessage(user_id, message_id, full_name,
-                              "new_chat_photo",
+                              type_prefix + "new_chat_photo",
                               message["new_chat_photo"][-1]["file_id"], date,
                               reply_to_message_id, reply_to_user_id)
             if "delete_chat_photo" in message:
                 mtype.append("delete_chat_photo")
                 EC.addmessage(user_id, message_id, full_name,
-                              "delete_chat_photo", "", date,
+                              type_prefix + "delete_chat_photo", "", date,
                               reply_to_message_id, reply_to_user_id)
             if len(mtype) == 0:
-                EC.addmessage(user_id, message_id, full_name, "unknown",
+                EC.addmessage(user_id, message_id, full_name, type_prefix + "unknown",
                               json.dumps(message), date, reply_to_message_id,
                               reply_to_user_id)
         except Exception as e:
