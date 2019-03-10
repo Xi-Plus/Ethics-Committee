@@ -15,8 +15,11 @@ from spam_ban_config import *
 
 
 def main(data):
-    if "message" in data:
-        message = data["message"]
+    if "message" in data or "edited_message" in data:
+        if "message" in data:
+            message = data["message"]
+        elif "edited_message" in data:
+            message = data["edited_message"]
         chat_id = message["chat"]["id"]
         user_id = message["from"]["id"]
 
@@ -58,7 +61,6 @@ def main(data):
 
         try:
             message_id = message["message_id"]
-            # date = message["date"]
 
             EC.cur.execute(
                 """SELECT COUNT(*) FROM `message` WHERE `user_id` = %s AND `type` != 'new_chat_member'""", (user_id))
