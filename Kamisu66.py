@@ -76,6 +76,17 @@ class EthicsCommittee:
 			url = "https://api.telegram.org/bot"+self.token+"/sendSticker?"+query
 			res = urllib.request.urlopen(url).read().decode("utf8")
 			res = json.loads(res)
+			if res["ok"]:
+				from_first_name = ""
+				if "from" in res["result"]:
+					from_first_name = res["result"]["from"]["first_name"]
+				reply_to_message_id = ""
+				reply_to_user_id = ""
+				if "reply_to_message" in res["result"]:
+					reply_to_message_id = res["result"]["reply_to_message"]["message_id"]
+					reply_to_user_id = res["result"]["reply_to_message"]["from"]["id"]
+				self.addmessage(self.botid, res["result"]["message_id"], from_first_name, "sticker", res["result"]
+								["sticker"]["file_id"], res["result"]["date"], reply_to_message_id, reply_to_user_id)
 		except urllib.error.HTTPError as e:
 			self.log("send msg error: code={} res={}".format(e.code, e.read().decode("utf8")))
 			self.log(traceback.format_exc())
