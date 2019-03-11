@@ -62,6 +62,26 @@ class EthicsCommittee:
 		except Exception as e:
 			self.log(traceback.format_exc())
 
+	def sendSticker(self, sticker, reply=False, chat_id=None):
+		try:
+			query = {}
+			query["chat_id"] = self.chat_id
+			if chat_id is not None:
+				query["chat_id"] = chat_id
+			if type(reply) == str or type(reply) == int:
+				query["reply_to_message_id"] = reply
+			query["sticker"] = sticker
+
+			query = urllib.parse.urlencode(query)
+			url = "https://api.telegram.org/bot"+self.token+"/sendSticker?"+query
+			res = urllib.request.urlopen(url).read().decode("utf8")
+			res = json.loads(res)
+		except urllib.error.HTTPError as e:
+			self.log("send msg error: code={} res={}".format(e.code, e.read().decode("utf8")))
+			self.log(traceback.format_exc())
+		except Exception as e:
+			self.log(traceback.format_exc())
+
 	def editmessage(self, message_id, message, parse_mode="Markdown", reply_markup=None, chat_id=None):
 		try:
 			query = {}
