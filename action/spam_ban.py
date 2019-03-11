@@ -63,7 +63,7 @@ def main(data):
             message_id = message["message_id"]
 
             EC.cur.execute(
-                """SELECT COUNT(*) FROM `message` WHERE `user_id` = %s AND `type` != 'new_chat_member' AND `type` NOT LIKE 'edited_%'""", (user_id))
+                """SELECT COUNT(*) FROM `message` WHERE `user_id` = %s AND `type` != 'new_chat_member' AND `type` NOT LIKE 'edited_%%'""", (user_id))
             user_msg_cnt = int(EC.cur.fetchall()[0][0])
 
             message_deleted = False
@@ -180,7 +180,6 @@ def main(data):
             # function end
 
             if 'text' in mode and text.startswith('/') and chat_id in global_ban_cmd_chat:
-                EC.log('[spam_ban] {}'.format(text))
                 cmd = shlex.split(text)
                 action = cmd[0]
                 cmd = cmd[1:]
