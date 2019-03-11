@@ -5,6 +5,7 @@ import random
 import re
 import os
 import json
+import time
 import traceback
 import urllib.parse
 import urllib.request
@@ -139,6 +140,11 @@ class EthicsCommittee:
 		self.cur.execute("""INSERT INTO `message` (`chat_id`, `user_id`, `message_id`, `full_name`, `type`, `text`, `date`, `reply_to_message_id`, `reply_to_user_id`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
 			(str(self.chat_id), str(user_id), str(message_id), full_name, type, text, str(date), reply_to_message_id, reply_to_user_id) )
 		self.db.commit()
+
+	def addBotMessage(self, text, date=None):
+		if date is None:
+			date = int(time.time())
+		self.addmessage(self.botid, 0, '', 'log', text, date, '', '')
 
 	def log(self, message):
 		self.cur.execute("""INSERT INTO `log` (`chat_id`, `message`) VALUES (%s, %s)""",
