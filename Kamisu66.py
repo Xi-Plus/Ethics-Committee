@@ -122,10 +122,13 @@ class EthicsCommittee:
 
 	def deletemessage(self, chat_id, message_id):
 		try:
-			url = "https://api.telegram.org/bot"+self.token+"/deleteMessage?chat_id="+str(chat_id)+"&message_id="+str(message_id)
-			urllib.request.urlopen(url)
-			self.cur.execute("""UPDATE `message` SET `deleted` = 1 WHERE `chat_id` = %s AND `message_id` = %s""", (chat_id, message_id))
+			self.cur.execute("""UPDATE `message` SET `deleted` = 1 WHERE `chat_id` = %s AND `message_id` = %s""",
+							 (chat_id, message_id))
 			self.db.commit()
+			if message_id > 0:
+				url = "https://api.telegram.org/bot{}/deleteMessage?chat_id={}&message_id={}".format(
+					self.token, chat_id, message_id)
+				urllib.request.urlopen(url)
 		except urllib.error.HTTPError as e:
 			datastr = e.read().decode("utf8")
 			data = json.loads(datastr)
