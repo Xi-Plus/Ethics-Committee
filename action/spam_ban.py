@@ -63,7 +63,7 @@ def main(data):
             message_id = message["message_id"]
 
             EC.cur.execute(
-                """SELECT COUNT(*) FROM `message` WHERE `user_id` = %s AND `type` != 'new_chat_member' AND `type` NOT LIKE 'edited_%%'""", (user_id))
+                """SELECT SUM(`count`) AS `count` FROM `message_count` WHERE `user_id` = %s AND `type` != 'new_chat_member' AND `type` NOT LIKE 'edited_%%'""", (user_id))
             user_msg_cnt = int(EC.cur.fetchall()[0][0])
 
             message_deleted = False
