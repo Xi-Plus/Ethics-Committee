@@ -28,10 +28,26 @@ CREATE TABLE `message` (
   `time` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `deleted` tinyint(1) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+DELIMITER $$
+CREATE TRIGGER `count` AFTER INSERT ON `message` FOR EACH ROW BEGIN
+INSERT INTO `message_count` (`chat_id`, `user_id`, `type`, `count`) VALUES (NEW.chat_id, NEW.user_id, NEW.type, 1)
+
+ON DUPLICATE KEY UPDATE `count` = `count`+1;
+
+END
+$$
+DELIMITER ;
+
+CREATE TABLE `message_count` (
+  `chat_id` varchar(20) COLLATE utf8_bin NOT NULL,
+  `user_id` varchar(20) COLLATE utf8_bin NOT NULL,
+  `type` varchar(20) COLLATE utf8_bin NOT NULL,
+  `count` int(11) NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 
-ALTER TABLE `message`
-  ADD PRIMARY KEY (`chat_id`,`message_id`,`type`);
+ALTER TABLE `message_count`
+  ADD PRIMARY KEY (`chat_id`,`user_id`,`type`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
