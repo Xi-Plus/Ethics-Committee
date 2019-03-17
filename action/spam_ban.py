@@ -257,7 +257,7 @@ def main(data):
                     elif chat_id in warn_text_chat and re.search(warn_text_regex, textnorm, flags=re.I):
                         action_warn(message_id)
 
-                if chat_id in test_chat:
+                if chat_id in test_chat and re.search(r'/test', text):
                     spam_type = []
                     if re.search(ban_username_regex, textnorm, flags=re.I):
                         spam_type.append("ban_username")
@@ -267,11 +267,12 @@ def main(data):
                         spam_type.append("ban_text")
                     if re.search(warn_text_regex, textnorm, flags=re.I):
                         spam_type.append("warn_text")
-                    if len(spam_type) > 0:
-                        EC.log("[spam_ban] test pass text={} type={}".format(
-                            textnorm, ", ".join(spam_type)))
-                        EC.sendmessage("spam type = {}".format(
-                            ", ".join(spam_type)), reply=message_id, parse_mode="")
+                    EC.log("[spam_ban] test pass text={} type={}".format(
+                        textnorm, ", ".join(spam_type)))
+                    EC.sendmessage("textnorm = {}\nspam type = {}".format(
+                        textnorm,
+                        ", ".join(spam_type)),
+                        reply=message_id, parse_mode="")
 
             if "username" in mode:
                 if chat_id in ban_username_chat and re.search(ban_username_regex, textnorm, flags=re.I):
