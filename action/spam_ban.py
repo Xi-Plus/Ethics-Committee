@@ -288,7 +288,7 @@ def main(data):
                     if user_msg_cnt <= 5:
                         action_ban_all_chat(user_id, 604800)
                         action_log_bot(
-                            user_id, '於 @wikipedia_zh 發送圖片', duration_text(604800))
+                            user_id, '發送圖片', duration_text(604800))
 
             if "forward" in mode and not message_deleted:
                 if user_msg_cnt <= 5:
