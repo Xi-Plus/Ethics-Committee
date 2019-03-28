@@ -40,4 +40,11 @@ text = group["message"]["text"].format(link)
 
 print(text)
 
-EC.editmessage(group["message"]["message_id"], text, chat_id=group["message"]["chat_id"], parse_mode="")
+res = EC.editmessage(group["message"]["message_id"], text,
+                     chat_id=group["message"]["chat_id"], parse_mode="")
+print(res)
+
+if res['ok'] is False and res['description'] == 'Bad Request: message to edit not found':
+    res = EC.sendmessage(text,
+                         chat_id=group["message"]["chat_id"], parse_mode="")
+    print(res)
