@@ -59,12 +59,15 @@ class EthicsCommittee:
                     reply_to_user_id = res["result"]["reply_to_message"]["from"]["id"]
                 self.addmessage(self.botid, res["result"]["message_id"], from_first_name, "text",
                                 res["result"]["text"], res["result"]["date"], reply_to_message_id, reply_to_user_id)
+            return res
         except urllib.error.HTTPError as e:
-            self.log("send msg error: code={} res={}".format(
-                e.code, e.read().decode("utf8")))
+            res = e.read().decode("utf8")
+            self.log("send msg error: code={} res={}".format(e.code, res))
             self.log(traceback.format_exc())
+            return json.loads(res)
         except Exception as e:
             self.log(traceback.format_exc())
+            return None
 
     def sendSticker(self, sticker, reply=False, chat_id=None):
         try:
@@ -116,14 +119,15 @@ class EthicsCommittee:
             url = "https://api.telegram.org/bot" + self.token + "/editMessageText?" + query
             res = urllib.request.urlopen(url).read().decode("utf8")
             res = json.loads(res)
-            if res["ok"]:
-                pass
+            return res
         except urllib.error.HTTPError as e:
-            self.log("edit msg error: code={} res={}".format(
-                e.code, e.read().decode("utf8")))
+            res = e.read().decode("utf8")
+            self.log("edit msg error: code={} res={}".format(e.code, res))
             self.log(traceback.format_exc())
+            return json.loads(res)
         except Exception as e:
             self.log(traceback.format_exc())
+            return None
 
     def deletemessage(self, chat_id, message_id):
         try:
