@@ -15,6 +15,7 @@ from spam_ban_config import *
 
 MODULE_NAME = 'spam_ban'
 PERMISSION_GLOBALBAN = MODULE_NAME + '_global_ban'
+PERMISSION_GRANT = MODULE_NAME + '_grant'
 
 
 def main(data):
@@ -28,6 +29,13 @@ def main(data):
 
         if chat_id not in (global_ban_chat + test_chat + global_ban_cmd_chat):
             return
+
+        full_name = message["from"]["first_name"]
+        if "last_name" in message["from"]:
+            full_name += " " + message["from"]["last_name"]
+        if "reply_to_message" in message:
+            is_reply = True
+            reply_to_user_id = message["reply_to_message"]["from"]["id"]
 
         mode = []
         text = ""
@@ -193,6 +201,7 @@ def main(data):
                 action = action[1:]
                 action = re.sub(r'@Kamisu66EthicsCommitteeBot$', '', action)
                 action = action.lower()
+                is_reply = "reply_to_message" in message
                 if action in ['globalban', 'globalunban']:
                     if EC.check_permission(user_id, PERMISSION_GLOBALBAN, 0):
                         parser = argparse.ArgumentParser(
@@ -207,8 +216,8 @@ def main(data):
                         ok, args = EC.parse_command(parser, cmd)
                         if ok:
                             ban_user_id = args.user
-                            if ban_user_id is None and "reply_to_message" in message:
-                                ban_user_id = message["reply_to_message"]["from"]["id"]
+                            if ban_user_id is None and is_reply:
+                                ban_user_id = reply_to_user_id
                             if ban_user_id is None:
                                 EC.sendmessage(
                                     '需要回覆訊息或用參數指定封鎖目標', reply=message_id)
@@ -246,7 +255,39 @@ def main(data):
                     else:
                         EC.log(
                             '[spam_ban] {} /globalban not premission'.format(user_id))
-                        EC.sendmessage('你沒有權限', reply=message_id)
+                        EC.sendmessage('你沒有權限進行全域封鎖的動作', reply=message_id)
+
+                if action in ['grantglobalban']:
+                    if EC.check_permission(user_id, PERMISSION_GRANT, 0):
+                        if is_reply:
+                            ok = EC.add_permission(
+                                reply_to_user_id, PERMISSION_GLOBALBAN, 0)
+                            if ok:
+                                EC.sendmessage('已授予 {} 全域封鎖的權限'.format(
+                                    full_name), reply=message_id)
+                            else:
+                                EC.sendmessage('{} 已有全域封鎖的權限'.format(
+                                    full_name), reply=message_id)
+                        else:
+                            EC.sendmessage('你需要回應一則訊息以授予權限', reply=message_id)
+                    else:
+                        EC.sendmessage('你沒有權限進行授予權限的動作', reply=message_id)
+
+                if action in ['revokeglobalban']:
+                    if EC.check_permission(user_id, PERMISSION_GRANT, 0):
+                        if is_reply:
+                            ok = EC.remove_permission(
+                                reply_to_user_id, PERMISSION_GLOBALBAN, 0)
+                            if ok:
+                                EC.sendmessage('已解除 {} 全域封鎖的權限'.format(
+                                    full_name), reply=message_id)
+                            else:
+                                EC.sendmessage('{} 沒有全域封鎖的權限'.format(
+                                    full_name), reply=message_id)
+                        else:
+                            EC.sendmessage('你需要回應一則訊息以解除權限', reply=message_id)
+                    else:
+                        EC.sendmessage('你沒有權限進行解除權限', reply=message_id)
 
             if "text" in mode:
                 if user_msg_cnt <= 5:
