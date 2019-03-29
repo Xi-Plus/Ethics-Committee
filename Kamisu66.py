@@ -210,6 +210,16 @@ class EthicsCommittee:
         rows = self.cur.fetchall()
         return len(rows) > 0
 
+    def list_users_with_permission(self, user_right, chat_id=None):
+        if chat_id is None:
+            self.cur.execute("""SELECT `user_id` FROM `permissions` WHERE `user_right` = %s""",
+                             (user_right))
+        else:
+            self.cur.execute("""SELECT 'user_id' FROM `permissions` WHERE `user_right` = %s AND `chat_id` = %s""",
+                             (user_right, chat_id))
+        rows = self.cur.fetchall()
+        return [row[0] for row in rows]
+
     def addBotMessage(self, text, date=None):
         if date is None:
             date = int(time.time())
