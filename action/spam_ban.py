@@ -36,6 +36,10 @@ def main(data):
         if "reply_to_message" in message:
             is_reply = True
             reply_to_user_id = message["reply_to_message"]["from"]["id"]
+            reply_to_full_name = message["reply_to_message"]["from"]["first_name"]
+            if "last_name" in message["reply_to_message"]["from"]:
+                reply_to_full_name += ' ' + \
+                    message["reply_to_message"]["from"]["last_name"]
 
         mode = []
         text = ""
@@ -264,10 +268,10 @@ def main(data):
                                 reply_to_user_id, PERMISSION_GLOBALBAN, 0)
                             if ok:
                                 EC.sendmessage('已授予 {} 全域封鎖的權限'.format(
-                                    full_name), reply=message_id)
+                                    reply_to_full_name), reply=message_id)
                             else:
                                 EC.sendmessage('{} 已有全域封鎖的權限'.format(
-                                    full_name), reply=message_id)
+                                    reply_to_full_name), reply=message_id)
                         else:
                             EC.sendmessage('你需要回應一則訊息以授予權限', reply=message_id)
                     else:
@@ -280,10 +284,10 @@ def main(data):
                                 reply_to_user_id, PERMISSION_GLOBALBAN, 0)
                             if ok:
                                 EC.sendmessage('已解除 {} 全域封鎖的權限'.format(
-                                    full_name), reply=message_id)
+                                    reply_to_full_name), reply=message_id)
                             else:
                                 EC.sendmessage('{} 沒有全域封鎖的權限'.format(
-                                    full_name), reply=message_id)
+                                    reply_to_full_name), reply=message_id)
                         else:
                             EC.sendmessage('你需要回應一則訊息以解除權限', reply=message_id)
                     else:
