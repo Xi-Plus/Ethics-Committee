@@ -10,21 +10,21 @@ SET time_zone = "+00:00";
 
 
 CREATE TABLE `log` (
-  `chat_id` varchar(20) COLLATE utf8_bin NOT NULL,
+  `chat_id` bigint(20) NOT NULL,
   `message` text COLLATE utf8_bin NOT NULL,
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 CREATE TABLE `message` (
-  `chat_id` varchar(20) COLLATE utf8_bin NOT NULL,
-  `user_id` varchar(20) COLLATE utf8_bin NOT NULL,
+  `chat_id` bigint(20) NOT NULL,
+  `user_id` int(11) NOT NULL,
   `message_id` int(11) NOT NULL,
   `full_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `type` varchar(20) COLLATE utf8_bin NOT NULL,
   `text` text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `date` int(11) NOT NULL,
-  `reply_to_message_id` varchar(20) COLLATE utf8_bin NOT NULL,
-  `reply_to_user_id` varchar(20) COLLATE utf8_bin NOT NULL,
+  `reply_to_message_id` int(11) NOT NULL,
+  `reply_to_user_id` int(11) NOT NULL,
   `time` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `deleted` tinyint(1) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
@@ -39,8 +39,8 @@ $$
 DELIMITER ;
 
 CREATE TABLE `message_count` (
-  `chat_id` varchar(20) COLLATE utf8_bin NOT NULL,
-  `user_id` varchar(20) COLLATE utf8_bin NOT NULL,
+  `chat_id` bigint(20) NOT NULL,
+  `user_id` int(11) NOT NULL,
   `type` varchar(20) COLLATE utf8_bin NOT NULL,
   `count` int(11) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
