@@ -13,6 +13,9 @@ from groups import groups_name
 from Kamisu66 import EthicsCommittee
 from spam_ban_config import *
 
+MODULE_NAME = 'spam_ban'
+PERMISSION_GLOBALBAN = MODULE_NAME + '_global_ban'
+
 
 def main(data):
     if "message" in data or "edited_message" in data:
@@ -191,61 +194,59 @@ def main(data):
                 action = re.sub(r'@Kamisu66EthicsCommitteeBot$', '', action)
                 action = action.lower()
                 if action in ['globalban', 'globalunban']:
-                    parser = argparse.ArgumentParser(prog='/{0}@Kamisu66EthicsCommitteeBot'.format(
-                        action), usage='%(prog)s user [-d 時長] [-r 原因] [-h]')
-                    parser.add_argument(
-                        'user', type=str, default=None, nargs='?', help='被用戶ID，不指定時需回覆訊息')
-                    parser.add_argument('-d', type=str, metavar='時長', default='1w',
-                                        help='接受單位為秒的整數，或是<整數><單位>的格式，例如：60s, 1min, 2h, 3d, 4w, 5m。預設：%(default)s')
-                    parser.add_argument(
-                        '-r', type=str, metavar='原因', default='未給理由', help='預設：%(default)s')
-                    with io.StringIO() as buf, contextlib.redirect_stdout(buf):
-                        try:
-                            args = parser.parse_args(cmd)
-                        except SystemExit:
-                            output = buf.getvalue()
-                            EC.sendmessage(
-                                output, reply=message_id, parse_mode='')
-                        else:
-                            if user_id in global_ban_admin:
-                                ban_user_id = args.user
-                                if ban_user_id is None and "reply_to_message" in message:
-                                    ban_user_id = message["reply_to_message"]["from"]["id"]
-                                if ban_user_id is None:
-                                    EC.sendmessage(
-                                        '需要回覆訊息或用參數指定封鎖目標', reply=message_id)
-                                else:
-                                    reason = args.r
-                                    duration = parse_duration(args.d)
-                                    if duration is None:
-                                        EC.sendmessage(
-                                            '指定的時長無效', reply=message_id)
-
-                                    elif action == "globalban":
-                                        action_ban_all_chat(
-                                            ban_user_id, duration)
-                                        action_del_all_msg(ban_user_id)
-                                        action_log_admin(
-                                            '#封', user_id,
-                                            message["from"]["first_name"],
-                                            'banned', ban_user_id, reason,
-                                            duration_text(duration)
-                                        )
-
-                                    elif action == "globalunban":
-                                        action_unban_all_chat(ban_user_id)
-                                        action_log_admin(
-                                            '#解', user_id,
-                                            message["from"]["first_name"],
-                                            'unbanned', ban_user_id, reason,
-                                            duration_text(duration)
-                                        )
-
-                                    EC.deletemessage(chat_id, message_id)
+                    if EC.check_permission(user_id, PERMISSION_GLOBALBAN, 0):
+                        parser = argparse.ArgumentParser(
+                            prog='/{0}'.format(action),
+                            usage='%(prog)s user [-d 時長] [-r 原因] [-h]')
+                        parser.add_argument(
+                            'user', type=str, default=None, nargs='?', help='被用戶ID，不指定時需回覆訊息')
+                        parser.add_argument('-d', type=str, metavar='時長', default='1w',
+                                            help='接受單位為秒的整數，或是<整數><單位>的格式，例如：60s, 1min, 2h, 3d, 4w, 5m。預設：%(default)s')
+                        parser.add_argument(
+                            '-r', type=str, metavar='原因', default='未給理由', help='預設：%(default)s')
+                        ok, args = EC.parse_command(parser, cmd)
+                        if ok:
+                            ban_user_id = args.user
+                            if ban_user_id is None and "reply_to_message" in message:
+                                ban_user_id = message["reply_to_message"]["from"]["id"]
+                            if ban_user_id is None:
+                                EC.sendmessage(
+                                    '需要回覆訊息或用參數指定封鎖目標', reply=message_id)
                             else:
-                                EC.log(
-                                    '[spam_ban] {} /globalban not premission'.format(user_id))
-                                EC.sendmessage('你沒有權限', reply=message_id)
+                                reason = args.r
+                                duration = parse_duration(args.d)
+                                if duration is None:
+                                    EC.sendmessage(
+                                        '指定的時長無效', reply=message_id)
+
+                                elif action == "globalban":
+                                    action_ban_all_chat(
+                                        ban_user_id, duration)
+                                    action_del_all_msg(ban_user_id)
+                                    action_log_admin(
+                                        '#封', user_id,
+                                        message["from"]["first_name"],
+                                        'banned', ban_user_id, reason,
+                                        duration_text(duration)
+                                    )
+
+                                elif action == "globalunban":
+                                    action_unban_all_chat(ban_user_id)
+                                    action_log_admin(
+                                        '#解', user_id,
+                                        message["from"]["first_name"],
+                                        'unbanned', ban_user_id, reason,
+                                        duration_text(duration)
+                                    )
+
+                                EC.deletemessage(chat_id, message_id)
+                        else:
+                            EC.sendmessage(
+                                args, reply=message_id, parse_mode='')
+                    else:
+                        EC.log(
+                            '[spam_ban] {} /globalban not premission'.format(user_id))
+                        EC.sendmessage('你沒有權限', reply=message_id)
 
             if "text" in mode:
                 if user_msg_cnt <= 5:
@@ -304,6 +305,8 @@ def main(data):
 
 
 def web():
+    EC = EthicsCommittee(MODULE_NAME + '_web', MODULE_NAME + '_web')
+
     html = """
         <style>
             table {
@@ -371,8 +374,9 @@ def web():
 
     html += "<tr><td>warn_text</td><td>{}</td></td>".format(warn_text)
 
+    users = EC.list_users_with_permission(PERMISSION_GLOBALBAN)
     html += "<tr><td>global_ban_admin</td><td>{}</td></td>".format(
-        "<br>".join(map(str, global_ban_admin)))
+        "<br>".join(map(str, users)))
 
     html += "<tr><td>log_chat_id</td><td>{}</td></td>".format(log_chat_id)
     html += "<tr><td>delete_limit</td><td>{}</td></td>".format(delete_limit)
