@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 import configparser
+import contextlib
+import io
 import json
 import os
+import shlex
 import time
 import traceback
 import urllib.parse
@@ -154,6 +157,26 @@ class EthicsCommittee:
         self.cur.execute("""INSERT INTO `message` (`chat_id`, `user_id`, `message_id`, `full_name`, `type`, `text`, `date`, `reply_to_message_id`, `reply_to_user_id`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
                          (str(self.chat_id), str(user_id), str(message_id), full_name, msg_type, text, str(date), reply_to_message_id, reply_to_user_id))
         self.db.commit()
+
+    def parse_command(self, parser, cmd, ignore_first=False):
+        if isinstance(cmd, str):
+            cmd = shlex.split(cmd)
+        elif isinstance(cmd, list):
+            pass
+        else:
+            raise TypeError('cmd not a str or list')
+
+        if ignore_first:
+            cmd = cmd[1:]
+
+        with io.StringIO() as buf, contextlib.redirect_stdout(buf), contextlib.redirect_stderr(buf):
+            try:
+                args = parser.parse_args(cmd)
+            except SystemExit:
+                output = buf.getvalue()
+                return False, output
+            else:
+                return True, args
 
     def addBotMessage(self, text, date=None):
         if date is None:
