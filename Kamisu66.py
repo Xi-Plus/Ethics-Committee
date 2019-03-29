@@ -178,6 +178,30 @@ class EthicsCommittee:
             else:
                 return True, args
 
+    def add_permission(self, user_id, user_right, chat_id=None):
+        if chat_id is None:
+            chat_id = self.chat_id
+
+        res = self.cur.execute("""INSERT IGNORE INTO `permissions` (`chat_id`, `user_id`, `user_right`) 
+                                  VALUES (%s, %s, %s)""",
+                               (chat_id, user_id, user_right))
+        self.db.commit()
+        if res == 0:
+            return False
+        return True
+
+    def remove_permission(self, user_id, user_right, chat_id=None):
+        if chat_id is None:
+            chat_id = self.chat_id
+
+        res = self.cur.execute("""DELETE FROM `permissions` WHERE `chat_id` = %s 
+                                  AND `user_id` = %s AND `user_right` = %s""",
+                               (chat_id, user_id, user_right))
+        self.db.commit()
+        if res == 0:
+            return False
+        return True
+
     def addBotMessage(self, text, date=None):
         if date is None:
             date = int(time.time())

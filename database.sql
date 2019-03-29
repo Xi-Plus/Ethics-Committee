@@ -45,9 +45,18 @@ CREATE TABLE `message_count` (
   `count` int(11) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
+CREATE TABLE `permissions` (
+  `chat_id` bigint(20) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `user_right` varchar(50) COLLATE utf8_bin NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
 
 ALTER TABLE `message_count`
   ADD PRIMARY KEY (`chat_id`,`user_id`,`type`);
+
+ALTER TABLE `permissions`
+  ADD PRIMARY KEY (`chat_id`,`user_id`,`user_right`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
