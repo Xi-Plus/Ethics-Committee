@@ -202,6 +202,14 @@ class EthicsCommittee:
             return False
         return True
 
+    def check_permission(self, user_id, user_right, chat_id=None):
+        if chat_id is None:
+            chat_id = 0
+        self.cur.execute("""SELECT 'true' FROM `permissions` WHERE `user_id` = %s AND `user_right` = %s AND `chat_id` = %s""",
+                         (user_id, user_right, chat_id))
+        rows = self.cur.fetchall()
+        return len(rows) > 0
+
     def addBotMessage(self, text, date=None):
         if date is None:
             date = int(time.time())
