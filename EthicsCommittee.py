@@ -1,17 +1,15 @@
 # -*- coding: utf-8 -*-
-import json
-from flask import Flask, request, abort
 import configparser
-from Kamisu66 import EthicsCommittee, EthicsCommitteeExtension
+import importlib
+import json
 import os
 import sys
-import importlib
 import traceback
-try:
-    from config_local import extensions
-except ImportError:
-    from config_default import extensions
 
+from flask import Flask, abort, request
+
+from config_local import extensions
+from Kamisu66 import EthicsCommittee
 
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 
