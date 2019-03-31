@@ -9,7 +9,8 @@ from read_only_config import adminList, banGroupIds, deleteGroupIds
 
 
 class Read_only(EthicsCommitteeExtension):
-    def main(self, data):
+    def main(self, EC):
+        data = EC.data
         if "message" in data:
             chat_id = data["message"]["chat"]["id"]
             user_id = data["message"]["from"]["id"]

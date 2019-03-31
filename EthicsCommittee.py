@@ -43,9 +43,10 @@ def web():
 def telegram():
     try:
         data = json.loads(request.data.decode("utf8"))
+        EC = EthicsCommittee(update=data)
         for extension in extensions:
             try:
-                extension.main(data)
+                extension.main(EC)
             except NotImplementedError:
                 EC = EthicsCommittee(0, 0)
                 EC.log(traceback.format_exc())

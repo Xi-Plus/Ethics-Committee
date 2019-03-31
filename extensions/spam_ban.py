@@ -19,7 +19,8 @@ PERMISSION_GRANT = MODULE_NAME + '_grant'
 
 
 class Spam_ban(EthicsCommitteeExtension):
-    def main(self, data):
+    def main(self, EC):
+        data = EC.data
         if "message" in data or "edited_message" in data:
             if "message" in data:
                 message = data["message"]

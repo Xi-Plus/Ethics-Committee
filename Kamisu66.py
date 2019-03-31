@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import configparser
 import contextlib
 import io
 import json
@@ -11,26 +10,32 @@ import urllib.parse
 import urllib.request
 
 import pymysql
+import telegram
 
 
 class EthicsCommittee:
-    def __init__(self, chat_id, user_id):
-        self.chat_id = chat_id
-        self.user_id = user_id
-        config = configparser.ConfigParser()
-        configpath = os.path.dirname(
-            os.path.realpath(__file__)) + '/config.ini'
-        config.read(configpath)
-        self.token = config.get('telegram', 'token')
-        self.botid = config.getint('telegram', 'botid')
-        self.url = config.get('telegram', 'url')
-        self.max_connections = config.get('telegram', 'max_connections')
-        self.db = pymysql.connect(host=config.get('database', 'host'),
-                                  user=config.get('database', 'user'),
-                                  passwd=config.get('database', 'passwd'),
-                                  db=config.get('database', 'db'),
-                                  charset=config.get('database', 'charset'))
+    def __init__(self, chat_id=None, user_id=None, update=None):
+        from config_local import cfg
+        self.token = cfg['telegram']['token']
+        self.bot = telegram.Bot(self.token)
+        self.botid = self.bot.id
+        self.url = cfg['telegram']['url']
+        self.max_connections = cfg['telegram']['max_connections']
+        self.db = pymysql.connect(host=cfg['database']['host'],
+                                  user=cfg['database']['user'],
+                                  passwd=cfg['database']['passwd'],
+                                  db=cfg['database']['db'],
+                                  charset=cfg['database']['charset'])
         self.cur = self.db.cursor()
+        if update is None:
+            self.update = None
+            self.chat_id = chat_id
+            self.user_id = user_id
+        else:
+            self.data = update
+            self.update = telegram.Update.de_json(update, self.bot)
+            self.chat_id = self.update.effective_user.id
+            self.user_id = self.update.effective_user.id
 
     def sendmessage(self, message, parse_mode="Markdown", reply=False, reply_markup=None, chat_id=None):
         try:
@@ -254,7 +259,7 @@ class EthicsCommittee:
 
 
 class EthicsCommitteeExtension():
-    def main(self, data):
+    def main(self, EC):
         raise NotImplementedError
 
     def web(self):
