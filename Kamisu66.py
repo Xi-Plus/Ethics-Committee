@@ -259,3 +259,9 @@ class EthicsCommitteeExtension():
 
     def web(self):
         raise NotImplementedError
+
+
+def load_extensions(name):
+    import importlib
+    import extensions
+    return importlib.import_module('.' + name, 'extensions').__mainclass__()

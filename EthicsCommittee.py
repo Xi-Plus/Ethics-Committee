@@ -8,9 +8,9 @@ import sys
 import importlib
 import traceback
 try:
-	import config_local
+	from config_local import extensions
 except ImportError:
-	import config_default
+	from config_default import extensions
 
 
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
@@ -45,9 +45,9 @@ def web():
 def telegram():
 	try:
 		data = json.loads(request.data.decode("utf8"))
-		for module in EthicsCommitteeExtension.__subclasses__():
+		for extension in extensions:
 			try:
-				module().main(data)
+				extension.main(data)
 			except NotImplementedError:
 				EC = EthicsCommittee("error", "error")
 				EC.log(traceback.format_exc())

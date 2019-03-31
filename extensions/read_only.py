@@ -50,3 +50,7 @@ class Read_only(EthicsCommitteeExtension):
             except Exception as e:
                 traceback.print_exc()
                 EC.log(traceback.format_exc())
+
+
+def __mainclass__():
+    return Read_only

@@ -188,3 +188,7 @@ class Record(EthicsCommitteeExtension):
         else:
             EC = EthicsCommittee("unknown", "unknown")
             EC.log("[record] " + json.dumps(data))
+
+
+def __mainclass__():
+    return Record
