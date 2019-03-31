@@ -9,6 +9,11 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 
+CREATE TABLE `group_name` (
+  `chat_id` bigint(20) NOT NULL,
+  `title` varchar(255) COLLATE utf8_bin NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
 CREATE TABLE `log` (
   `chat_id` bigint(20) NOT NULL,
   `message` text COLLATE utf8_bin NOT NULL,
@@ -51,12 +56,24 @@ CREATE TABLE `permissions` (
   `user_right` varchar(50) COLLATE utf8_bin NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
+CREATE TABLE `user_name` (
+  `user_id` int(11) NOT NULL,
+  `full_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `username` varchar(255) COLLATE utf8_bin NOT NULL DEFAULT ''
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
+
+ALTER TABLE `group_name`
+  ADD PRIMARY KEY (`chat_id`);
 
 ALTER TABLE `message_count`
   ADD PRIMARY KEY (`chat_id`,`user_id`,`type`);
 
 ALTER TABLE `permissions`
   ADD PRIMARY KEY (`chat_id`,`user_id`,`user_right`);
+
+ALTER TABLE `user_name`
+  ADD PRIMARY KEY (`user_id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
