@@ -8,6 +8,9 @@ class Bot_added_notification(EthicsCommitteeExtension):
         self.notice_chat_id = notice_chat_id
 
     def main(self, EC):
+        if not EC.update.message:
+            return
+
         if EC.update.message.new_chat_members and EC.update.message.new_chat_members[0].id == EC.bot.id:
             message = '機器人被 <a href="tg://user?id={}">{}</a> 加入了群 {} {}'.format(
                 EC.update.effective_user.id,
