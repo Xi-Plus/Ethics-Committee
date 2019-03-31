@@ -1,3 +1,4 @@
 *.pyc
-action/*config.py
+extensions/*config.py
 config.ini
+config_local.py

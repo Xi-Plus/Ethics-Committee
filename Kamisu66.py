@@ -251,3 +251,11 @@ class EthicsCommittee:
     def __del__(self):
         if hasattr(self, 'db'):
             self.db.close()
+
+
+class EthicsCommitteeExtension():
+    def main(self, data):
+        raise NotImplementedError
+
+    def web(self):
+        raise NotImplementedError
