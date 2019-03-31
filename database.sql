@@ -9,6 +9,24 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 
+CREATE TABLE `admins` (
+  `chat_id` bigint(20) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `can_add_web_page_previews` tinyint(4) NOT NULL,
+  `can_be_edited` tinyint(4) NOT NULL,
+  `can_change_info` tinyint(4) NOT NULL,
+  `can_delete_messages` tinyint(4) NOT NULL,
+  `can_edit_messages` tinyint(4) NOT NULL,
+  `can_invite_users` tinyint(4) NOT NULL,
+  `can_pin_messages` tinyint(4) NOT NULL,
+  `can_post_messages` tinyint(4) NOT NULL,
+  `can_promote_members` tinyint(4) NOT NULL,
+  `can_restrict_members` tinyint(4) NOT NULL,
+  `can_send_media_messages` tinyint(4) NOT NULL,
+  `can_send_messages` tinyint(4) NOT NULL,
+  `can_send_other_messages` tinyint(4) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
 CREATE TABLE `group_name` (
   `chat_id` bigint(20) NOT NULL,
   `title` varchar(255) COLLATE utf8_bin NOT NULL
@@ -62,6 +80,8 @@ CREATE TABLE `user_name` (
   `username` varchar(255) COLLATE utf8_bin NOT NULL DEFAULT ''
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
+ALTER TABLE `admins`
+  ADD PRIMARY KEY (`chat_id`,`user_id`);
 
 ALTER TABLE `group_name`
   ADD PRIMARY KEY (`chat_id`);
