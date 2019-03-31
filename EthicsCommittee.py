@@ -34,7 +34,7 @@ def web():
 		try:
 			return module.__mainclass__()().web()
 		except (AttributeError, NotImplementedError) as e:
-			EC = EthicsCommittee("error", "error")
+			EC = EthicsCommittee(0, 0)
 			EC.log(traceback.format_exc())
 			return "This module doesn't have web."
 	else:
@@ -49,10 +49,10 @@ def telegram():
 			try:
 				extension.main(data)
 			except NotImplementedError:
-				EC = EthicsCommittee("error", "error")
+				EC = EthicsCommittee(0, 0)
 				EC.log(traceback.format_exc())
 	except Exception as e:
-		EC = EthicsCommittee("error", "error")
+		EC = EthicsCommittee(0, 0)
 		EC.log(traceback.format_exc())
 	return "OK"
 

@@ -9,7 +9,7 @@ import time
 import urllib.request
 from ImpureCat_config import delconfigs
 
-EC = EthicsCommittee("ImpureCat", "ImpureCat")
+EC = EthicsCommittee(0, 0)
 
 dellimit = int(time.time()-86400*2)
 

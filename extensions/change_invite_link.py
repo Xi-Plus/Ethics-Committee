@@ -9,7 +9,7 @@ import time
 import urllib.request
 from change_invite_link_config import *
 
-EC = EthicsCommittee("ChangeInviteLink", "ChangeInviteLink")
+EC = EthicsCommittee(0, 0)
 
 if len(sys.argv) < 2:
 	exit("not given chat_id")

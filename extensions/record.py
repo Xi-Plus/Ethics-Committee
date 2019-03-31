@@ -186,7 +186,7 @@ class Record(EthicsCommitteeExtension):
             pass
 
         else:
-            EC = EthicsCommittee("unknown", "unknown")
+            EC = EthicsCommittee(0, 0)
             EC.log("[record] " + json.dumps(data))
 
 

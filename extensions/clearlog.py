@@ -7,7 +7,7 @@ import time
 from Kamisu66 import *
 from clearlog_config import limit
 
-EC = EthicsCommittee("", "")
+EC = EthicsCommittee(0, 0)
 
 print(limit)
 timestamp = datetime.datetime.fromtimestamp(int(time.time()-limit)).strftime('%Y-%m-%d %H:%M:%S')

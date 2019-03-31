@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.realpath(
 from Kamisu66 import EthicsCommittee
 
 
-EC = EthicsCommittee("setWebhook", "setWebhook")
+EC = EthicsCommittee(0, 0)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('action', default='set')
