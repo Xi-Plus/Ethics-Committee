@@ -123,10 +123,12 @@ class Spam_ban(EthicsCommitteeExtension):
                             EC.deletemessage(row[0], row[1])
 
                 def action_warn(message_id=None, text=warn_text):
+                    global message_deleted
                     if message_deleted:
                         EC.log("[spam_ban] warn {} in {} {} skiped, msg deleted.".format(
                             user_id, chat_id, textnorm))
                         return
+                    message_deleted = True
 
                     EC.log("[spam_ban] warn {} in {} {}".format(
                         user_id, chat_id, textnorm))
