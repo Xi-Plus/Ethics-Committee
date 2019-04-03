@@ -9,7 +9,6 @@ import traceback
 from Equivset import Equivset
 from groups import groups_name
 from Kamisu66 import EthicsCommittee, EthicsCommitteeExtension
-from spam_ban_config import *
 
 
 class Spam_ban(EthicsCommitteeExtension):
@@ -17,16 +16,56 @@ class Spam_ban(EthicsCommitteeExtension):
     PERMISSION_GLOBALBAN = MODULE_NAME + '_global_ban'
     PERMISSION_GRANT = MODULE_NAME + '_grant'
     SETTING_BAN_TEXT = MODULE_NAME + '_ban_text'
-    SETTING_BAN_USERNAME = MODULE_NAME + 'ban_username'
+    SETTING_BAN_USERNAME = MODULE_NAME + '_ban_username'
     SETTING_WARN_TEXT = MODULE_NAME + '_warn_text'
     SETTING_WARN_USERNAME = MODULE_NAME + '_warn_username'
     SETTING_BAN_PHOTO = MODULE_NAME + '_ban_photo'
     SETTING_GLOBAL_BAN = MODULE_NAME + '_global_ban'
+    SETTING_GLOBAL_BAN_CMD = MODULE_NAME + '_global_ban_cmd'
+    SETTING_TEST = MODULE_NAME + '_test'
     EC = None
     chat_id = None
     user_id = None
     textnorm = None
     message_deleted = False
+
+    def __init__(self, ban_text_regex, ban_username_regex, warn_text_regex, warn_username_regex, warn_text, log_chat_id, warn_forward_chat_id, delete_limit):
+        self.ban_text_regex = ban_text_regex
+        self.ban_username_regex = ban_username_regex
+        self.warn_text_regex = warn_text_regex
+        self.warn_username_regex = warn_username_regex
+        self.warn_text = warn_text
+        self.log_chat_id = log_chat_id
+        self.warn_forward_chat_id = warn_forward_chat_id
+        self.delete_limit = delete_limit
+
+        self.EC = EthicsCommittee(0, 0)
+        self.ban_text_chat = [
+            int(row[0]) for row in self.EC.list_group_with_setting(self.SETTING_BAN_TEXT)]
+        self.ban_username_chat = [
+            int(row[0]) for row in self.EC.list_group_with_setting(self.SETTING_BAN_USERNAME)]
+        self.warn_text_chat = [
+            int(row[0]) for row in self.EC.list_group_with_setting(self.SETTING_WARN_TEXT)]
+        self.warn_username_chat = [
+            int(row[0]) for row in self.EC.list_group_with_setting(self.SETTING_WARN_USERNAME)]
+        self.ban_photo_chat = [
+            int(row[0]) for row in self.EC.list_group_with_setting(self.SETTING_BAN_PHOTO)]
+        self.global_ban_chat = [
+            int(row[0]) for row in self.EC.list_group_with_setting(self.SETTING_GLOBAL_BAN)]
+        self.global_ban_cmd_chat = [
+            int(row[0]) for row in self.EC.list_group_with_setting(self.SETTING_GLOBAL_BAN_CMD)]
+        self.test_chat = [
+            int(row[0]) for row in self.EC.list_group_with_setting(self.SETTING_TEST)]
+
+        self.EC.cur.execute("""SELECT `chat_id`, `title` FROM `group_name`
+                            WHERE `chat_id` IN ('{}')""".format("', '".join(
+            [str(v) for v in (self.ban_text_chat + self.ban_username_chat + self.warn_text_chat +
+                              self.warn_username_chat + self.ban_photo_chat + self.global_ban_chat)]
+        )))
+        rows = self.EC.cur.fetchall()
+        self.group_name = {}
+        for row in rows:
+            self.group_name[int(row[0])] = row[1]
 
     def main(self, EC):
         self.EC = EC
@@ -39,7 +78,7 @@ class Spam_ban(EthicsCommitteeExtension):
             self.chat_id = chat_id = message["chat"]["id"]
             self.user_id = user_id = message["from"]["id"]
 
-            if chat_id not in (global_ban_chat + test_chat + global_ban_cmd_chat):
+            if chat_id not in self.global_ban_chat + self.test_chat + self.global_ban_cmd_chat:
                 return
 
             full_name = message["from"]["first_name"]
@@ -98,7 +137,7 @@ class Spam_ban(EthicsCommitteeExtension):
                 else:
                     user_msg_cnt = int(rows[0][0])
 
-                if 'text' in mode and text.startswith('/') and chat_id in global_ban_cmd_chat:
+                if 'text' in mode and text.startswith('/') and chat_id in self.global_ban_cmd_chat:
                     cmd = shlex.split(text)
                     action = cmd[0]
                     cmd = cmd[1:]
@@ -198,24 +237,24 @@ class Spam_ban(EthicsCommitteeExtension):
 
                 if "text" in mode:
                     if user_msg_cnt <= 5:
-                        if chat_id in ban_text_chat and re.search(ban_text_regex, textnorm, flags=re.I):
+                        if chat_id in self.ban_text_chat and re.search(self.ban_text_regex, textnorm, flags=re.I):
                             self.action_ban_all_chat(user_id, 604800)
                             self.action_del_all_msg(user_id)
                             self.action_log_bot(user_id, '宣傳文字',
                                                 self.duration_text(604800))
 
-                        elif chat_id in warn_text_chat and re.search(warn_text_regex, textnorm, flags=re.I):
+                        elif chat_id in self.warn_text_chat and re.search(self.warn_text_regex, textnorm, flags=re.I):
                             self.action_warn(message_id)
 
-                    if chat_id in test_chat and re.search(r'/test', text):
+                    if chat_id in self.test_chat and re.search(r'/test', text):
                         spam_type = []
-                        if re.search(ban_username_regex, textnorm, flags=re.I):
+                        if re.search(self.ban_username_regex, textnorm, flags=re.I):
                             spam_type.append("ban_username")
-                        if re.search(warn_username_regex, textnorm, flags=re.I):
+                        if re.search(self.warn_username_regex, textnorm, flags=re.I):
                             spam_type.append("warn_username")
-                        if re.search(ban_text_regex, textnorm, flags=re.I):
+                        if re.search(self.ban_text_regex, textnorm, flags=re.I):
                             spam_type.append("ban_text")
-                        if re.search(warn_text_regex, textnorm, flags=re.I):
+                        if re.search(self.warn_text_regex, textnorm, flags=re.I):
                             spam_type.append("warn_text")
                         EC.log("[spam_ban] test pass text={} type={}".format(
                             textnorm, ", ".join(spam_type)))
@@ -225,17 +264,17 @@ class Spam_ban(EthicsCommitteeExtension):
                             reply=message_id, parse_mode="")
 
                 if "username" in mode:
-                    if chat_id in ban_username_chat and re.search(ban_username_regex, textnorm, flags=re.I):
+                    if chat_id in self.ban_username_chat and re.search(self.ban_username_regex, textnorm, flags=re.I):
                         self.action_ban_all_chat(user_id, 604800)
                         self.action_del_all_msg(user_id)
                         self.action_log_bot(user_id, '宣傳性用戶名',
                                             self.duration_text(604800))
 
-                    elif chat_id in warn_username_chat and re.search(warn_username_regex, textnorm, flags=re.I):
+                    elif chat_id in self.warn_username_chat and re.search(self.warn_username_regex, textnorm, flags=re.I):
                         self.action_warn(message_id)
 
                 if "photo" in mode:
-                    if chat_id in ban_photo_chat:
+                    if chat_id in self.ban_photo_chat:
                         if user_msg_cnt <= 5:
                             self.action_ban_all_chat(user_id, 604800)
                             self.action_log_bot(
@@ -244,7 +283,7 @@ class Spam_ban(EthicsCommitteeExtension):
                 if "forward" in mode and not self.message_deleted:
                     if user_msg_cnt <= 5:
                         EC.sendmessage('https://t.me/{}/{}'.format(
-                            message["chat"]["username"], message_id), chat_id=warn_forward_chat_id, parse_mode="HTML")
+                            message["chat"]["username"], message_id), chat_id=self.warn_forward_chat_id, parse_mode="HTML")
                         EC.log("[spam_ban] forward {}".format(
                             json.dumps(message)))
                         if "forward_from_chat" in message and message["forward_from_message_id"] < 10:
@@ -257,8 +296,8 @@ class Spam_ban(EthicsCommitteeExtension):
     # action list start
     def action_ban_all_chat(self, user_id, duration=604800):
         self.EC.log("[spam_ban] kick {} in {}".format(
-            user_id, ", ".join(map(str, global_ban_chat))))
-        for ban_chat_id in global_ban_chat:
+            user_id, ", ".join(map(str, self.global_ban_chat))))
+        for ban_chat_id in self.global_ban_chat:
             url = "https://api.telegram.org/bot" + self.EC.token + "/kickChatMember?chat_id=" + \
                 str(ban_chat_id) + "&user_id=" + str(user_id) + \
                 "&until_date=" + str(int(time.time() + duration))
@@ -266,8 +305,8 @@ class Spam_ban(EthicsCommitteeExtension):
 
     def action_unban_all_chat(self, user_id):
         self.EC.log("[spam_ban] unban {} in {}".format(
-            user_id, ", ".join(map(str, global_ban_chat))))
-        for ban_chat_id in global_ban_chat:
+            user_id, ", ".join(map(str, self.global_ban_chat))))
+        for ban_chat_id in self.global_ban_chat:
             url = "https://api.telegram.org/bot{0}/unbanChatMember?chat_id={1}&user_id={2}".format(
                 self.EC.token, ban_chat_id, user_id)
             subprocess.Popen(['curl', '-s', url])
@@ -276,17 +315,19 @@ class Spam_ban(EthicsCommitteeExtension):
         self.message_deleted = True
 
         self.EC.cur.execute("""SELECT `chat_id`, `message_id`, `type` FROM `message` WHERE `user_id` = %s AND `date` > %s""", (user_id, int(
-            time.time() - delete_limit)))
+            time.time() - self.delete_limit)))
         rows = self.EC.cur.fetchall()
         self.EC.log(
             "[spam_ban] find {} messages to delete".format(len(rows)))
         for row in rows:
-            if int(row[0]) in global_ban_chat:
+            if int(row[0]) in self.global_ban_chat:
                 self.EC.log("[spam_ban] delete {} ({}) in {}".format(
                     row[1], row[2], row[0]))
                 self.EC.deletemessage(row[0], row[1])
 
-    def action_warn(self, message_id=None, text=warn_text):
+    def action_warn(self, message_id=None, text=None):
+        if text is None:
+            text = self.warn_text
         if self.message_deleted:
             self.EC.log("[spam_ban] warn {} in {} {} skiped, msg deleted.".format(
                 self.user_id, self.chat_id, self.textnorm))
@@ -309,7 +350,7 @@ class Spam_ban(EthicsCommitteeExtension):
             duration
         )
         self.EC.log("[spam_ban] message {}".format(message))
-        self.EC.sendmessage(chat_id=log_chat_id,
+        self.EC.sendmessage(chat_id=self.log_chat_id,
                             message=message, parse_mode="HTML")
 
     def action_log_bot(self, ban_user_id, reason, duration):
@@ -320,7 +361,7 @@ class Spam_ban(EthicsCommitteeExtension):
             duration
         )
         self.EC.log("[spam_ban] message {}".format(message))
-        self.EC.sendmessage(chat_id=log_chat_id,
+        self.EC.sendmessage(chat_id=self.log_chat_id,
                             message=message, parse_mode="HTML")
     # action list end
 
@@ -398,21 +439,18 @@ class Spam_ban(EthicsCommitteeExtension):
             </tr>
             """
 
-        chats = list(set(ban_username_chat + warn_username_chat + ban_text_chat
-                         + warn_text_chat + ban_photo_chat + global_ban_chat))
-        groups_keys = list(groups.keys())
-        groups_values = list(groups.values())
-        chats.sort(key=lambda v: groups_keys[groups_values.index(v)].lower())
+        chats = list(set(self.ban_username_chat + self.warn_username_chat + self.ban_text_chat
+                         + self.warn_text_chat + self.ban_photo_chat + self.global_ban_chat))
         for chat_id in chats:
             temp += '<tr>'
-            if chat_id in groups_name:
+            if chat_id in self.group_name:
                 temp += '<td>{} ({})</td>'.format(chat_id,
-                                                  groups_name[chat_id])
+                                                  self.group_name[chat_id])
             else:
                 temp += '<td>{}</td>'.format(chat_id)
-            for chat_setting in [ban_text_chat, ban_username_chat,
-                                 warn_text_chat, warn_username_chat,
-                                 ban_photo_chat, global_ban_chat]:
+            for chat_setting in [self.ban_text_chat, self.ban_username_chat,
+                                 self.warn_text_chat, self.warn_username_chat,
+                                 self.ban_photo_chat, self.global_ban_chat]:
                 temp += '<td>'
                 if chat_id in chat_setting:
                     temp += '&#10003;'
@@ -423,26 +461,27 @@ class Spam_ban(EthicsCommitteeExtension):
         html += '<tr><td>chats</td><td>{}</td></td>'.format(temp)
 
         html += "<tr><td>ban_text_regex</td><td>{}</td></td>".format(
-            ban_text_regex)
+            self.ban_text_regex)
 
         html += "<tr><td>ban_username_regex</td><td>{}</td></td>".format(
-            ban_username_regex)
+            self.ban_username_regex)
 
         html += "<tr><td>warn_text_regex</td><td>{}</td></td>".format(
-            warn_text_regex)
+            self.warn_text_regex)
 
         html += "<tr><td>warn_username_regex</td><td>{}</td></td>".format(
-            warn_username_regex)
+            self.warn_username_regex)
 
-        html += "<tr><td>warn_text</td><td>{}</td></td>".format(warn_text)
+        html += "<tr><td>warn_text</td><td>{}</td></td>".format(self.warn_text)
 
         users = EC.list_users_with_permission(self.PERMISSION_GLOBALBAN)
         html += "<tr><td>global_ban_admin</td><td>{}</td></td>".format(
             "<br>".join(map(str, users)))
 
-        html += "<tr><td>log_chat_id</td><td>{}</td></td>".format(log_chat_id)
+        html += "<tr><td>log_chat_id</td><td>{}</td></td>".format(
+            self.log_chat_id)
         html += "<tr><td>delete_limit</td><td>{}</td></td>".format(
-            delete_limit)
+            self.delete_limit)
 
         return html
 

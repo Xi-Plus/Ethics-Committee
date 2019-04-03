@@ -266,6 +266,16 @@ class EthicsCommittee:
             return False
         return True
 
+    def list_group_with_setting(self, key, value=None):
+        if value is None:
+            self.cur.execute("""SELECT `chat_id`, `value` FROM `group_setting` WHERE `key` = %s""",
+                             (key))
+        else:
+            self.cur.execute("""SELECT 'chat_id', `value` FROM `group_setting` WHERE `key` = %s AND `value` = %s""",
+                             (key, value))
+        rows = self.cur.fetchall()
+        return rows
+
     def addBotMessage(self, text, date=None):
         if date is None:
             date = int(time.time())
