@@ -243,6 +243,29 @@ class EthicsCommittee:
         rows = self.cur.fetchall()
         return [row[0] for row in rows]
 
+    def add_group_setting(self, chat_id, key, value=''):
+        res = self.cur.execute("""INSERT INTO `group_setting` (`chat_id`, `key`, `value`) 
+                                  VALUES (%s, %s, %s)""",
+                               (chat_id, key, value))
+        self.db.commit()
+        if res == 0:
+            return False
+        return True
+
+    def remove_group_setting(self, chat_id, key, value=None):
+        if value is None:
+            res = self.cur.execute("""DELETE FROM `group_setting` WHERE `chat_id` = %s 
+                                    AND `key` = %s""",
+                                   (chat_id, key, key))
+        else:
+            res = self.cur.execute("""DELETE FROM `group_setting` WHERE `chat_id` = %s 
+                                    AND `key` = %s AND `value` = %s""",
+                                   (chat_id, key, value))
+        self.db.commit()
+        if res == 0:
+            return False
+        return True
+
     def addBotMessage(self, text, date=None):
         if date is None:
             date = int(time.time())

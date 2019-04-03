@@ -32,6 +32,12 @@ CREATE TABLE `group_name` (
   `title` varchar(255) COLLATE utf8_bin NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
+CREATE TABLE `group_setting` (
+  `chat_id` bigint(20) NOT NULL,
+  `key` varchar(64) COLLATE utf8_bin NOT NULL,
+  `value` mediumtext COLLATE utf8_bin NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
 CREATE TABLE `log` (
   `chat_id` bigint(20) NOT NULL,
   `message` text COLLATE utf8_bin NOT NULL,
