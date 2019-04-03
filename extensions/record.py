@@ -4,6 +4,9 @@ import json
 
 
 class Record(EthicsCommitteeExtension):
+    def __init__(self, full_log_chat_id):
+        self.full_log_chat_id = full_log_chat_id
+
     def main(self, EC):
         data = EC.data
         if "message" in data or "edited_message" in data:
@@ -42,8 +45,10 @@ class Record(EthicsCommitteeExtension):
                     reply_to_last_name = reply_to_message["from"]["last_name"]
                 else:
                     reply_to_last_name = ""
-            if chat_id in [-1001294063397, -376220552, 246258569]:
-                EC.log("[record] " + json.dumps(message))
+
+            if chat_id in self.full_log_chat_id:
+                EC.log("[record] " + json.dumps(data))
+
             try:
                 EC.cur.execute("""INSERT INTO `user_name` (`user_id`, `full_name`, `username`)
                                 VALUES (%s, %s, %s)
