@@ -6,6 +6,8 @@ import subprocess
 import time
 import traceback
 
+import telegram
+
 from Equivset import Equivset
 from Kamisu66 import EthicsCommittee, EthicsCommitteeExtension
 
@@ -165,6 +167,7 @@ class Spam_ban(EthicsCommitteeExtension):
                                     EC.sendmessage(
                                         '需要回覆訊息或用參數指定封鎖目標', reply=message_id)
                                 else:
+                                    ban_user_id = int(ban_user_id)
                                     reason = args.r
                                     duration = self.parse_duration(args.d)
                                     if duration is None:
@@ -172,26 +175,40 @@ class Spam_ban(EthicsCommitteeExtension):
                                             '指定的時長無效', reply=message_id)
 
                                     elif action == "globalban":
-                                        self.action_ban_all_chat(
-                                            ban_user_id, duration)
-                                        self.action_del_all_msg(ban_user_id)
-                                        self.action_log_admin(
-                                            '#封', user_id,
-                                            message["from"]["first_name"],
-                                            'banned', ban_user_id, reason,
-                                            self.duration_text(duration)
-                                        )
+                                        if ban_user_id == self.EC.bot.id:
+                                            EC.sendmessage(
+                                                '你不能對機器人執行此操作', reply=message_id)
+                                        else:
+                                            failed = self.action_ban_all_chat(
+                                                ban_user_id, duration)
+                                            self.action_del_all_msg(
+                                                ban_user_id)
+                                            self.action_log_admin(
+                                                '#封', user_id,
+                                                message["from"]["first_name"],
+                                                'banned', ban_user_id, reason,
+                                                self.duration_text(duration),
+                                                failed,
+                                            )
+                                            EC.deletemessage(
+                                                chat_id, message_id)
 
                                     elif action == "globalunban":
-                                        self.action_unban_all_chat(ban_user_id)
-                                        self.action_log_admin(
-                                            '#解', user_id,
-                                            message["from"]["first_name"],
-                                            'unbanned', ban_user_id, reason,
-                                            self.duration_text(duration)
-                                        )
-
-                                    EC.deletemessage(chat_id, message_id)
+                                        if ban_user_id == self.EC.bot.id:
+                                            EC.sendmessage(
+                                                '你不能對機器人執行此操作', reply=message_id)
+                                        else:
+                                            failed = self.action_unban_all_chat(
+                                                ban_user_id)
+                                            self.action_log_admin(
+                                                '#解', user_id,
+                                                message["from"]["first_name"],
+                                                'unbanned', ban_user_id, reason,
+                                                self.duration_text(duration),
+                                                failed,
+                                            )
+                                            EC.deletemessage(
+                                                chat_id, message_id)
                             else:
                                 EC.sendmessage(
                                     args, reply=message_id, parse_mode='')
@@ -296,19 +313,29 @@ class Spam_ban(EthicsCommitteeExtension):
     def action_ban_all_chat(self, user_id, duration=604800):
         self.EC.log("[spam_ban] kick {} in {}".format(
             user_id, ", ".join(map(str, self.global_ban_chat))))
+        until_date = int(time.time() + duration)
+        failed = 0
         for ban_chat_id in self.global_ban_chat:
-            url = "https://api.telegram.org/bot" + self.EC.token + "/kickChatMember?chat_id=" + \
-                str(ban_chat_id) + "&user_id=" + str(user_id) + \
-                "&until_date=" + str(int(time.time() + duration))
-            subprocess.Popen(['curl', '-s', url])
+            try:
+                self.EC.bot.kick_chat_member(
+                    chat_id=ban_chat_id, user_id=user_id, until_date=until_date)
+            except telegram.error.BadRequest as e:
+                self.EC.log(e.message)
+                failed += 1
+        return failed
 
     def action_unban_all_chat(self, user_id):
         self.EC.log("[spam_ban] unban {} in {}".format(
             user_id, ", ".join(map(str, self.global_ban_chat))))
+        failed = 0
         for ban_chat_id in self.global_ban_chat:
-            url = "https://api.telegram.org/bot{0}/unbanChatMember?chat_id={1}&user_id={2}".format(
-                self.EC.token, ban_chat_id, user_id)
-            subprocess.Popen(['curl', '-s', url])
+            try:
+                self.EC.bot.unban_chat_member(
+                    chat_id=ban_chat_id, user_id=user_id)
+            except telegram.error.BadRequest as e:
+                self.EC.log(e.message)
+                failed += 1
+        return failed
 
     def action_del_all_msg(self, user_id):
         self.message_deleted = True
@@ -338,15 +365,17 @@ class Spam_ban(EthicsCommitteeExtension):
         self.EC.sendmessage(text, reply=message_id)
         self.EC.sendmessage('/globalban {}'.format(self.user_id))
 
-    def action_log_admin(self, hashtag, admin_user_id, admin_name, action, ban_user_id, reason, duration):
-        message = '{0} 所有群組 <a href="tg://user?id={1}">{2}</a> via ECbot {3} <a href="tg://user?id={4}">{4}</a> 期限為{6}\n理由：{5}'.format(
+    def action_log_admin(self, hashtag, admin_user_id, admin_name, action, ban_user_id, reason, duration, failed):
+        message = '{0} 所有群組 <a href="tg://user?id={1}">{2}</a> via ECbot {3} <a href="tg://user?id={4}">{4}</a> 期限為{6}，{7}成功，{8}失敗\n理由：{5}'.format(
             hashtag,
             admin_user_id,
             admin_name,
             action,
             ban_user_id,
             reason,
-            duration
+            duration,
+            len(self.global_ban_chat) - failed,
+            failed,
         )
         self.EC.log("[spam_ban] message {}".format(message))
         self.EC.sendmessage(chat_id=self.log_chat_id,
