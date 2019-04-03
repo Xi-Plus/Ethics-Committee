@@ -1,6 +1,7 @@
-from Kamisu66 import EthicsCommittee, EthicsCommitteeExtension
-import traceback
 import json
+import traceback
+
+from Kamisu66 import EthicsCommitteeExtension
 
 
 class Record(EthicsCommitteeExtension):
@@ -20,7 +21,6 @@ class Record(EthicsCommitteeExtension):
                 type_prefix = 'edited_'
             chat_id = message["chat"]["id"]
             user_id = message["from"]["id"]
-            EC = EthicsCommittee(chat_id, user_id)
             full_name = message["from"]["first_name"]
             if "last_name" in message["from"]:
                 full_name += " " + message["from"]["last_name"]
@@ -168,7 +168,6 @@ class Record(EthicsCommitteeExtension):
             message = data["channel_post"]
             chat_id = message["chat"]["id"]
             user_id = ""
-            EC = EthicsCommittee(chat_id, user_id)
             full_name = ""
             message_id = message["message_id"]
             reply_to_message_id = ""
@@ -192,7 +191,6 @@ class Record(EthicsCommitteeExtension):
             pass
 
         else:
-            EC = EthicsCommittee(0, 0)
             EC.log("[record] " + json.dumps(data))
 
 
