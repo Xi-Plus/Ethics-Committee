@@ -136,7 +136,7 @@ class Spam_ban(EthicsCommitteeExtension):
                 else:
                     user_msg_cnt = int(rows[0][0])
 
-                if 'text' in mode and text.startswith('/') and chat_id in self.global_ban_cmd_chat:
+                if 'text' in mode and text.startswith('/') and chat_id in self.global_ban_chat + self.global_ban_cmd_chat:
                     cmd = shlex.split(text)
                     action = cmd[0]
                     cmd = cmd[1:]
