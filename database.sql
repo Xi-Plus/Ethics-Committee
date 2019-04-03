@@ -12,6 +12,7 @@ SET time_zone = "+00:00";
 CREATE TABLE `admins` (
   `chat_id` bigint(20) NOT NULL,
   `user_id` int(11) NOT NULL,
+  `creator` tinyint(1) NOT NULL,
   `can_add_web_page_previews` tinyint(4) NOT NULL,
   `can_be_edited` tinyint(4) NOT NULL,
   `can_change_info` tinyint(4) NOT NULL,
