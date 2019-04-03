@@ -16,6 +16,12 @@ def r2i(right):
     return 0
 
 
+oldadmins = set()
+EC.cur.execute("""SELECT `chat_id`, `user_id` FROM `admins`""")
+rows = EC.cur.fetchall()
+for row in rows:
+    oldadmins.add((row[0], row[1]))
+
 EC.cur.execute("""SELECT `chat_id`, `title` FROM `group_name`""")
 rows = EC.cur.fetchall()
 for row in rows:
@@ -26,6 +32,8 @@ for row in rows:
     admins = EC.bot.get_chat_administrators(chat_id)
     for a in admins:
         user_id = a.user.id
+        if (chat_id, user_id) in oldadmins:
+            oldadmins.remove((chat_id, user_id))
         is_creator = a.status == a.CREATOR
 
         EC.cur.execute(
@@ -69,3 +77,8 @@ for row in rows:
         EC.db.commit()
 
         print('\t', a.user.full_name)
+
+for chat_id, user_id in oldadmins:
+    EC.cur.execute("""DELETE FROM `admins` WHERE `chat_id` = %s AND `user_id` = %s""",
+                   (chat_id, user_id))
+EC.db.commit()
