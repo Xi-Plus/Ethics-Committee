@@ -1,6 +1,8 @@
 from Kamisu66 import load_extensions
 
 extensions = []
+webs = []
+
 extensions.append(load_extensions('record')())
 
 cfg = {

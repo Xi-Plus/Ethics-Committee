@@ -8,7 +8,7 @@ import traceback
 
 from flask import Flask, abort, request
 
-from config_local import extensions
+from config_local import extensions, webs
 from Kamisu66 import EthicsCommittee
 
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
@@ -23,18 +23,15 @@ app = Flask(__name__)
 @app.route("/web")
 def web():
     if "q" in request.args:
-        try:
-            module = importlib.import_module(
-                "." + request.args["q"], "extensions")
-        except ImportError as e:
+        if request.args['q'] in webs:
+            try:
+                return webs[request.args['q']].web()
+            except (AttributeError, NotImplementedError) as e:
+                EC = EthicsCommittee(0, 0)
+                EC.log(traceback.format_exc())
+                return "This module doesn't have web."
+        else:
             return "No such module."
-
-        try:
-            return module.__mainclass__()().web()
-        except (AttributeError, NotImplementedError) as e:
-            EC = EthicsCommittee(0, 0)
-            EC.log(traceback.format_exc())
-            return "This module doesn't have web."
     else:
         return "Not given module name."
 

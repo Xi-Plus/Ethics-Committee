@@ -11,12 +11,17 @@ from groups import groups_name
 from Kamisu66 import EthicsCommittee, EthicsCommitteeExtension
 from spam_ban_config import *
 
-MODULE_NAME = 'spam_ban'
-PERMISSION_GLOBALBAN = MODULE_NAME + '_global_ban'
-PERMISSION_GRANT = MODULE_NAME + '_grant'
-
 
 class Spam_ban(EthicsCommitteeExtension):
+    MODULE_NAME = 'spam_ban'
+    PERMISSION_GLOBALBAN = MODULE_NAME + '_global_ban'
+    PERMISSION_GRANT = MODULE_NAME + '_grant'
+    SETTING_BAN_TEXT = MODULE_NAME + '_ban_text'
+    SETTING_BAN_USERNAME = MODULE_NAME + 'ban_username'
+    SETTING_WARN_TEXT = MODULE_NAME + '_warn_text'
+    SETTING_WARN_USERNAME = MODULE_NAME + '_warn_username'
+    SETTING_BAN_PHOTO = MODULE_NAME + '_ban_photo'
+    SETTING_GLOBAL_BAN = MODULE_NAME + '_global_ban'
     EC = None
     chat_id = None
     user_id = None
@@ -103,7 +108,7 @@ class Spam_ban(EthicsCommitteeExtension):
                     action = action.lower()
                     is_reply = "reply_to_message" in message
                     if action in ['globalban', 'globalunban']:
-                        if EC.check_permission(user_id, PERMISSION_GLOBALBAN, 0):
+                        if EC.check_permission(user_id, self.PERMISSION_GLOBALBAN, 0):
                             parser = argparse.ArgumentParser(
                                 prog='/{0}'.format(action),
                                 usage='%(prog)s user [-d 時長] [-r 原因] [-h]')
@@ -158,10 +163,10 @@ class Spam_ban(EthicsCommitteeExtension):
                             EC.sendmessage('你沒有權限進行全域封鎖的動作', reply=message_id)
 
                     if action in ['grantglobalban']:
-                        if EC.check_permission(user_id, PERMISSION_GRANT, 0):
+                        if EC.check_permission(user_id, self.PERMISSION_GRANT, 0):
                             if is_reply:
                                 ok = EC.add_permission(
-                                    reply_to_user_id, PERMISSION_GLOBALBAN, 0)
+                                    reply_to_user_id, self.PERMISSION_GLOBALBAN, 0)
                                 if ok:
                                     EC.sendmessage('已授予 {} 全域封鎖的權限'.format(
                                         reply_to_full_name), reply=message_id)
@@ -175,10 +180,10 @@ class Spam_ban(EthicsCommitteeExtension):
                             EC.sendmessage('你沒有權限進行授予權限的動作', reply=message_id)
 
                     if action in ['revokeglobalban']:
-                        if EC.check_permission(user_id, PERMISSION_GRANT, 0):
+                        if EC.check_permission(user_id, self.PERMISSION_GRANT, 0):
                             if is_reply:
                                 ok = EC.remove_permission(
-                                    reply_to_user_id, PERMISSION_GLOBALBAN, 0)
+                                    reply_to_user_id, self.PERMISSION_GLOBALBAN, 0)
                                 if ok:
                                     EC.sendmessage('已解除 {} 全域封鎖的權限'.format(
                                         reply_to_full_name), reply=message_id)
@@ -361,7 +366,7 @@ class Spam_ban(EthicsCommitteeExtension):
     # function end
 
     def web(self):
-        EC = EthicsCommittee(MODULE_NAME + '_web', MODULE_NAME + '_web')
+        EC = EthicsCommittee(0, 0)
 
         html = """
             <style>
@@ -431,7 +436,7 @@ class Spam_ban(EthicsCommitteeExtension):
 
         html += "<tr><td>warn_text</td><td>{}</td></td>".format(warn_text)
 
-        users = EC.list_users_with_permission(PERMISSION_GLOBALBAN)
+        users = EC.list_users_with_permission(self.PERMISSION_GLOBALBAN)
         html += "<tr><td>global_ban_admin</td><td>{}</td></td>".format(
             "<br>".join(map(str, users)))
 
