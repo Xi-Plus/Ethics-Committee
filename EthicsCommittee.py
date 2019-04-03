@@ -8,7 +8,7 @@ import traceback
 
 from flask import Flask, abort, request
 
-from config_local import extensions, webs
+from config_extension import extensions, webs
 from Kamisu66 import EthicsCommittee
 
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))

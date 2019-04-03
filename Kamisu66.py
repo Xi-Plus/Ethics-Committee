@@ -15,7 +15,7 @@ import telegram
 
 class EthicsCommittee:
     def __init__(self, chat_id=None, user_id=None, update=None):
-        from config_local import cfg
+        from config_variable import cfg
         self.token = cfg['telegram']['token']
         self.bot = telegram.Bot(self.token)
         self.botid = self.bot.id
