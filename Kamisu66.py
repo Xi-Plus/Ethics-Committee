@@ -275,6 +275,16 @@ class EthicsCommittee:
                              (key, value))
         rows = self.cur.fetchall()
         return rows
+    
+    def get_group_name(self, chat_id=None):
+        if chat_id is None:
+            chat_id = self.chat_id
+        self.cur.execute("""SELECT `title` FROM `group_name` WHERE `chat_id` = %s""",
+                             (chat_id))
+        row = self.cur.fetchone()
+        if row is None:
+            return str(chat_id)
+        return row[0]
 
     def addBotMessage(self, text, date=None):
         if date is None:
