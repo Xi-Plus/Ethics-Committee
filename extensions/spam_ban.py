@@ -7,7 +7,6 @@ import time
 import traceback
 
 from Equivset import Equivset
-from groups import groups_name
 from Kamisu66 import EthicsCommittee, EthicsCommitteeExtension
 
 
@@ -355,7 +354,7 @@ class Spam_ban(EthicsCommitteeExtension):
 
     def action_log_bot(self, ban_user_id, reason, duration):
         message = '#封 #自動 所有群組(from {0}) ECbot banned <a href="tg://user?id={1}">{1}</a> 期限為{3}\n理由：{2}'.format(
-            groups_name[self.chat_id],
+            self.EC.get_group_name(self.chat_id),
             ban_user_id,
             reason,
             duration
