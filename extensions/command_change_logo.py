@@ -3,7 +3,7 @@ import tempfile
 
 import telegram
 
-from Kamisu66 import EthicsCommitteeExtension
+from Kamisu66 import EthicsCommittee, EthicsCommitteeExtension
 
 
 class SendPhotoChangeLogo(EthicsCommitteeExtension):
@@ -95,6 +95,47 @@ class SendPhotoChangeLogo(EthicsCommitteeExtension):
                         text='你沒有權限進行更換頭貼的動作',
                         quote=True)
                 return
+
+    def web(self):
+        EC = EthicsCommittee(0, 0)
+
+        html = """
+            <style>
+                table {
+                    border-collapse: collapse;
+                }
+                th, td {
+                    vertical-align: top;
+                    border: 1px solid black;
+                    padding: 3px;
+                }
+            </style>
+        <table>
+        <tr>
+        <th>chat</th>
+        <th>grant permission</th>
+        <th>revoke permission</th>
+        <th>change logo</th>
+        </tr>
+        """
+        for chat_id in self.settings:
+            setting = self.settings[chat_id]
+
+            html += """<tr>"""
+            html += """<td>{0}<br>{1}</td><td>{2}</td><td>{3}</td>""".format(
+                EC.get_group_name(chat_id),
+                chat_id,
+                setting['permissions']['grant'],
+                setting['permissions']['revoke'],
+            )
+            html += """<td><ul>"""
+            for cmd in setting['logo']:
+                html += """<li>{0}</li>""".format(cmd)
+            html += """<ul></td>"""
+            html += """</tr>"""
+        html += """</table>"""
+
+        return html
 
 
 def __mainclass__():
