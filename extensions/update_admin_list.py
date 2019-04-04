@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
-import sys
 import os
+import sys
+import time
+
 sys.path.insert(0, os.path.realpath(
     os.path.dirname(os.path.realpath(__file__)) + "/../"))
 from Kamisu66 import EthicsCommittee
@@ -29,7 +31,13 @@ for row in rows:
     title = row[1]
     print(chat_id, title)
 
-    admins = EC.bot.get_chat_administrators(chat_id)
+    while True:
+        try:
+            admins = EC.bot.get_chat_administrators(chat_id)
+            break
+        except telegram.error.TimedOut as e:
+            print(e.message)
+
     for a in admins:
         user_id = a.user.id
         if (chat_id, user_id) in oldadmins:
@@ -77,6 +85,8 @@ for row in rows:
         EC.db.commit()
 
         print('\t', a.user.full_name)
+
+    time.sleep(1)
 
 for chat_id, user_id in oldadmins:
     EC.cur.execute("""DELETE FROM `admins` WHERE `chat_id` = %s AND `user_id` = %s""",
