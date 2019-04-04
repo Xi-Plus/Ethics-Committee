@@ -255,7 +255,7 @@ class EthicsCommittee:
         if value is None:
             res = self.cur.execute("""DELETE FROM `group_setting` WHERE `chat_id` = %s 
                                     AND `key` = %s""",
-                                   (chat_id, key, key))
+                                   (chat_id, key))
         else:
             res = self.cur.execute("""DELETE FROM `group_setting` WHERE `chat_id` = %s 
                                     AND `key` = %s AND `value` = %s""",
@@ -282,16 +282,16 @@ class EthicsCommittee:
             self.cur.execute("""SELECT `chat_id`, `value` FROM `group_setting` WHERE `key` = %s""",
                              (key))
         else:
-            self.cur.execute("""SELECT 'chat_id', `value` FROM `group_setting` WHERE `key` = %s AND `value` = %s""",
+            self.cur.execute("""SELECT `chat_id`, `value` FROM `group_setting` WHERE `key` = %s AND `value` = %s""",
                              (key, value))
         rows = self.cur.fetchall()
         return rows
-    
+
     def get_group_name(self, chat_id=None):
         if chat_id is None:
             chat_id = self.chat_id
         self.cur.execute("""SELECT `title` FROM `group_name` WHERE `chat_id` = %s""",
-                             (chat_id))
+                         (chat_id))
         row = self.cur.fetchone()
         if row is None:
             return str(chat_id)
