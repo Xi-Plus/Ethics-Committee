@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import configparser
 import importlib
 import json
 import os
@@ -12,10 +11,6 @@ from config_extension import extensions, webs
 from Kamisu66 import EthicsCommittee
 
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
-
-config = configparser.ConfigParser()
-configpath = os.path.dirname(os.path.realpath(__file__)) + '/config.ini'
-config.read(configpath)
 
 app = Flask(__name__)
 
