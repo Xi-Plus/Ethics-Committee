@@ -2,7 +2,6 @@
 import contextlib
 import io
 import json
-import os
 import shlex
 import time
 import traceback

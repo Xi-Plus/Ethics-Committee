@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
-import importlib
 import json
 import os
 import sys
 import traceback
 
-from flask import Flask, abort, request
+from flask import Flask, request
 
 from config_extension import extensions, webs
 from Kamisu66 import EthicsCommittee
