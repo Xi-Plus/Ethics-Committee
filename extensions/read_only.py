@@ -2,31 +2,35 @@ import random
 import time
 import traceback
 
-import requests
+import telegram
 
-from Kamisu66 import EthicsCommittee, EthicsCommitteeExtension
-from read_only_config import adminList, banGroupIds, deleteGroupIds
+from Kamisu66 import EthicsCommitteeExtension
 
 
 class Read_only(EthicsCommitteeExtension):
+    def __init__(self, deleteGroupIds, banGroupIds):
+        self.deleteGroupIds = deleteGroupIds
+        self.banGroupIds = banGroupIds
+
     def main(self, EC):
         data = EC.data
         if "message" in data:
             chat_id = data["message"]["chat"]["id"]
             user_id = data["message"]["from"]["id"]
 
-            if chat_id not in deleteGroupIds:
+            if chat_id not in self.deleteGroupIds:
                 return
 
-            EC = EthicsCommittee(chat_id, user_id)
-            message_id = data["message"]["message_id"]
-            date = data["message"]["date"]
+            chat_member = EC.update.effective_chat.get_member(
+                EC.update.effective_user.id)
+            is_admin = chat_member.status in [
+                chat_member.ADMINISTRATOR, chat_member.CREATOR]
             isDelete = True
             isBan = False
             try:
                 if "text" in data["message"]:
                     isBan = True
-                    if "NODEL" in data["message"]["text"].upper() and user_id in adminList:
+                    if "NODEL" in data["message"]["text"].upper() and is_admin:
                         isDelete = False
                 elif "left_chat_member" in data["message"]:
                     isDelete = False
@@ -39,15 +43,27 @@ class Read_only(EthicsCommitteeExtension):
                 elif "delete_chat_photo" in data["message"]:
                     isDelete = False
                 if isDelete:
-                    EC.deletemessage(chat_id, message_id)
-                    if isBan and chat_id in banGroupIds and user_id not in adminList:
+                    try:
+                        EC.update.message.delete()
+                    except telegram.error.BadRequest as e:
+                        EC.error('Delete {} in {} failed: {}'.format(
+                            EC.update.message.message_id, EC.update.message.chat_id, e.message
+                        ))
+
+                    if isBan and chat_id in self.banGroupIds and not is_admin:
                         EC.cur.execute("""SELECT COUNT(*) FROM `message` WHERE `chat_id` = %s AND `user_id` = %s AND `date` > %s""",
                                        (chat_id, user_id, int(time.time() - 86400)))
                         cnt = int(EC.cur.fetchall()[0][0])
-                        url = "https://api.telegram.org/bot" + EC.token + "/restrictChatMember?chat_id=" + \
-                            str(chat_id) + "&user_id=" + str(user_id) + "&until_date=" + \
-                            str(int(time.time() + random.randint(120, 300) * (1.5**cnt)))
-                        response = requests.get(url)
+
+                        try:
+                            until_date = int(
+                                time.time() + random.randint(120, 300) * (1.5**cnt))
+                            EC.bot.restrict_chat_member(
+                                chat_id, user_id, until_date=until_date)
+                        except telegram.error.BadRequest as e:
+                            EC.error('Restrict {} in {} failed: {}'.format(
+                                user_id, chat_id, e.message
+                            ))
             except Exception as e:
                 traceback.print_exc()
                 EC.log(traceback.format_exc())
