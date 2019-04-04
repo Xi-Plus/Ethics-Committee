@@ -11,8 +11,9 @@ class SendPhotoChangeLogo(EthicsCommitteeExtension):
     PERMISSION_CHANGELOGO = MODULE_NAME + '_change_logo'
     PERMISSION_GRANT = MODULE_NAME + '_grant'
 
-    def __init__(self, settings):
+    def __init__(self, settings, hidden_in_web):
         self.settings = settings
+        self.hidden_in_web = hidden_in_web
 
     def main(self, EC):
         chat_id = EC.update.effective_chat.id
@@ -119,6 +120,8 @@ class SendPhotoChangeLogo(EthicsCommitteeExtension):
         </tr>
         """
         for chat_id in self.settings:
+            if chat_id in self.hidden_in_web:
+                continue
             setting = self.settings[chat_id]
 
             html += """<tr>"""
