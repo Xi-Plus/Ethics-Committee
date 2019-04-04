@@ -265,6 +265,18 @@ class EthicsCommittee:
             return False
         return True
 
+    def list_setting_in_group(self, chat_id, key, value=None):
+        if value is None:
+            self.cur.execute(
+                """SELECT `value` FROM `group_setting` WHERE `chat_id` = %s AND `key` = %s""",
+                (chat_id, key))
+        else:
+            self.cur.execute(
+                """SELECT `value` FROM `group_setting` WHERE `chat_id` = %s AND `key` = %s AND `value` = %s""",
+                (chat_id, key, value))
+        rows = self.cur.fetchall()
+        return rows
+
     def list_group_with_setting(self, key, value=None):
         if value is None:
             self.cur.execute("""SELECT `chat_id`, `value` FROM `group_setting` WHERE `key` = %s""",
