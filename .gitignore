@@ -1,5 +1,4 @@
 *.pyc
 extensions/*config.py
-config.ini
 config_extension.py
 config_variable.py
