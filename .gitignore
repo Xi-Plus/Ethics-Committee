@@ -1,4 +1,5 @@
-*.pyc
-extensions/*config.py
+.vscode/
 config_extension.py
 config_variable.py
+extensions/*config.py
+*.pyc
