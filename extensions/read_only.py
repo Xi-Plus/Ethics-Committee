@@ -46,7 +46,7 @@ class Read_only(EthicsCommitteeExtension):
                     try:
                         EC.update.message.delete()
                     except telegram.error.BadRequest as e:
-                        EC.error('Delete {} in {} failed: {}'.format(
+                        EC.log('Delete {} in {} failed: {}'.format(
                             EC.update.message.message_id, EC.update.message.chat_id, e.message
                         ))
 
@@ -61,7 +61,7 @@ class Read_only(EthicsCommitteeExtension):
                             EC.bot.restrict_chat_member(
                                 chat_id, user_id, until_date=until_date)
                         except telegram.error.BadRequest as e:
-                            EC.error('Restrict {} in {} failed: {}'.format(
+                            EC.log('Restrict {} in {} failed: {}'.format(
                                 user_id, chat_id, e.message
                             ))
             except Exception as e:
