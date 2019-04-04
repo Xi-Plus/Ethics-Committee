@@ -13,8 +13,11 @@ from Kamisu66 import EthicsCommittee, EthicsCommitteeExtension
 
 class Spam_ban(EthicsCommitteeExtension):
     MODULE_NAME = 'spam_ban'
+
     PERMISSION_GLOBALBAN = MODULE_NAME + '_global_ban'
     PERMISSION_GRANT = MODULE_NAME + '_grant'
+    PERMISSION_SETTING = MODULE_NAME + '_setting'
+
     SETTING_BAN_TEXT = MODULE_NAME + '_ban_text'
     SETTING_BAN_USERNAME = MODULE_NAME + '_ban_username'
     SETTING_WARN_TEXT = MODULE_NAME + '_warn_text'
@@ -23,10 +26,21 @@ class Spam_ban(EthicsCommitteeExtension):
     SETTING_GLOBAL_BAN = MODULE_NAME + '_global_ban'
     SETTING_GLOBAL_BAN_CMD = MODULE_NAME + '_global_ban_cmd'
     SETTING_TEST = MODULE_NAME + '_test'
+
     CMD_GLOBALBAN = r'^global_?ban$'
     CMD_GLOBALUNBAN = r'^global_?unban$'
     CMD_GRANT = r'^grant_?global_?ban$'
     CMD_REVOKE = r'^revoke_?global_?ban$'
+    CMD_ENABLE_BAN_TEXT = r'^enable_?ban_?text$'
+    CMD_ENABLE_BAN_USERNAME = r'^enable_?ban_?username$'
+    CMD_ENABLE_WARN_TEXT = r'^enable_?warn_?text$'
+    CMD_ENABLE_WARN_USERNAME = r'^enable_?warn_?username$'
+    CMD_ENABLE_GLOBALBAN = r'^enable_?global_?ban$'
+    CMD_DISABLE_BAN_TEXT = r'^disable_?ban_?text$'
+    CMD_DISABLE_BAN_USERNAME = r'^disable_?ban_?username$'
+    CMD_DISABLE_WARN_TEXT = r'^disable_?warn_?text$'
+    CMD_DISABLE_WARN_USERNAME = r'^disable_?warn_?username$'
+    CMD_DISABLE_GLOBALBAN = r'^disable_?global_?ban$'
 
     EC = None
     chat_id = None
@@ -233,6 +247,36 @@ class Spam_ban(EthicsCommitteeExtension):
         if re.search(self.CMD_REVOKE, action):
             self.cmd_revoke()
 
+        if re.search(self.CMD_ENABLE_BAN_TEXT, action):
+            self.cmd_setting_enable(self.SETTING_BAN_TEXT)
+
+        if re.search(self.CMD_ENABLE_BAN_USERNAME, action):
+            self.cmd_setting_enable(self.SETTING_BAN_USERNAME)
+
+        if re.search(self.CMD_ENABLE_WARN_TEXT, action):
+            self.cmd_setting_enable(self.SETTING_WARN_TEXT)
+
+        if re.search(self.CMD_ENABLE_WARN_USERNAME, action):
+            self.cmd_setting_enable(self.SETTING_WARN_USERNAME)
+
+        if re.search(self.CMD_ENABLE_GLOBALBAN, action):
+            self.cmd_setting_enable(self.SETTING_GLOBAL_BAN)
+
+        if re.search(self.CMD_DISABLE_BAN_TEXT, action):
+            self.cmd_setting_disable(self.SETTING_BAN_TEXT)
+
+        if re.search(self.CMD_DISABLE_BAN_USERNAME, action):
+            self.cmd_setting_disable(self.SETTING_BAN_USERNAME)
+
+        if re.search(self.CMD_DISABLE_WARN_TEXT, action):
+            self.cmd_setting_disable(self.SETTING_WARN_TEXT)
+
+        if re.search(self.CMD_DISABLE_WARN_USERNAME, action):
+            self.cmd_setting_disable(self.SETTING_WARN_USERNAME)
+
+        if re.search(self.CMD_DISABLE_GLOBALBAN, action):
+            self.cmd_setting_disable(self.SETTING_GLOBAL_BAN)
+
     def cmd_globalban(self, action, cmd):
         if not self.EC.check_permission(self.user_id, self.PERMISSION_GLOBALBAN, 0):
             self.EC.log(
@@ -364,6 +408,44 @@ class Spam_ban(EthicsCommitteeExtension):
         else:
             self.EC.sendmessage('{} 沒有全域封鎖的權限'.format(
                 self.reply_to_full_name), reply=self.message_id)
+
+    def cmd_setting_enable(self, setting):
+        if not self.EC.check_permission(self.user_id, self.PERMISSION_SETTING, 0):
+            self.EC.sendmessage('你沒有權限變更自動封鎖設定', reply=self.message_id)
+            return
+
+        cm = self.EC.bot.get_chat_member(self.chat_id, self.EC.bot.id)
+        if not cm.can_delete_messages or not cm.can_restrict_members:
+            self.EC.sendmessage('請先授予機器人"Delete messages"和"Ban users"後才能啟用此功能', reply=self.message_id)
+            return
+
+        rows = self.EC.list_setting_in_group(self.chat_id, setting)
+        if rows:
+            self.EC.sendmessage('本群早已啟用 {}'.format(setting),
+                                reply=self.message_id,
+                                parse_mode='')
+        else:
+            ok = self.EC.add_group_setting(self.chat_id, setting, 'enable')
+            self.EC.sendmessage('本群已啟用 {}'.format(setting),
+                                reply=self.message_id,
+                                parse_mode='')
+
+    def cmd_setting_disable(self, setting):
+        if not self.EC.check_permission(self.user_id, self.PERMISSION_SETTING, 0):
+            self.EC.sendmessage('你沒有權限變更自動封鎖設定', reply=self.message_id)
+            return
+
+        rows = self.EC.list_setting_in_group(self.chat_id, setting)
+        self.EC.log(rows)
+        if rows:
+            ok = self.EC.remove_group_setting(self.chat_id, setting)
+            self.EC.sendmessage('本群已停用 {}'.format(setting),
+                                reply=self.message_id,
+                                parse_mode='')
+        else:
+            self.EC.sendmessage('本群並未啟用 {}'.format(setting),
+                                reply=self.message_id,
+                                parse_mode='')
 
     # action list start
     def action_ban_all_chat(self, user_id, duration=604800):
