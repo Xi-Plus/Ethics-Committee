@@ -2,7 +2,6 @@ import argparse
 import json
 import re
 import shlex
-import subprocess
 import time
 import traceback
 
@@ -32,6 +31,11 @@ class Spam_ban(EthicsCommitteeExtension):
     EC = None
     chat_id = None
     user_id = None
+    is_reply = None
+    first_name = None
+    reply_to_user_id = None
+    reply_to_full_name = None
+    message_id = None
     textnorm = None
     message_deleted = False
 
@@ -63,11 +67,13 @@ class Spam_ban(EthicsCommitteeExtension):
         self.test_chat = [
             int(row[0]) for row in self.EC.list_group_with_setting(self.SETTING_TEST)]
 
-        self.EC.cur.execute("""SELECT `chat_id`, `title` FROM `group_name`
-                            WHERE `chat_id` IN ('{}')""".format("', '".join(
-            [str(v) for v in (self.ban_text_chat + self.ban_username_chat + self.warn_text_chat +
-                              self.warn_username_chat + self.ban_photo_chat + self.global_ban_chat)]
-        )))
+        self.EC.cur.execute(
+            """SELECT `chat_id`, `title` FROM `group_name` WHERE `chat_id` IN ('{}')""".format(
+                "', '".join(
+                    [str(v) for v in (
+                        self.ban_text_chat + self.ban_username_chat + self.warn_text_chat
+                        + self.warn_username_chat + self.ban_photo_chat + self.global_ban_chat)]
+                )))
         rows = self.EC.cur.fetchall()
         self.group_name = {}
         for row in rows:
@@ -81,21 +87,22 @@ class Spam_ban(EthicsCommitteeExtension):
                 message = data["message"]
             elif "edited_message" in data:
                 message = data["edited_message"]
-            self.chat_id = chat_id = message["chat"]["id"]
-            self.user_id = user_id = message["from"]["id"]
+            self.chat_id = message["chat"]["id"]
+            self.user_id = message["from"]["id"]
 
-            if chat_id not in self.global_ban_chat + self.test_chat + self.global_ban_cmd_chat:
+            if self.chat_id not in self.global_ban_chat + self.test_chat + self.global_ban_cmd_chat:
                 return
 
+            self.first_name = message["from"]["first_name"]
             full_name = message["from"]["first_name"]
             if "last_name" in message["from"]:
                 full_name += " " + message["from"]["last_name"]
             if "reply_to_message" in message:
-                is_reply = True
-                reply_to_user_id = message["reply_to_message"]["from"]["id"]
-                reply_to_full_name = message["reply_to_message"]["from"]["first_name"]
+                self.is_reply = True
+                self.reply_to_user_id = message["reply_to_message"]["from"]["id"]
+                self.reply_to_full_name = message["reply_to_message"]["from"]["first_name"]
                 if "last_name" in message["reply_to_message"]["from"]:
-                    reply_to_full_name += ' ' + \
+                    self.reply_to_full_name += ' ' + \
                         message["reply_to_message"]["from"]["last_name"]
 
             mode = []
@@ -122,7 +129,6 @@ class Spam_ban(EthicsCommitteeExtension):
             if len(mode) == 0:
                 return
 
-            EC = EthicsCommittee(chat_id, user_id)
             try:
                 textnorm = Equivset(text)
                 # EC.log("[spam_ban] Equivset ok {}".format(text2))
@@ -133,17 +139,17 @@ class Spam_ban(EthicsCommitteeExtension):
                 EC.log(traceback.format_exc())
 
             try:
-                message_id = message["message_id"]
+                self.message_id = message["message_id"]
 
                 EC.cur.execute(
-                    """SELECT SUM(`count`) AS `count` FROM `message_count` WHERE `user_id` = %s AND `type` != 'new_chat_member' AND `type` NOT LIKE 'edited_%%'""", (user_id))
+                    """SELECT SUM(`count`) AS `count` FROM `message_count` WHERE `user_id` = %s AND `type` != 'new_chat_member' AND `type` NOT LIKE 'edited_%%'""", (self.user_id))
                 rows = EC.cur.fetchall()
                 if rows[0][0] is None:
                     user_msg_cnt = 0
                 else:
                     user_msg_cnt = int(rows[0][0])
 
-                if 'text' in mode and text.startswith('/') and chat_id in self.global_ban_chat + self.global_ban_cmd_chat:
+                if 'text' in mode and text.startswith('/') and self.chat_id in self.global_ban_chat + self.global_ban_cmd_chat:
                     cmd = shlex.split(text)
                     action = cmd[0]
                     cmd = cmd[1:]
@@ -151,152 +157,22 @@ class Spam_ban(EthicsCommitteeExtension):
                     action = re.sub(r'@{}$'.format(
                         re.escape(EC.bot.username)), '', action)
                     action = action.lower()
-                    is_reply = "reply_to_message" in message
+                    self.is_reply = "reply_to_message" in message
 
-                    if re.search(self.CMD_GLOBALBAN, action):
-                        if EC.check_permission(user_id, self.PERMISSION_GLOBALBAN, 0):
-                            parser = argparse.ArgumentParser(
-                                prog='/{0}'.format(action),
-                                usage='%(prog)s user [-d 時長] [-r 原因] [-h]')
-                            parser.add_argument(
-                                'user', type=str, default=None, nargs='?', help='欲封鎖用戶ID，不指定時需回覆訊息')
-                            parser.add_argument('-d', type=str, metavar='時長', default='1w',
-                                                help='接受單位為秒的整數，或是<整數><單位>的格式，例如：60s, 1min, 2h, 3d, 4w, 5m。預設：%(default)s')
-                            parser.add_argument(
-                                '-r', type=str, metavar='原因', default='Spam', help='預設：%(default)s')
-                            ok, args = EC.parse_command(parser, cmd)
-                            if ok:
-                                ban_user_id = args.user
-                                if ban_user_id is None and is_reply:
-                                    ban_user_id = reply_to_user_id
-                                if ban_user_id is None:
-                                    EC.sendmessage(
-                                        '需要回覆訊息或用參數指定封鎖目標', reply=message_id)
-                                else:
-                                    ban_user_id = int(ban_user_id)
-                                    reason = args.r
-                                    duration = self.parse_duration(args.d)
-                                    if duration is None:
-                                        EC.sendmessage(
-                                            '指定的時長無效', reply=message_id)
-                                    else:
-                                        if ban_user_id == self.EC.bot.id:
-                                            EC.sendmessage(
-                                                '你不能對機器人執行此操作', reply=message_id)
-                                        else:
-                                            failed = self.action_ban_all_chat(
-                                                ban_user_id, duration)
-                                            self.action_del_all_msg(
-                                                ban_user_id)
-                                            self.action_log_admin(
-                                                '#封', user_id,
-                                                message["from"]["first_name"],
-                                                'banned', ban_user_id, reason,
-                                                self.duration_text(duration),
-                                                failed,
-                                            )
-                                            EC.deletemessage(
-                                                chat_id, message_id)
-
-                            else:
-                                EC.sendmessage(
-                                    args, reply=message_id, parse_mode='')
-                        else:
-                            EC.log(
-                                '[spam_ban] {} /globalban no premission'.format(user_id))
-                            EC.sendmessage('你沒有權限進行全域封鎖的動作', reply=message_id)
-
-                    if re.search(self.CMD_GLOBALUNBAN, action):
-                        if EC.check_permission(user_id, self.PERMISSION_GLOBALBAN, 0):
-                            parser = argparse.ArgumentParser(
-                                prog='/{0}'.format(action),
-                                usage='%(prog)s user [-r 原因] [-h]')
-                            parser.add_argument(
-                                'user', type=str, default=None, nargs='?', help='欲解除封鎖用戶ID，不指定時需回覆訊息')
-                            parser.add_argument(
-                                '-r', type=str, metavar='原因', default='無原因', help='預設：%(default)s')
-                            ok, args = EC.parse_command(parser, cmd)
-                            if ok:
-                                ban_user_id = args.user
-                                if ban_user_id is None and is_reply:
-                                    ban_user_id = reply_to_user_id
-                                if ban_user_id is None:
-                                    EC.sendmessage(
-                                        '需要回覆訊息或用參數指定解除封鎖目標', reply=message_id)
-                                else:
-                                    ban_user_id = int(ban_user_id)
-                                    reason = args.r
-
-                                    if ban_user_id == self.EC.bot.id:
-                                        EC.sendmessage(
-                                            '你不能對機器人執行此操作', reply=message_id)
-                                    else:
-                                        failed = self.action_unban_all_chat(
-                                            ban_user_id)
-                                        self.action_log_admin(
-                                            '#解', user_id,
-                                            message["from"]["first_name"],
-                                            'unbanned', ban_user_id, reason,
-                                            self.duration_text(duration),
-                                            failed,
-                                        )
-                                        EC.deletemessage(
-                                            chat_id, message_id)
-                            else:
-                                EC.sendmessage(
-                                    args, reply=message_id, parse_mode='')
-                        else:
-                            EC.log(
-                                '[spam_ban] {} /globalunban no premission'.format(user_id))
-                            EC.sendmessage('你沒有權限進行全域解除封鎖的動作',
-                                           reply=message_id)
-
-                    if re.search(self.CMD_GRANT, action):
-                        if EC.check_permission(user_id, self.PERMISSION_GRANT, 0):
-                            if is_reply:
-                                ok = EC.add_permission(
-                                    reply_to_user_id, self.PERMISSION_GLOBALBAN, 0)
-                                if ok:
-                                    EC.sendmessage('已授予 {} 全域封鎖的權限'.format(
-                                        reply_to_full_name), reply=message_id)
-                                else:
-                                    EC.sendmessage('{} 已有全域封鎖的權限'.format(
-                                        reply_to_full_name), reply=message_id)
-                            else:
-                                EC.sendmessage('你需要回應一則訊息以授予權限',
-                                               reply=message_id)
-                        else:
-                            EC.sendmessage('你沒有權限進行授予權限的動作', reply=message_id)
-
-                    if re.search(self.CMD_REVOKE, action):
-                        if EC.check_permission(user_id, self.PERMISSION_GRANT, 0):
-                            if is_reply:
-                                ok = EC.remove_permission(
-                                    reply_to_user_id, self.PERMISSION_GLOBALBAN, 0)
-                                if ok:
-                                    EC.sendmessage('已解除 {} 全域封鎖的權限'.format(
-                                        reply_to_full_name), reply=message_id)
-                                else:
-                                    EC.sendmessage('{} 沒有全域封鎖的權限'.format(
-                                        reply_to_full_name), reply=message_id)
-                            else:
-                                EC.sendmessage('你需要回應一則訊息以解除權限',
-                                               reply=message_id)
-                        else:
-                            EC.sendmessage('你沒有權限進行解除權限', reply=message_id)
+                    self.handle_cmd(action, cmd)
 
                 if "text" in mode:
                     if user_msg_cnt <= 5:
-                        if chat_id in self.ban_text_chat and re.search(self.ban_text_regex, textnorm, flags=re.I):
-                            self.action_ban_all_chat(user_id, 604800)
-                            self.action_del_all_msg(user_id)
-                            self.action_log_bot(user_id, '宣傳文字',
+                        if self.chat_id in self.ban_text_chat and re.search(self.ban_text_regex, textnorm, flags=re.I):
+                            self.action_ban_all_chat(self.user_id, 604800)
+                            self.action_del_all_msg(self.user_id)
+                            self.action_log_bot(self.user_id, '宣傳文字',
                                                 self.duration_text(604800))
 
-                        elif chat_id in self.warn_text_chat and re.search(self.warn_text_regex, textnorm, flags=re.I):
-                            self.action_warn(message_id)
+                        elif self.chat_id in self.warn_text_chat and re.search(self.warn_text_regex, textnorm, flags=re.I):
+                            self.action_warn(self.message_id)
 
-                    if chat_id in self.test_chat and re.search(r'/test', text):
+                    if self.chat_id in self.test_chat and re.search(r'/test', text):
                         spam_type = []
                         if re.search(self.ban_username_regex, textnorm, flags=re.I):
                             spam_type.append("ban_username")
@@ -308,40 +184,186 @@ class Spam_ban(EthicsCommitteeExtension):
                             spam_type.append("warn_text")
                         EC.log("[spam_ban] test pass text={} type={}".format(
                             textnorm, ", ".join(spam_type)))
-                        EC.sendmessage("textnorm = {}\nspam type = {}".format(
-                            textnorm,
-                            ", ".join(spam_type)),
-                            reply=message_id, parse_mode="")
+                        EC.sendmessage(
+                            "textnorm = {}\nspam type = {}".format(
+                                textnorm,
+                                ", ".join(spam_type)),
+                            reply=self.message_id, parse_mode="")
 
                 if "username" in mode:
-                    if chat_id in self.ban_username_chat and re.search(self.ban_username_regex, textnorm, flags=re.I):
-                        self.action_ban_all_chat(user_id, 604800)
-                        self.action_del_all_msg(user_id)
-                        self.action_log_bot(user_id, '宣傳性用戶名',
+                    if self.chat_id in self.ban_username_chat and re.search(self.ban_username_regex, textnorm, flags=re.I):
+                        self.action_ban_all_chat(self.user_id, 604800)
+                        self.action_del_all_msg(self.user_id)
+                        self.action_log_bot(self.user_id, '宣傳性用戶名',
                                             self.duration_text(604800))
 
-                    elif chat_id in self.warn_username_chat and re.search(self.warn_username_regex, textnorm, flags=re.I):
-                        self.action_warn(message_id)
+                    elif self.chat_id in self.warn_username_chat and re.search(self.warn_username_regex, textnorm, flags=re.I):
+                        self.action_warn(self.message_id)
 
                 if "photo" in mode:
-                    if chat_id in self.ban_photo_chat:
+                    if self.chat_id in self.ban_photo_chat:
                         if user_msg_cnt <= 5:
-                            self.action_ban_all_chat(user_id, 604800)
+                            self.action_ban_all_chat(self.user_id, 604800)
                             self.action_log_bot(
-                                user_id, '發送圖片', self.duration_text(604800))
+                                self.user_id, '發送圖片', self.duration_text(604800))
 
                 if "forward" in mode and not self.message_deleted:
                     if user_msg_cnt <= 5:
                         EC.sendmessage('https://t.me/{}/{}'.format(
-                            message["chat"]["username"], message_id), chat_id=self.warn_forward_chat_id, parse_mode="HTML")
+                            message["chat"]["username"], self.message_id), chat_id=self.warn_forward_chat_id, parse_mode="HTML")
                         EC.log("[spam_ban] forward {}".format(
                             json.dumps(message)))
                         if "forward_from_chat" in message and message["forward_from_message_id"] < 10:
-                            self.action_warn(message_id)
+                            self.action_warn(self.message_id)
 
             except Exception:
                 traceback.print_exc()
                 EC.log("[spam_ban] " + traceback.format_exc())
+
+    def handle_cmd(self, action, cmd):
+        if re.search(self.CMD_GLOBALBAN, action):
+            self.cmd_globalban(action, cmd)
+
+        if re.search(self.CMD_GLOBALUNBAN, action):
+            self.cmd_globalunban(action, cmd)
+
+        if re.search(self.CMD_GRANT, action):
+            self.cmd_grant()
+
+        if re.search(self.CMD_REVOKE, action):
+            self.cmd_revoke()
+
+    def cmd_globalban(self, action, cmd):
+        if not self.EC.check_permission(self.user_id, self.PERMISSION_GLOBALBAN, 0):
+            self.EC.log(
+                '[spam_ban] {} /globalban no premission'.format(self.user_id))
+            self.EC.sendmessage('你沒有權限進行全域封鎖的動作', reply=self.message_id)
+            return
+
+        parser = argparse.ArgumentParser(
+            prog='/{0}'.format(action),
+            usage='%(prog)s user [-d 時長] [-r 原因] [-h]')
+        parser.add_argument(
+            'user', type=str, default=None, nargs='?', help='欲封鎖用戶ID，不指定時需回覆訊息')
+        parser.add_argument('-d', type=str, metavar='時長', default='1w',
+                            help='接受單位為秒的整數，或是<整數><單位>的格式，例如：60s, 1min, 2h, 3d, 4w, 5m。預設：%(default)s')
+        parser.add_argument(
+            '-r', type=str, metavar='原因', default='Spam', help='預設：%(default)s')
+        ok, args = self.EC.parse_command(parser, cmd)
+
+        if not ok:
+            self.EC.sendmessage(args, reply=self.message_id, parse_mode='')
+            return
+
+        ban_user_id = args.user
+        if ban_user_id is None and self.is_reply:
+            ban_user_id = self.reply_to_user_id
+        if ban_user_id is None:
+            self.EC.sendmessage('需要回覆訊息或用參數指定封鎖目標', reply=self.message_id)
+            return
+
+        ban_user_id = int(ban_user_id)
+        reason = args.r
+        duration = self.parse_duration(args.d)
+        if duration is None:
+            self.EC.sendmessage('指定的時長無效', reply=self.message_id)
+            return
+
+        if ban_user_id == self.EC.bot.id:
+            self.EC.sendmessage('你不能對機器人執行此操作', reply=self.message_id)
+            return
+
+        failed = self.action_ban_all_chat(ban_user_id, duration)
+        self.action_del_all_msg(ban_user_id)
+        self.action_log_admin(
+            '#封', self.user_id,
+            self.first_name,
+            'banned', ban_user_id, reason,
+            self.duration_text(duration),
+            failed,
+        )
+        self.EC.deletemessage(self.chat_id, self.message_id)
+
+    def cmd_globalunban(self, action, cmd):
+        if not self.EC.check_permission(self.user_id, self.PERMISSION_GLOBALBAN, 0):
+            self.EC.log(
+                '[spam_ban] {} /globalunban no premission'.format(self.user_id))
+            self.EC.sendmessage('你沒有權限進行全域解除封鎖的動作',
+                                reply=self.message_id)
+            return
+
+        parser = argparse.ArgumentParser(
+            prog='/{0}'.format(action),
+            usage='%(prog)s user [-r 原因] [-h]')
+        parser.add_argument(
+            'user', type=str, default=None, nargs='?', help='欲解除封鎖用戶ID，不指定時需回覆訊息')
+        parser.add_argument(
+            '-r', type=str, metavar='原因', default='無原因', help='預設：%(default)s')
+        ok, args = self.EC.parse_command(parser, cmd)
+
+        if not ok:
+            self.EC.sendmessage(args, reply=self.message_id, parse_mode='')
+            return
+
+        ban_user_id = args.user
+        if ban_user_id is None and self.is_reply:
+            ban_user_id = self.reply_to_user_id
+        if ban_user_id is None:
+            self.EC.sendmessage('需要回覆訊息或用參數指定解除封鎖目標', reply=self.message_id)
+            return
+
+        ban_user_id = int(ban_user_id)
+        reason = args.r
+
+        if ban_user_id == self.EC.bot.id:
+            self.EC.sendmessage('你不能對機器人執行此操作', reply=self.message_id)
+            return
+
+        failed = self.action_unban_all_chat(ban_user_id)
+        self.action_log_admin(
+            '#解', self.user_id,
+            self.first_name,
+            'unbanned', ban_user_id, reason,
+            self.duration_text(0),
+            failed,
+        )
+        self.EC.deletemessage(self.chat_id, self.message_id)
+
+    def cmd_grant(self):
+        if not self.EC.check_permission(self.user_id, self.PERMISSION_GRANT, 0):
+            self.EC.sendmessage('你沒有權限進行授予權限的動作', reply=self.message_id)
+            return
+
+        if not self.is_reply:
+            self.EC.sendmessage('你需要回應一則訊息以授予權限', reply=self.message_id)
+            return
+
+        ok = self.EC.add_permission(
+            self.reply_to_user_id, self.PERMISSION_GLOBALBAN, 0)
+        if ok:
+            self.EC.sendmessage('已授予 {} 全域封鎖的權限'.format(
+                self.reply_to_full_name), reply=self.message_id)
+        else:
+            self.EC.sendmessage('{} 已有全域封鎖的權限'.format(
+                self.reply_to_full_name), reply=self.message_id)
+
+    def cmd_revoke(self):
+        if not self.EC.check_permission(self.user_id, self.PERMISSION_GRANT, 0):
+            self.EC.sendmessage('你沒有權限進行解除權限', reply=self.message_id)
+            return
+
+        if not self.is_reply:
+            self.EC.sendmessage('你需要回應一則訊息以解除權限', reply=self.message_id)
+            return
+
+        ok = self.EC.remove_permission(
+            self.reply_to_user_id, self.PERMISSION_GLOBALBAN, 0)
+        if ok:
+            self.EC.sendmessage('已解除 {} 全域封鎖的權限'.format(
+                self.reply_to_full_name), reply=self.message_id)
+        else:
+            self.EC.sendmessage('{} 沒有全域封鎖的權限'.format(
+                self.reply_to_full_name), reply=self.message_id)
 
     # action list start
     def action_ban_all_chat(self, user_id, duration=604800):
