@@ -103,9 +103,7 @@ class Spam_ban(EthicsCommitteeExtension):
                 message = data["edited_message"]
             self.chat_id = message["chat"]["id"]
             self.user_id = message["from"]["id"]
-
-            if self.chat_id not in self.global_ban_chat + self.test_chat + self.global_ban_cmd_chat:
-                return
+            self.message_id = message["message_id"]
 
             self.first_name = message["from"]["first_name"]
             full_name = message["from"]["first_name"]
@@ -118,6 +116,21 @@ class Spam_ban(EthicsCommitteeExtension):
                 if "last_name" in message["reply_to_message"]["from"]:
                     self.reply_to_full_name += ' ' + \
                         message["reply_to_message"]["from"]["last_name"]
+
+            if 'text' in message and message['text'].startswith('/'):
+                cmd = shlex.split(message['text'])
+                action = cmd[0]
+                cmd = cmd[1:]
+                action = action[1:]
+                action = re.sub(r'@{}$'.format(
+                    re.escape(EC.bot.username)), '', action)
+                action = action.lower()
+                self.is_reply = 'reply_to_message' in message
+
+                self.handle_cmd(action, cmd)
+
+            if self.chat_id not in self.global_ban_chat + self.test_chat + self.global_ban_cmd_chat:
+                return
 
             mode = []
             text = ""
@@ -153,8 +166,6 @@ class Spam_ban(EthicsCommitteeExtension):
                 EC.log(traceback.format_exc())
 
             try:
-                self.message_id = message["message_id"]
-
                 EC.cur.execute(
                     """SELECT SUM(`count`) AS `count` FROM `message_count` WHERE `user_id` = %s AND `type` != 'new_chat_member' AND `type` NOT LIKE 'edited_%%'""", (self.user_id))
                 rows = EC.cur.fetchall()
@@ -162,18 +173,6 @@ class Spam_ban(EthicsCommitteeExtension):
                     user_msg_cnt = 0
                 else:
                     user_msg_cnt = int(rows[0][0])
-
-                if 'text' in mode and text.startswith('/') and self.chat_id in self.global_ban_chat + self.global_ban_cmd_chat:
-                    cmd = shlex.split(text)
-                    action = cmd[0]
-                    cmd = cmd[1:]
-                    action = action[1:]
-                    action = re.sub(r'@{}$'.format(
-                        re.escape(EC.bot.username)), '', action)
-                    action = action.lower()
-                    self.is_reply = "reply_to_message" in message
-
-                    self.handle_cmd(action, cmd)
 
                 if "text" in mode:
                     if user_msg_cnt <= 5:
@@ -235,17 +234,18 @@ class Spam_ban(EthicsCommitteeExtension):
                 EC.log("[spam_ban] " + traceback.format_exc())
 
     def handle_cmd(self, action, cmd):
-        if re.search(self.CMD_GLOBALBAN, action):
-            self.cmd_globalban(action, cmd)
+        if self.chat_id in self.global_ban_chat + self.global_ban_cmd_chat:
+            if re.search(self.CMD_GLOBALBAN, action):
+                self.cmd_globalban(action, cmd)
 
-        if re.search(self.CMD_GLOBALUNBAN, action):
-            self.cmd_globalunban(action, cmd)
+            if re.search(self.CMD_GLOBALUNBAN, action):
+                self.cmd_globalunban(action, cmd)
 
-        if re.search(self.CMD_GRANT, action):
-            self.cmd_grant()
+            if re.search(self.CMD_GRANT, action):
+                self.cmd_grant()
 
-        if re.search(self.CMD_REVOKE, action):
-            self.cmd_revoke()
+            if re.search(self.CMD_REVOKE, action):
+                self.cmd_revoke()
 
         if re.search(self.CMD_ENABLE_BAN_TEXT, action):
             self.cmd_setting_enable(self.SETTING_BAN_TEXT)
@@ -416,7 +416,8 @@ class Spam_ban(EthicsCommitteeExtension):
 
         cm = self.EC.bot.get_chat_member(self.chat_id, self.EC.bot.id)
         if not cm.can_delete_messages or not cm.can_restrict_members:
-            self.EC.sendmessage('請先授予機器人"Delete messages"和"Ban users"後才能啟用此功能', reply=self.message_id)
+            self.EC.sendmessage(
+                '請先授予機器人"Delete messages"和"Ban users"後才能啟用此功能', reply=self.message_id)
             return
 
         rows = self.EC.list_setting_in_group(self.chat_id, setting)
@@ -436,7 +437,6 @@ class Spam_ban(EthicsCommitteeExtension):
             return
 
         rows = self.EC.list_setting_in_group(self.chat_id, setting)
-        self.EC.log(rows)
         if rows:
             ok = self.EC.remove_group_setting(self.chat_id, setting)
             self.EC.sendmessage('本群已停用 {}'.format(setting),
