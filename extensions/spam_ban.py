@@ -24,6 +24,11 @@ class Spam_ban(EthicsCommitteeExtension):
     SETTING_GLOBAL_BAN = MODULE_NAME + '_global_ban'
     SETTING_GLOBAL_BAN_CMD = MODULE_NAME + '_global_ban_cmd'
     SETTING_TEST = MODULE_NAME + '_test'
+    CMD_GLOBALBAN = r'^global_?ban$'
+    CMD_GLOBALUNBAN = r'^global_?unban$'
+    CMD_GRANT = r'^grant_?global_?ban$'
+    CMD_REVOKE = r'^revoke_?global_?ban$'
+
     EC = None
     chat_id = None
     user_id = None
@@ -143,17 +148,18 @@ class Spam_ban(EthicsCommitteeExtension):
                     action = cmd[0]
                     cmd = cmd[1:]
                     action = action[1:]
-                    action = re.sub(
-                        r'@Kamisu66EthicsCommitteeBot$', '', action)
+                    action = re.sub(r'@{}$'.format(
+                        re.escape(EC.bot.username)), '', action)
                     action = action.lower()
                     is_reply = "reply_to_message" in message
-                    if action in ['globalban', 'globalunban']:
+
+                    if re.search(self.CMD_GLOBALBAN, action):
                         if EC.check_permission(user_id, self.PERMISSION_GLOBALBAN, 0):
                             parser = argparse.ArgumentParser(
                                 prog='/{0}'.format(action),
                                 usage='%(prog)s user [-d 時長] [-r 原因] [-h]')
                             parser.add_argument(
-                                'user', type=str, default=None, nargs='?', help='被用戶ID，不指定時需回覆訊息')
+                                'user', type=str, default=None, nargs='?', help='欲封鎖用戶ID，不指定時需回覆訊息')
                             parser.add_argument('-d', type=str, metavar='時長', default='1w',
                                                 help='接受單位為秒的整數，或是<整數><單位>的格式，例如：60s, 1min, 2h, 3d, 4w, 5m。預設：%(default)s')
                             parser.add_argument(
@@ -173,8 +179,7 @@ class Spam_ban(EthicsCommitteeExtension):
                                     if duration is None:
                                         EC.sendmessage(
                                             '指定的時長無效', reply=message_id)
-
-                                    elif action == "globalban":
+                                    else:
                                         if ban_user_id == self.EC.bot.id:
                                             EC.sendmessage(
                                                 '你不能對機器人執行此操作', reply=message_id)
@@ -193,31 +198,60 @@ class Spam_ban(EthicsCommitteeExtension):
                                             EC.deletemessage(
                                                 chat_id, message_id)
 
-                                    elif action == "globalunban":
-                                        if ban_user_id == self.EC.bot.id:
-                                            EC.sendmessage(
-                                                '你不能對機器人執行此操作', reply=message_id)
-                                        else:
-                                            failed = self.action_unban_all_chat(
-                                                ban_user_id)
-                                            self.action_log_admin(
-                                                '#解', user_id,
-                                                message["from"]["first_name"],
-                                                'unbanned', ban_user_id, reason,
-                                                self.duration_text(duration),
-                                                failed,
-                                            )
-                                            EC.deletemessage(
-                                                chat_id, message_id)
                             else:
                                 EC.sendmessage(
                                     args, reply=message_id, parse_mode='')
                         else:
                             EC.log(
-                                '[spam_ban] {} /globalban not premission'.format(user_id))
+                                '[spam_ban] {} /globalban no premission'.format(user_id))
                             EC.sendmessage('你沒有權限進行全域封鎖的動作', reply=message_id)
 
-                    if action in ['grantglobalban']:
+                    if re.search(self.CMD_GLOBALUNBAN, action):
+                        if EC.check_permission(user_id, self.PERMISSION_GLOBALBAN, 0):
+                            parser = argparse.ArgumentParser(
+                                prog='/{0}'.format(action),
+                                usage='%(prog)s user [-r 原因] [-h]')
+                            parser.add_argument(
+                                'user', type=str, default=None, nargs='?', help='欲解除封鎖用戶ID，不指定時需回覆訊息')
+                            parser.add_argument(
+                                '-r', type=str, metavar='原因', default='無原因', help='預設：%(default)s')
+                            ok, args = EC.parse_command(parser, cmd)
+                            if ok:
+                                ban_user_id = args.user
+                                if ban_user_id is None and is_reply:
+                                    ban_user_id = reply_to_user_id
+                                if ban_user_id is None:
+                                    EC.sendmessage(
+                                        '需要回覆訊息或用參數指定解除封鎖目標', reply=message_id)
+                                else:
+                                    ban_user_id = int(ban_user_id)
+                                    reason = args.r
+
+                                    if ban_user_id == self.EC.bot.id:
+                                        EC.sendmessage(
+                                            '你不能對機器人執行此操作', reply=message_id)
+                                    else:
+                                        failed = self.action_unban_all_chat(
+                                            ban_user_id)
+                                        self.action_log_admin(
+                                            '#解', user_id,
+                                            message["from"]["first_name"],
+                                            'unbanned', ban_user_id, reason,
+                                            self.duration_text(duration),
+                                            failed,
+                                        )
+                                        EC.deletemessage(
+                                            chat_id, message_id)
+                            else:
+                                EC.sendmessage(
+                                    args, reply=message_id, parse_mode='')
+                        else:
+                            EC.log(
+                                '[spam_ban] {} /globalunban no premission'.format(user_id))
+                            EC.sendmessage('你沒有權限進行全域解除封鎖的動作',
+                                           reply=message_id)
+
+                    if re.search(self.CMD_GRANT, action):
                         if EC.check_permission(user_id, self.PERMISSION_GRANT, 0):
                             if is_reply:
                                 ok = EC.add_permission(
@@ -234,7 +268,7 @@ class Spam_ban(EthicsCommitteeExtension):
                         else:
                             EC.sendmessage('你沒有權限進行授予權限的動作', reply=message_id)
 
-                    if action in ['revokeglobalban']:
+                    if re.search(self.CMD_REVOKE, action):
                         if EC.check_permission(user_id, self.PERMISSION_GRANT, 0):
                             if is_reply:
                                 ok = EC.remove_permission(
