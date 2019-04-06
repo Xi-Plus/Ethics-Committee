@@ -176,6 +176,10 @@ class Record(EthicsCommitteeExtension):
                 reply_to_message = message["reply_to_message"]
                 reply_to_message_id = reply_to_message["message_id"]
             date = message["date"]
+
+            if chat_id in self.full_log_chat_id:
+                EC.log("[record] " + json.dumps(data))
+
             try:
                 if "text" in message:
                     EC.addmessage(user_id, message_id, full_name, "text",
