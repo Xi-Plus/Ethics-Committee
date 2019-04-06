@@ -34,7 +34,8 @@ class EthicsCommittee:
             self.data = update
             self.update = telegram.Update.de_json(update, self.bot)
             self.chat_id = self.update.effective_chat.id
-            self.user_id = self.update.effective_user.id
+            if self.update.effective_user is not None:
+                self.user_id = self.update.effective_user.id
 
     def sendmessage(self, message, parse_mode="Markdown", reply=False, reply_markup=None, chat_id=None):
         try:
