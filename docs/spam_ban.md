@@ -61,6 +61,9 @@ optional arguments:
 ### /enable_warn_username
 在本群啟用用戶名警示，需要權限`spam_ban_setting`
 
+### /enable_ban_youtube_link
+在本群啟用YouTube連結自動封鎖，需要權限`spam_ban_setting`
+
 ### /enable_global_ban
 將本群納入全域封鎖範圍，需要權限`spam_ban_setting`
 
@@ -68,13 +71,16 @@ optional arguments:
 在本群停用文字自動封鎖，需要權限`spam_ban_setting`
 
 ### /disable_ban_username
-在本群停用文字自動封鎖，需要權限`spam_ban_setting`
+在本群停用用戶名自動封鎖，需要權限`spam_ban_setting`
 
 ### /disable_warn_text
 在本群停用文字警示，需要權限`spam_ban_setting`
 
 ### /disable_warn_username
 在本群停用用戶名警示，需要權限`spam_ban_setting`
+
+### /disable_ban_youtube_link
+在本群停用YouTube連結自動封鎖，需要權限`spam_ban_setting`
 
 ### /disable_global_ban
 將本群移出全域封鎖範圍，需要權限`spam_ban_setting`

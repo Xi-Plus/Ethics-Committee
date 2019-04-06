@@ -5,6 +5,7 @@ import shlex
 import time
 import traceback
 
+import requests
 import telegram
 
 from Equivset import Equivset
@@ -22,6 +23,7 @@ class Spam_ban(EthicsCommitteeExtension):
     SETTING_BAN_USERNAME = MODULE_NAME + '_ban_username'
     SETTING_WARN_TEXT = MODULE_NAME + '_warn_text'
     SETTING_WARN_USERNAME = MODULE_NAME + '_warn_username'
+    SETTING_BAN_YOUTUBE_LINK = MODULE_NAME + '_ban_youtube_link'
     SETTING_BAN_PHOTO = MODULE_NAME + '_ban_photo'
     SETTING_GLOBAL_BAN = MODULE_NAME + '_global_ban'
     SETTING_GLOBAL_BAN_CMD = MODULE_NAME + '_global_ban_cmd'
@@ -35,11 +37,13 @@ class Spam_ban(EthicsCommitteeExtension):
     CMD_ENABLE_BAN_USERNAME = r'^enable_?ban_?username$'
     CMD_ENABLE_WARN_TEXT = r'^enable_?warn_?text$'
     CMD_ENABLE_WARN_USERNAME = r'^enable_?warn_?username$'
+    CMD_ENABLE_BAN_YOUTUBE_LINK = r'^enable_?ban_?youtube_?link$'
     CMD_ENABLE_GLOBALBAN = r'^enable_?global_?ban$'
     CMD_DISABLE_BAN_TEXT = r'^disable_?ban_?text$'
     CMD_DISABLE_BAN_USERNAME = r'^disable_?ban_?username$'
     CMD_DISABLE_WARN_TEXT = r'^disable_?warn_?text$'
     CMD_DISABLE_WARN_USERNAME = r'^disable_?warn_?username$'
+    CMD_DISABLE_BAN_YOUTUBE_LINK = r'^disable_?ban_?youtube_?link$'
     CMD_DISABLE_GLOBALBAN = r'^disable_?global_?ban$'
 
     EC = None
@@ -53,12 +57,13 @@ class Spam_ban(EthicsCommitteeExtension):
     textnorm = None
     message_deleted = False
 
-    def __init__(self, ban_text_regex, ban_username_regex, warn_text_regex, warn_username_regex, warn_text, log_chat_id, warn_forward_chat_id, delete_limit):
+    def __init__(self, ban_text_regex, ban_username_regex, warn_text_regex, warn_username_regex, warn_text, ban_youtube_link_regex, log_chat_id, warn_forward_chat_id, delete_limit):
         self.ban_text_regex = ban_text_regex
         self.ban_username_regex = ban_username_regex
         self.warn_text_regex = warn_text_regex
         self.warn_username_regex = warn_username_regex
         self.warn_text = warn_text
+        self.ban_youtube_link_regex = ban_youtube_link_regex
         self.log_chat_id = log_chat_id
         self.warn_forward_chat_id = warn_forward_chat_id
         self.delete_limit = delete_limit
@@ -72,6 +77,8 @@ class Spam_ban(EthicsCommitteeExtension):
             int(row[0]) for row in self.EC.list_group_with_setting(self.SETTING_WARN_TEXT)]
         self.warn_username_chat = [
             int(row[0]) for row in self.EC.list_group_with_setting(self.SETTING_WARN_USERNAME)]
+        self.ban_youtube_link_chat = [
+            int(row[0]) for row in self.EC.list_group_with_setting(self.SETTING_BAN_YOUTUBE_LINK)]
         self.ban_photo_chat = [
             int(row[0]) for row in self.EC.list_group_with_setting(self.SETTING_BAN_PHOTO)]
         self.global_ban_chat = [
@@ -85,8 +92,9 @@ class Spam_ban(EthicsCommitteeExtension):
             """SELECT `chat_id`, `title` FROM `group_name` WHERE `chat_id` IN ('{}')""".format(
                 "', '".join(
                     [str(v) for v in (
-                        self.ban_text_chat + self.ban_username_chat + self.warn_text_chat
-                        + self.warn_username_chat + self.ban_photo_chat + self.global_ban_chat)]
+                        self.ban_text_chat + self.ban_username_chat + self.warn_text_chat +
+                        self.warn_username_chat + self.ban_photo_chat + self.ban_youtube_link_chat +
+                        self.global_ban_chat)]
                 )))
         rows = self.EC.cur.fetchall()
         self.group_name = {}
@@ -185,6 +193,20 @@ class Spam_ban(EthicsCommitteeExtension):
                         elif self.chat_id in self.warn_text_chat and re.search(self.warn_text_regex, textnorm, flags=re.I):
                             self.action_warn(self.message_id)
 
+                        if self.chat_id in self.ban_youtube_link_chat:
+                            m = re.search(
+                                r'(https?://(youtu.be/|www.youtube.com/watch\?v=)[A-Za-z0-9\-]+)', text)
+                            if m:
+                                EC.log(
+                                    '[spam_ban] find youtube link {}'.format(m.group(1)))
+                                ythtml = requests.get(m.group(1)).text
+                                if re.search(self.ban_youtube_link_regex, ythtml):
+                                    self.action_ban_all_chat(
+                                        self.user_id, 604800)
+                                    self.action_del_all_msg(self.user_id)
+                                    self.action_log_bot(self.user_id, '傳送特定YouTube頻道連結',
+                                                        self.duration_text(604800))
+
                     if self.chat_id in self.test_chat and re.search(r'/test', text):
                         spam_type = []
                         if re.search(self.ban_username_regex, textnorm, flags=re.I):
@@ -259,6 +281,9 @@ class Spam_ban(EthicsCommitteeExtension):
         if re.search(self.CMD_ENABLE_WARN_USERNAME, action):
             self.cmd_setting_enable(self.SETTING_WARN_USERNAME)
 
+        if re.search(self.CMD_ENABLE_BAN_YOUTUBE_LINK, action):
+            self.cmd_setting_enable(self.SETTING_BAN_YOUTUBE_LINK)
+
         if re.search(self.CMD_ENABLE_GLOBALBAN, action):
             self.cmd_setting_enable(self.SETTING_GLOBAL_BAN)
 
@@ -273,6 +298,9 @@ class Spam_ban(EthicsCommitteeExtension):
 
         if re.search(self.CMD_DISABLE_WARN_USERNAME, action):
             self.cmd_setting_disable(self.SETTING_WARN_USERNAME)
+
+        if re.search(self.CMD_DISABLE_BAN_YOUTUBE_LINK, action):
+            self.cmd_setting_disable(self.SETTING_BAN_YOUTUBE_LINK)
 
         if re.search(self.CMD_DISABLE_GLOBALBAN, action):
             self.cmd_setting_disable(self.SETTING_GLOBAL_BAN)
@@ -600,13 +628,15 @@ class Spam_ban(EthicsCommitteeExtension):
             <td>ban_username</td>
             <td>warn_text</td>
             <td>warn_username</td>
+            <td>ban_youtube_link</td>
             <td>ban_photo</td>
             <td>global_ban</td>
             </tr>
             """
 
         chats = list(set(self.ban_username_chat + self.warn_username_chat + self.ban_text_chat
-                         + self.warn_text_chat + self.ban_photo_chat + self.global_ban_chat))
+                         + self.warn_text_chat  + self.ban_youtube_link_chat + self.ban_photo_chat
+                         + self.global_ban_chat))
         for chat_id in chats:
             temp += '<tr>'
             if chat_id in self.group_name:
@@ -616,7 +646,8 @@ class Spam_ban(EthicsCommitteeExtension):
                 temp += '<td>{}</td>'.format(chat_id)
             for chat_setting in [self.ban_text_chat, self.ban_username_chat,
                                  self.warn_text_chat, self.warn_username_chat,
-                                 self.ban_photo_chat, self.global_ban_chat]:
+                                 self.ban_youtube_link_chat, self.ban_photo_chat,
+                                 self.global_ban_chat]:
                 temp += '<td>'
                 if chat_id in chat_setting:
                     temp += '&#10003;'
@@ -639,6 +670,9 @@ class Spam_ban(EthicsCommitteeExtension):
             self.warn_username_regex)
 
         html += "<tr><td>warn_text</td><td>{}</td></td>".format(self.warn_text)
+
+        html += "<tr><td>ban_youtube_link_regex</td><td>{}</td></td>".format(
+            self.ban_youtube_link_regex)
 
         users = EC.list_users_with_permission(self.PERMISSION_GLOBALBAN)
         html += "<tr><td>global_ban_admin</td><td>{}</td></td>".format(
