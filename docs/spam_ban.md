@@ -26,7 +26,7 @@ optional arguments:
 - `/global_ban -d 2w`(Reply) - 封鎖被回應的用戶，期限為2週
 
 ### /global_unban
-進行全域封鎖，需要權限`spam_ban_global_ban`
+進行全域解除封鎖，需要權限`spam_ban_global_ban`
 ```
 usage: /global_unban user [-r 原因] [-h]
 
@@ -39,9 +39,9 @@ optional arguments:
 ```
 範例：
 - `/global_unban`(Reply) - 解除封鎖被回應的用戶
-- `/global_unban -r 誤判`(Reply) - 封鎖被回應的用戶，理由為誤判
-- `/global_unban -r "block review"`(Reply) - 封鎖被回應的用戶，理由為block review
-- `/global_unban 12345 -r 誤判` - 封鎖ID為12345的用戶，理由為誤判
+- `/global_unban -r 誤判`(Reply) - 解除封鎖被回應的用戶，理由為誤判
+- `/global_unban -r "block review"`(Reply) - 解除封鎖被回應的用戶，理由為block review
+- `/global_unban 12345 -r 誤判` - 解除封鎖ID為12345的用戶，理由為誤判
 
 ### /grant_global_ban
 授予全域封鎖權限，需要權限`spam_ban_grant`
