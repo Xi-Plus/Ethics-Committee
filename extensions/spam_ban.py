@@ -1,14 +1,15 @@
 import argparse
 import json
+import os
 import re
 import shlex
+import subprocess
 import time
 import traceback
 
 import requests
 import telegram
 
-from Equivset import Equivset
 from Kamisu66 import EthicsCommittee, EthicsCommitteeExtension
 
 
@@ -165,7 +166,7 @@ class Spam_ban(EthicsCommitteeExtension):
                 return
 
             try:
-                textnorm = Equivset(text)
+                textnorm = self._Equivset(text)
                 # EC.log("[spam_ban] Equivset ok {}".format(text2))
                 textnorm = text + "\n" + textnorm
                 self.textnorm = textnorm
@@ -684,6 +685,13 @@ class Spam_ban(EthicsCommitteeExtension):
             self.delete_limit)
 
         return html
+
+    def _Equivset(self, string):
+        path = os.path.dirname(os.path.realpath(__file__))
+        ps = subprocess.Popen(['php', '{}/Equivset.php'.format(path)],
+                              stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        res = ps.communicate(string.encode())[0].decode()
+        return res
 
 
 def __mainclass__():
