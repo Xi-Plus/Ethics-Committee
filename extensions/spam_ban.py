@@ -165,14 +165,16 @@ class Spam_ban(EthicsCommitteeExtension):
             if len(mode) == 0:
                 return
 
+            textnorm = ''
             try:
                 textnorm = self._Equivset(text)
                 # EC.log("[spam_ban] Equivset ok {}".format(text2))
-                textnorm = text + "\n" + textnorm
-                self.textnorm = textnorm
             except Exception:
                 # EC.log("[spam_ban] Equivset fail {}".format(text))
                 EC.log(traceback.format_exc())
+
+            self.textnorm = textnorm
+            to_check_text = [text, textnorm]
 
             try:
                 EC.cur.execute(
@@ -185,13 +187,13 @@ class Spam_ban(EthicsCommitteeExtension):
 
                 if "text" in mode:
                     if user_msg_cnt <= 5:
-                        if self.chat_id in self.ban_text_chat and re.search(self.ban_text_regex, textnorm, flags=re.I):
+                        if self.chat_id in self.ban_text_chat and self.check_regex(self.ban_text_regex, to_check_text):
                             self.action_ban_all_chat(self.user_id, 604800)
                             self.action_del_all_msg(self.user_id)
                             self.action_log_bot(self.user_id, '宣傳文字',
                                                 self.duration_text(604800))
 
-                        elif self.chat_id in self.warn_text_chat and re.search(self.warn_text_regex, textnorm, flags=re.I):
+                        elif self.chat_id in self.warn_text_chat and self.check_regex(self.warn_text_regex, to_check_text):
                             self.action_warn(self.message_id)
 
                         if self.chat_id in self.ban_youtube_link_chat:
@@ -210,13 +212,13 @@ class Spam_ban(EthicsCommitteeExtension):
 
                     if self.chat_id in self.test_chat and re.search(r'/test', text):
                         spam_type = []
-                        if re.search(self.ban_username_regex, textnorm, flags=re.I):
+                        if self.check_regex(self.ban_username_regex, to_check_text):
                             spam_type.append("ban_username")
-                        if re.search(self.warn_username_regex, textnorm, flags=re.I):
+                        if self.check_regex(self.warn_username_regex, to_check_text):
                             spam_type.append("warn_username")
-                        if re.search(self.ban_text_regex, textnorm, flags=re.I):
+                        if self.check_regex(self.ban_text_regex, to_check_text):
                             spam_type.append("ban_text")
-                        if re.search(self.warn_text_regex, textnorm, flags=re.I):
+                        if self.check_regex(self.warn_text_regex, to_check_text):
                             spam_type.append("warn_text")
                         EC.log("[spam_ban] test pass text={} type={}".format(
                             textnorm, ", ".join(spam_type)))
@@ -227,13 +229,13 @@ class Spam_ban(EthicsCommitteeExtension):
                             reply=self.message_id, parse_mode="")
 
                 if "username" in mode:
-                    if self.chat_id in self.ban_username_chat and re.search(self.ban_username_regex, textnorm, flags=re.I):
+                    if self.chat_id in self.ban_username_chat and self.check_regex(self.ban_username_regex, to_check_text):
                         self.action_ban_all_chat(self.user_id, 604800)
                         self.action_del_all_msg(self.user_id)
                         self.action_log_bot(self.user_id, '宣傳性用戶名',
                                             self.duration_text(604800))
 
-                    elif self.chat_id in self.warn_username_chat and re.search(self.warn_username_regex, textnorm, flags=re.I):
+                    elif self.chat_id in self.warn_username_chat and self.check_regex(self.warn_username_regex, to_check_text):
                         self.action_warn(self.message_id)
 
                 if "photo" in mode:
@@ -599,6 +601,12 @@ class Spam_ban(EthicsCommitteeExtension):
         if duration >= 1:
             res += '{}秒'.format(int(duration))
         return res
+
+    def check_regex(self, regex, texts):
+        for text in texts:
+            if re.search(regex, text, flags=re.I):
+                return True
+        return False
     # function end
 
     def web(self):
