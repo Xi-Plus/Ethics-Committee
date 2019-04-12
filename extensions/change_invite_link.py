@@ -30,6 +30,7 @@ group = change_groups[args.group]
 print(group)
 
 link = EC.bot.export_chat_invite_link(chat_id=group['chat_id'])
+print(link)
 
 if args.message:
     text = group['message']['text'].format(link)
