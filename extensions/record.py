@@ -27,7 +27,10 @@ class Record(EthicsCommitteeExtension):
             full_name = ''
 
         message = update.effective_message
-        date = int(message.date.timestamp())
+        if message.edit_date:
+            date = int(message.edit_date.timestamp())
+        else:
+            date = int(message.date.timestamp())
         message_id = message.message_id
         reply_to_message_id = 0
         reply_to_user_id = 0
