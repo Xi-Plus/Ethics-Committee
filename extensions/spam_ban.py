@@ -189,9 +189,10 @@ class Spam_ban(EthicsCommitteeExtension):
                     if user_msg_cnt <= 5:
                         if self.chat_id in self.ban_text_chat and self.check_regex(self.ban_text_regex, to_check_text):
                             self.action_del_all_msg(self.user_id)
-                            self.action_ban_all_chat(self.user_id, 604800)
+                            failed = self.action_ban_all_chat(
+                                self.user_id, 604800)
                             self.action_log_bot(self.user_id, '宣傳文字',
-                                                self.duration_text(604800))
+                                                self.duration_text(604800), failed)
 
                         elif self.chat_id in self.warn_text_chat and self.check_regex(self.warn_text_regex, to_check_text):
                             self.action_warn(self.message_id)
@@ -205,10 +206,10 @@ class Spam_ban(EthicsCommitteeExtension):
                                 ythtml = requests.get(m.group(1)).text
                                 if re.search(self.ban_youtube_link_regex, ythtml):
                                     self.action_del_all_msg(self.user_id)
-                                    self.action_ban_all_chat(
+                                    failed = self.action_ban_all_chat(
                                         self.user_id, 604800)
                                     self.action_log_bot(self.user_id, '傳送特定YouTube頻道連結',
-                                                        self.duration_text(604800))
+                                                        self.duration_text(604800), failed)
 
                     if self.chat_id in self.test_chat and re.search(r'/test', text):
                         spam_type = []
@@ -231,9 +232,9 @@ class Spam_ban(EthicsCommitteeExtension):
                 if "username" in mode:
                     if self.chat_id in self.ban_username_chat and self.check_regex(self.ban_username_regex, to_check_text):
                         self.action_del_all_msg(self.user_id)
-                        self.action_ban_all_chat(self.user_id, 604800)
+                        failed = self.action_ban_all_chat(self.user_id, 604800)
                         self.action_log_bot(self.user_id, '宣傳性用戶名',
-                                            self.duration_text(604800))
+                                            self.duration_text(604800), failed)
 
                     elif self.chat_id in self.warn_username_chat and self.check_regex(self.warn_username_regex, to_check_text):
                         self.action_warn(self.message_id)
@@ -241,9 +242,10 @@ class Spam_ban(EthicsCommitteeExtension):
                 if "photo" in mode:
                     if self.chat_id in self.ban_photo_chat:
                         if user_msg_cnt <= 5:
-                            self.action_ban_all_chat(self.user_id, 604800)
+                            failed = self.action_ban_all_chat(
+                                self.user_id, 604800)
                             self.action_log_bot(
-                                self.user_id, '發送圖片', self.duration_text(604800))
+                                self.user_id, '發送圖片', self.duration_text(604800), failed)
 
                 if "forward" in mode and not self.message_deleted:
                     if user_msg_cnt <= 5:
@@ -535,7 +537,13 @@ class Spam_ban(EthicsCommitteeExtension):
         self.EC.sendmessage('/globalban {}'.format(self.user_id))
 
     def action_log_admin(self, hashtag, admin_user_id, admin_name, action, ban_user_id, reason, duration, failed):
-        message = '{0} 所有群組 <a href="tg://user?id={1}">{2}</a> via ECbot {3} <a href="tg://user?id={4}">{4}</a> 期限為{6}，{7}成功，{8}失敗\n理由：{5}'.format(
+        if self.chat_id in self.global_ban_chat:
+            chat_title = '(from {})'.format(
+                self.EC.get_group_name(self.chat_id))
+        else:
+            chat_title = ''
+
+        message = '{0} <a href="tg://user?id={1}">{2}</a>{9} {3} <a href="tg://user?id={4}">{4}</a> 期限為{6}，{7}成功，{8}失敗\n理由：{5}'.format(
             hashtag,
             admin_user_id,
             admin_name,
@@ -545,17 +553,20 @@ class Spam_ban(EthicsCommitteeExtension):
             duration,
             len(self.global_ban_chat) - failed,
             failed,
+            chat_title,
         )
         self.EC.log("[spam_ban] message {}".format(message))
         self.EC.sendmessage(chat_id=self.log_chat_id,
                             message=message, parse_mode="HTML")
 
-    def action_log_bot(self, ban_user_id, reason, duration):
-        message = '#封 #自動 所有群組(from {0}) ECbot banned <a href="tg://user?id={1}">{1}</a> 期限為{3}\n理由：{2}'.format(
+    def action_log_bot(self, ban_user_id, reason, duration, failed):
+        message = '#封 #自動 ECbot(from {0}) banned <a href="tg://user?id={1}">{1}</a> 期限為{3}，{4}成功，{5}失敗\n理由：{2}'.format(
             self.EC.get_group_name(self.chat_id),
             ban_user_id,
             reason,
-            duration
+            duration,
+            len(self.global_ban_chat) - failed,
+            failed,
         )
         self.EC.log("[spam_ban] message {}".format(message))
         self.EC.sendmessage(chat_id=self.log_chat_id,
