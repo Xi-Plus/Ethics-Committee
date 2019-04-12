@@ -13,6 +13,9 @@ class SendPhotoChangeLogo(EthicsCommitteeExtension):
         if EC.update.effective_chat.id not in self.enabled_chat_id:
             return
 
+        if not EC.update.message:
+            return
+
         if EC.update.message.photo:
             EC.update.effective_chat.send_action(
                 telegram.ChatAction.UPLOAD_PHOTO)
