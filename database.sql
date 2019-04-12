@@ -30,7 +30,8 @@ CREATE TABLE `admins` (
 
 CREATE TABLE `group_name` (
   `chat_id` bigint(20) NOT NULL,
-  `title` varchar(255) COLLATE utf8_bin NOT NULL
+  `title` varchar(255) COLLATE utf8_bin NOT NULL,
+  `username` varchar(255) COLLATE utf8_bin DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 CREATE TABLE `group_setting` (

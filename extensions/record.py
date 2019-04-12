@@ -30,6 +30,7 @@ class Record(EthicsCommitteeExtension):
             chat_title = ""
             if "title" in message["chat"]:
                 chat_title = message["chat"]["title"]
+            chat_username = EC.update.effective_chat.username
             message_id = message["message_id"]
             reply_to_message_id = ""
             reply_to_user_id = ""
@@ -55,9 +56,9 @@ class Record(EthicsCommitteeExtension):
                                 ON DUPLICATE KEY UPDATE `full_name` = %s, `username` = %s""",
                                (user_id, full_name, username, full_name, username))
                 if chat_id < 0:
-                    EC.cur.execute("""INSERT INTO `group_name` (`chat_id`, `title`) VALUES (%s, %s)
-                                    ON DUPLICATE KEY UPDATE `title` = %s""",
-                                   (chat_id, chat_title, chat_title))
+                    EC.cur.execute("""INSERT INTO `group_name` (`chat_id`, `title`, `username`) VALUES (%s, %s, %s)
+                                    ON DUPLICATE KEY UPDATE `title` = %s, `username` = %s""",
+                                   (chat_id, chat_title, chat_username, chat_title, chat_username))
                 EC.db.commit()
                 mtype = []
                 if "text" in message:
