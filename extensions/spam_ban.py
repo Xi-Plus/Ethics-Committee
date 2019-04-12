@@ -188,8 +188,8 @@ class Spam_ban(EthicsCommitteeExtension):
                 if "text" in mode:
                     if user_msg_cnt <= 5:
                         if self.chat_id in self.ban_text_chat and self.check_regex(self.ban_text_regex, to_check_text):
-                            self.action_ban_all_chat(self.user_id, 604800)
                             self.action_del_all_msg(self.user_id)
+                            self.action_ban_all_chat(self.user_id, 604800)
                             self.action_log_bot(self.user_id, '宣傳文字',
                                                 self.duration_text(604800))
 
@@ -204,9 +204,9 @@ class Spam_ban(EthicsCommitteeExtension):
                                     '[spam_ban] find youtube link {}'.format(m.group(1)))
                                 ythtml = requests.get(m.group(1)).text
                                 if re.search(self.ban_youtube_link_regex, ythtml):
+                                    self.action_del_all_msg(self.user_id)
                                     self.action_ban_all_chat(
                                         self.user_id, 604800)
-                                    self.action_del_all_msg(self.user_id)
                                     self.action_log_bot(self.user_id, '傳送特定YouTube頻道連結',
                                                         self.duration_text(604800))
 
@@ -230,8 +230,8 @@ class Spam_ban(EthicsCommitteeExtension):
 
                 if "username" in mode:
                     if self.chat_id in self.ban_username_chat and self.check_regex(self.ban_username_regex, to_check_text):
-                        self.action_ban_all_chat(self.user_id, 604800)
                         self.action_del_all_msg(self.user_id)
+                        self.action_ban_all_chat(self.user_id, 604800)
                         self.action_log_bot(self.user_id, '宣傳性用戶名',
                                             self.duration_text(604800))
 
