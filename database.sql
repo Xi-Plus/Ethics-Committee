@@ -85,7 +85,7 @@ CREATE TABLE `permissions` (
 CREATE TABLE `user_name` (
   `user_id` int(11) NOT NULL,
   `full_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
-  `username` varchar(255) COLLATE utf8_bin NOT NULL DEFAULT ''
+  `username` varchar(255) COLLATE utf8_bin DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 ALTER TABLE `admins`
