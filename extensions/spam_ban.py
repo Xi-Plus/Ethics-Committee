@@ -537,12 +537,6 @@ class Spam_ban(EthicsCommitteeExtension):
         self.EC.sendmessage('/globalban {}'.format(self.user_id))
 
     def action_log_admin(self, hashtag, admin_user_id, admin_name, action, ban_user_id, reason, duration, failed):
-        if self.chat_id in self.global_ban_chat:
-            chat_title = '(from {})'.format(
-                self.EC.get_group_name(self.chat_id))
-        else:
-            chat_title = ''
-
         message = '{0} <a href="tg://user?id={1}">{2}</a>{9} {3} <a href="tg://user?id={4}">{4}</a> 期限為{6}，{7}成功，{8}失敗\n理由：{5}'.format(
             hashtag,
             admin_user_id,
@@ -553,15 +547,15 @@ class Spam_ban(EthicsCommitteeExtension):
             duration,
             len(self.global_ban_chat) - failed,
             failed,
-            chat_title,
+            self._log_format_chat_title(),
         )
         self.EC.log("[spam_ban] message {}".format(message))
         self.EC.sendmessage(chat_id=self.log_chat_id,
                             message=message, parse_mode="HTML")
 
     def action_log_bot(self, ban_user_id, reason, duration, failed):
-        message = '#封 #自動 ECbot(from {0}) banned <a href="tg://user?id={1}">{1}</a> 期限為{3}，{4}成功，{5}失敗\n理由：{2}'.format(
-            self.EC.get_group_name(self.chat_id),
+        message = '#封 #自動 ECbot{0} banned <a href="tg://user?id={1}">{1}</a> 期限為{3}，{4}成功，{5}失敗\n理由：{2}'.format(
+            self._log_format_chat_title(),
             ban_user_id,
             reason,
             duration,
@@ -571,6 +565,16 @@ class Spam_ban(EthicsCommitteeExtension):
         self.EC.log("[spam_ban] message {}".format(message))
         self.EC.sendmessage(chat_id=self.log_chat_id,
                             message=message, parse_mode="HTML")
+
+    def _log_format_chat_title(self):
+        if self.chat_id in self.global_ban_chat:
+            if self.EC.update.effective_chat.link:
+                return '(from <a href="tg://user?id={0}">{1}</a>)'.format(
+                    self.EC.update.effective_chat.link, self.EC.get_group_name(self.chat_id))
+            else:
+                return '(from {})'.format(
+                    self.EC.get_group_name(self.chat_id))
+        return ''
     # action list end
 
     # function start
