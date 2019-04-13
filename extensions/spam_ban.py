@@ -26,6 +26,7 @@ class Spam_ban(EthicsCommitteeExtension):
     SETTING_WARN_USERNAME = MODULE_NAME + '_warn_username'
     SETTING_BAN_YOUTUBE_LINK = MODULE_NAME + '_ban_youtube_link'
     SETTING_BAN_PHOTO = MODULE_NAME + '_ban_photo'
+    SETTING_WARN_FORWARD = MODULE_NAME + '_warn_forward'
     SETTING_GLOBAL_BAN = MODULE_NAME + '_global_ban'
     SETTING_GLOBAL_BAN_CMD = MODULE_NAME + '_global_ban_cmd'
     SETTING_TEST = MODULE_NAME + '_test'
@@ -39,12 +40,14 @@ class Spam_ban(EthicsCommitteeExtension):
     CMD_ENABLE_WARN_TEXT = r'^enable_?warn_?text$'
     CMD_ENABLE_WARN_USERNAME = r'^enable_?warn_?username$'
     CMD_ENABLE_BAN_YOUTUBE_LINK = r'^enable_?ban_?youtube_?link$'
+    CMD_ENABLE_WARN_FORWARD = r'^enable_?warn_?forward$'
     CMD_ENABLE_GLOBALBAN = r'^enable_?global_?ban$'
     CMD_DISABLE_BAN_TEXT = r'^disable_?ban_?text$'
     CMD_DISABLE_BAN_USERNAME = r'^disable_?ban_?username$'
     CMD_DISABLE_WARN_TEXT = r'^disable_?warn_?text$'
     CMD_DISABLE_WARN_USERNAME = r'^disable_?warn_?username$'
     CMD_DISABLE_BAN_YOUTUBE_LINK = r'^disable_?ban_?youtube_?link$'
+    CMD_DISABLE_WARN_FORWARD = r'^disable_?warn_?forward$'
     CMD_DISABLE_GLOBALBAN = r'^disable_?global_?ban$'
 
     EC = None
@@ -58,7 +61,7 @@ class Spam_ban(EthicsCommitteeExtension):
     textnorm = None
     message_deleted = False
 
-    def __init__(self, ban_text_regex, ban_username_regex, warn_text_regex, warn_username_regex, warn_text, ban_youtube_link_regex, log_chat_id, warn_forward_chat_id, delete_limit):
+    def __init__(self, ban_text_regex, ban_username_regex, warn_text_regex, warn_username_regex, warn_text, ban_youtube_link_regex, log_chat_id, warn_forward_new_chat_limit, warn_forward_chat_id, delete_limit):
         self.ban_text_regex = ban_text_regex
         self.ban_username_regex = ban_username_regex
         self.warn_text_regex = warn_text_regex
@@ -66,6 +69,7 @@ class Spam_ban(EthicsCommitteeExtension):
         self.warn_text = warn_text
         self.ban_youtube_link_regex = ban_youtube_link_regex
         self.log_chat_id = log_chat_id
+        self.warn_forward_new_chat_limit = warn_forward_new_chat_limit
         self.warn_forward_chat_id = warn_forward_chat_id
         self.delete_limit = delete_limit
 
@@ -82,6 +86,8 @@ class Spam_ban(EthicsCommitteeExtension):
             int(row[0]) for row in self.EC.list_group_with_setting(self.SETTING_BAN_YOUTUBE_LINK)]
         self.ban_photo_chat = [
             int(row[0]) for row in self.EC.list_group_with_setting(self.SETTING_BAN_PHOTO)]
+        self.warn_forward_chat = [
+            int(row[0]) for row in self.EC.list_group_with_setting(self.SETTING_WARN_FORWARD)]
         self.global_ban_chat = [
             int(row[0]) for row in self.EC.list_group_with_setting(self.SETTING_GLOBAL_BAN)]
         self.global_ban_cmd_chat = [
@@ -95,7 +101,7 @@ class Spam_ban(EthicsCommitteeExtension):
                     [str(v) for v in (
                         self.ban_text_chat + self.ban_username_chat + self.warn_text_chat +
                         self.warn_username_chat + self.ban_photo_chat + self.ban_youtube_link_chat +
-                        self.global_ban_chat)]
+                        self.warn_forward_chat + self.global_ban_chat)]
                 )))
         rows = self.EC.cur.fetchall()
         self.group_name = {}
@@ -253,7 +259,8 @@ class Spam_ban(EthicsCommitteeExtension):
                             message["chat"]["username"], self.message_id), chat_id=self.warn_forward_chat_id, parse_mode="HTML")
                         EC.log("[spam_ban] forward {}".format(
                             json.dumps(message)))
-                        if "forward_from_chat" in message and message["forward_from_message_id"] < 10:
+                        if ("forward_from_chat" in message and self.chat_id in self.warn_forward_chat
+                                and message["forward_from_message_id"] < self.warn_forward_new_chat_limit):
                             self.action_warn(self.message_id)
 
             except Exception:
@@ -289,6 +296,9 @@ class Spam_ban(EthicsCommitteeExtension):
         if re.search(self.CMD_ENABLE_BAN_YOUTUBE_LINK, action):
             self.cmd_setting_enable(self.SETTING_BAN_YOUTUBE_LINK)
 
+        if re.search(self.CMD_ENABLE_WARN_FORWARD, action):
+            self.cmd_setting_enable(self.SETTING_WARN_FORWARD)
+
         if re.search(self.CMD_ENABLE_GLOBALBAN, action):
             self.cmd_setting_enable(self.SETTING_GLOBAL_BAN)
 
@@ -306,6 +316,9 @@ class Spam_ban(EthicsCommitteeExtension):
 
         if re.search(self.CMD_DISABLE_BAN_YOUTUBE_LINK, action):
             self.cmd_setting_disable(self.SETTING_BAN_YOUTUBE_LINK)
+
+        if re.search(self.CMD_DISABLE_WARN_FORWARD, action):
+            self.cmd_setting_disable(self.SETTING_WARN_FORWARD)
 
         if re.search(self.CMD_DISABLE_GLOBALBAN, action):
             self.cmd_setting_disable(self.SETTING_GLOBAL_BAN)
@@ -654,13 +667,14 @@ class Spam_ban(EthicsCommitteeExtension):
             <td>warn_username</td>
             <td>ban_youtube_link</td>
             <td>ban_photo</td>
+            <td>warn_forward</td>
             <td>global_ban</td>
             </tr>
             """
 
         chats = list(set(self.ban_username_chat + self.warn_username_chat + self.ban_text_chat
                          + self.warn_text_chat  + self.ban_youtube_link_chat + self.ban_photo_chat
-                         + self.global_ban_chat))
+                         + self.warn_forward_chat + self.global_ban_chat))
         for chat_id in chats:
             temp += '<tr>'
             if chat_id in self.group_name:
@@ -671,7 +685,7 @@ class Spam_ban(EthicsCommitteeExtension):
             for chat_setting in [self.ban_text_chat, self.ban_username_chat,
                                  self.warn_text_chat, self.warn_username_chat,
                                  self.ban_youtube_link_chat, self.ban_photo_chat,
-                                 self.global_ban_chat]:
+                                 self.warn_forward_chat, self.global_ban_chat]:
                 temp += '<td>'
                 if chat_id in chat_setting:
                     temp += '&#10003;'
