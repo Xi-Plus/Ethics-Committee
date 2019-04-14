@@ -14,7 +14,7 @@ positional arguments:
 
 optional arguments:
   -h, --help  show this help message and exit
-  -d 時長       接受單位為秒的整數，或是<整數><單位>的格式，例如：60s, 1min, 2h, 3d, 4w, 5m。預設：1w
+  -d 時長       接受單位為秒的整數，或是<整數><單位>的格式，例如：60s, 1min, 2h, 3d, 4w, 5m，永久為inf。預設：1w
   -r 原因       預設：Spam
 ```
 範例：
