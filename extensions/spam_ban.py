@@ -495,7 +495,7 @@ class Spam_ban(EthicsCommitteeExtension):
 
     # action list start
     def action_ban_all_chat(self, user_id, duration=604800):
-        self.EC.log("[spam_ban] kick {} in {}".format(
+        self.EC.log("[spam_ban] ban {} in {}".format(
             user_id, ", ".join(map(str, self.global_ban_chat))))
         until_date = int(time.time() + duration)
         failed = 0
@@ -504,7 +504,8 @@ class Spam_ban(EthicsCommitteeExtension):
                 self.EC.bot.kick_chat_member(
                     chat_id=ban_chat_id, user_id=user_id, until_date=until_date)
             except telegram.error.BadRequest as e:
-                self.EC.log(e.message)
+                self.EC.log('[spam_ban] ban {} in {} failed: {}'.format(
+                    user_id, ban_chat_id, e.message))
                 failed += 1
         return failed
 
@@ -517,7 +518,8 @@ class Spam_ban(EthicsCommitteeExtension):
                 self.EC.bot.unban_chat_member(
                     chat_id=ban_chat_id, user_id=user_id)
             except telegram.error.BadRequest as e:
-                self.EC.log(e.message)
+                self.EC.log('[spam_ban] unban {} in {} failed: {}'.format(
+                    user_id, ban_chat_id, e.message))
                 failed += 1
         return failed
 
