@@ -339,6 +339,7 @@ class Spam_ban(EthicsCommitteeExtension):
                             help='接受單位為秒的整數，或是<整數><單位>的格式，例如：60s, 1min, 2h, 3d, 4w, 5m，永久為inf。預設：%(default)s')
         parser.add_argument(
             '-r', type=str, metavar='原因', default='Spam', help='預設：%(default)s')
+        parser.add_argument('--dry-run', action='store_true', default=False, help='在日誌記錄但不執行封鎖')
         ok, args = self.EC.parse_command(parser, cmd)
 
         if not ok:
@@ -363,7 +364,11 @@ class Spam_ban(EthicsCommitteeExtension):
             self.EC.sendmessage('你不能對機器人執行此操作', reply=self.message_id)
             return
 
-        failed = self.action_ban_all_chat(ban_user_id, duration)
+        if args.dry_run:
+            failed = len(self.global_ban_chat)
+            reason += ' (dry run)'
+        else:
+            failed = self.action_ban_all_chat(ban_user_id, duration)
         self.action_del_all_msg(ban_user_id)
         self.action_log_admin(
             '#封', self.user_id,
@@ -389,6 +394,7 @@ class Spam_ban(EthicsCommitteeExtension):
             'user', type=str, default=None, nargs='?', help='欲解除封鎖用戶ID，不指定時需回覆訊息')
         parser.add_argument(
             '-r', type=str, metavar='原因', default='無原因', help='預設：%(default)s')
+        parser.add_argument('--dry-run', action='store_true', default=False, help='在日誌記錄但不執行解除封鎖')
         ok, args = self.EC.parse_command(parser, cmd)
 
         if not ok:
@@ -409,7 +415,11 @@ class Spam_ban(EthicsCommitteeExtension):
             self.EC.sendmessage('你不能對機器人執行此操作', reply=self.message_id)
             return
 
-        failed = self.action_unban_all_chat(ban_user_id)
+        if args.dry_run:
+            failed = len(self.global_ban_chat)
+            reason += ' (dry run)'
+        else:
+            failed = self.action_unban_all_chat(ban_user_id)
         self.action_log_admin(
             '#解', self.user_id,
             self.first_name,
