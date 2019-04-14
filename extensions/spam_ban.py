@@ -584,7 +584,7 @@ class Spam_ban(EthicsCommitteeExtension):
     def _log_format_chat_title(self):
         if self.chat_id in self.global_ban_chat:
             if self.EC.update.effective_chat.link:
-                return '(from <a href="tg://user?id={0}">{1}</a>)'.format(
+                return '(from <a href="{0}">{1}</a>)'.format(
                     self.EC.update.effective_chat.link, self.EC.get_group_name(self.chat_id))
             else:
                 return '(from {})'.format(
