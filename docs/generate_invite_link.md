@@ -1,4 +1,4 @@
-# spam_ban
+# generate_invite_link
 使用指令取得其他群組的邀請連結
 
 ## 注意事項

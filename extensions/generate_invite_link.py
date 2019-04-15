@@ -3,7 +3,7 @@ import re
 from Kamisu66 import EthicsCommittee, EthicsCommitteeExtension
 
 
-class SendPhotoChangeLogo(EthicsCommitteeExtension):
+class GenerateInviteLink(EthicsCommitteeExtension):
     MODULE_NAME = 'generate_invite_link'
     PERMISSION_CMD = MODULE_NAME + '_cmd'
     PERMISSION_GRANT = MODULE_NAME + '_grant'
@@ -186,4 +186,4 @@ class SendPhotoChangeLogo(EthicsCommitteeExtension):
 
 
 def __mainclass__():
-    return SendPhotoChangeLogo
+    return GenerateInviteLink
