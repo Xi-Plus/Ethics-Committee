@@ -87,6 +87,21 @@ CREATE TABLE `user_name` (
   `full_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `username` varchar(255) COLLATE utf8_bin DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+DELIMITER $$
+CREATE TRIGGER `change_user_name` AFTER UPDATE ON `user_name` FOR EACH ROW BEGIN
+INSERT INTO `user_name_changes` (`user_id`, `old_name`, `new_name`) VALUES (NEW.user_id, CONCAT( OLD.full_name," (",IFNULL(OLD.username, ''), ")"), CONCAT( NEW.full_name," (",IFNULL(NEW.username, ''), ")"));
+
+END
+$$
+DELIMITER ;
+
+CREATE TABLE `user_name_changes` (
+  `user_id` int(11) NOT NULL,
+  `old_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `new_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
 
 ALTER TABLE `admins`
   ADD PRIMARY KEY (`chat_id`,`user_id`);
