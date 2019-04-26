@@ -60,8 +60,8 @@ class EthicsCommittee:
                 from_first_name = ""
                 if "from" in res["result"]:
                     from_first_name = res["result"]["from"]["first_name"]
-                reply_to_message_id = ""
-                reply_to_user_id = ""
+                reply_to_message_id = 0
+                reply_to_user_id = 0
                 if "reply_to_message" in res["result"]:
                     reply_to_message_id = res["result"]["reply_to_message"]["message_id"]
                     reply_to_user_id = res["result"]["reply_to_message"]["from"]["id"]
@@ -95,8 +95,8 @@ class EthicsCommittee:
                 from_first_name = ""
                 if "from" in res["result"]:
                     from_first_name = res["result"]["from"]["first_name"]
-                reply_to_message_id = ""
-                reply_to_user_id = ""
+                reply_to_message_id = 0
+                reply_to_user_id = 0
                 if "reply_to_message" in res["result"]:
                     reply_to_message_id = res["result"]["reply_to_message"]["message_id"]
                     reply_to_user_id = res["result"]["reply_to_message"]["from"]["id"]
