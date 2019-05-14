@@ -2,13 +2,13 @@ from Kamisu66 import EthicsCommittee, EthicsCommitteeExtension
 
 
 class GroupName(EthicsCommitteeExtension):
-    def __init__(self, hidden_in_web):
-        self.hidden_in_web = hidden_in_web
-
     def web(self):
         EC = EthicsCommittee(0, 0)
         EC.cur.execute(
             """SELECT `chat_id`, `title`, `username` FROM `group_name`
+            WHERE `chat_id` NOT IN (
+                SELECT `chat_id` FROM `group_setting` WHERE `key` = 'group_set' AND `value` = 'hidden'
+            )
             ORDER BY `title` DESC""")
         rows = EC.cur.fetchall()
         text = """<!DOCTYPE html>
@@ -37,8 +37,6 @@ class GroupName(EthicsCommitteeExtension):
             <tbody>
             """
         for row in rows:
-            if row[0] in self.hidden_in_web:
-                continue
             text += """<tr><td>{0}</td><td>{1}</td><td>{2}</td></tr>""".format(
                 row[0], row[1], row[2])
         text += """
