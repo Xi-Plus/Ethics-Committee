@@ -9,7 +9,6 @@ import traceback
 
 import requests
 import telegram
-
 from Kamisu66 import EthicsCommittee, EthicsCommitteeExtension
 
 
@@ -99,9 +98,9 @@ class Spam_ban(EthicsCommitteeExtension):
             """SELECT `chat_id`, `title` FROM `group_name` WHERE `chat_id` IN ('{}')""".format(
                 "', '".join(
                     [str(v) for v in (
-                        self.ban_text_chat + self.ban_username_chat + self.warn_text_chat +
-                        self.warn_username_chat + self.ban_photo_chat + self.ban_youtube_link_chat +
-                        self.warn_forward_chat + self.global_ban_chat)]
+                        self.ban_text_chat + self.ban_username_chat + self.warn_text_chat
+                        + self.warn_username_chat + self.ban_photo_chat + self.ban_youtube_link_chat
+                        + self.warn_forward_chat + self.global_ban_chat)]
                 )))
         rows = self.EC.cur.fetchall()
         self.group_name = {}
@@ -685,7 +684,7 @@ class Spam_ban(EthicsCommitteeExtension):
             """
 
         chats = list(set(self.ban_username_chat + self.warn_username_chat + self.ban_text_chat
-                         + self.warn_text_chat  + self.ban_youtube_link_chat + self.ban_photo_chat
+                         + self.warn_text_chat + self.ban_youtube_link_chat + self.ban_photo_chat
                          + self.warn_forward_chat + self.global_ban_chat))
         for chat_id in chats:
             temp += '<tr>'
