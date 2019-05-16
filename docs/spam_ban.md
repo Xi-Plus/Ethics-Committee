@@ -67,6 +67,7 @@ optional arguments:
 - `/global_restrict 12345 -r 違反導則` - 禁言ID為12345的用戶，理由為違反導則
 - `/global_restrict -d 30d`(Reply) - 禁言被回應的用戶，期限為30天
 - `/global_restrict -d 2w`(Reply) - 禁言被回應的用戶，期限為2週
+- `/global_restrict -s official`(Reply) - 禁言被回應的用戶，執行範圍為群組集合 official
 
 ### /global_unrestrict
 進行全域解除禁言，需要權限`spam_ban_global_ban`
@@ -87,6 +88,7 @@ optional arguments:
 - `/global_unrestrict -r 申訴`(Reply) - 解除禁言被回應的用戶，理由為申訴
 - `/global_unrestrict -r "block review"`(Reply) - 解除禁言被回應的用戶，理由為block review
 - `/global_unrestrict 12345 -r 申訴` - 解除禁言ID為12345的用戶，理由為申訴
+- `/global_restrict -s official`(Reply) - 解除禁言被回應的用戶，執行範圍為群組集合 official
 
 ### /grant_global_ban
 授予全域封鎖權限，需要權限`spam_ban_grant`
