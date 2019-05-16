@@ -30,8 +30,12 @@ class Spam_ban(EthicsCommitteeExtension):
     SETTING_GLOBAL_BAN_CMD = MODULE_NAME + '_global_ban_cmd'
     SETTING_TEST = MODULE_NAME + '_test'
 
+    GROUP_SET = 'globalban'
+
     CMD_GLOBALBAN = r'^global_?ban$'
     CMD_GLOBALUNBAN = r'^global_?unban$'
+    CMD_GLOBALRESTRICT = r'^global_?restrict$'
+    CMD_GLOBALUNRESTRICT = r'^global_?unrestrict$'
     CMD_GRANT = r'^grant_?global_?ban$'
     CMD_REVOKE = r'^revoke_?global_?ban$'
     CMD_ENABLE_BAN_TEXT = r'^enable_?ban_?text$'
@@ -274,6 +278,12 @@ class Spam_ban(EthicsCommitteeExtension):
             if re.search(self.CMD_GLOBALUNBAN, action):
                 self.cmd_globalunban(action, cmd)
 
+            if re.search(self.CMD_GLOBALRESTRICT, action):
+                self.cmd_globalrestrict(action, cmd)
+
+            if re.search(self.CMD_GLOBALUNRESTRICT, action):
+                self.cmd_globalunrestrict(action, cmd)
+
             if re.search(self.CMD_GRANT, action):
                 self.cmd_grant()
 
@@ -329,9 +339,7 @@ class Spam_ban(EthicsCommitteeExtension):
             self.EC.sendmessage('你沒有權限進行全域封鎖的動作', reply=self.message_id)
             return
 
-        parser = argparse.ArgumentParser(
-            prog='/{0}'.format(action),
-            usage='%(prog)s user [-d 時長] [-r 原因] [-h]')
+        parser = argparse.ArgumentParser(prog='/{0}'.format(action))
         parser.add_argument(
             'user', type=str, default=None, nargs='?', help='欲封鎖用戶ID，不指定時需回覆訊息')
         parser.add_argument('-d', type=str, metavar='時長', default='1w',
@@ -375,6 +383,7 @@ class Spam_ban(EthicsCommitteeExtension):
             'banned', ban_user_id, reason,
             self.duration_text(duration),
             failed,
+            self.GROUP_SET,
         )
         self.EC.deletemessage(self.chat_id, self.message_id)
 
@@ -386,9 +395,7 @@ class Spam_ban(EthicsCommitteeExtension):
                                 reply=self.message_id)
             return
 
-        parser = argparse.ArgumentParser(
-            prog='/{0}'.format(action),
-            usage='%(prog)s user [-r 原因] [-h]')
+        parser = argparse.ArgumentParser(prog='/{0}'.format(action))
         parser.add_argument(
             'user', type=str, default=None, nargs='?', help='欲解除封鎖用戶ID，不指定時需回覆訊息')
         parser.add_argument(
@@ -425,6 +432,140 @@ class Spam_ban(EthicsCommitteeExtension):
             'unbanned', ban_user_id, reason,
             self.duration_text(0),
             failed,
+            self.GROUP_SET,
+        )
+        self.EC.deletemessage(self.chat_id, self.message_id)
+
+    def cmd_globalrestrict(self, action, cmd):
+        if not self.EC.check_permission(self.user_id, self.PERMISSION_GLOBALBAN, 0):
+            self.EC.log(
+                '[spam_ban] {} /globalban no premission'.format(self.user_id))
+            self.EC.sendmessage('你沒有權限進行全域禁言的動作', reply=self.message_id)
+            return
+
+        parser = argparse.ArgumentParser(prog='/{0}'.format(action))
+        parser.add_argument(
+            'user', type=str, default=None, nargs='?', help='欲禁言用戶ID，不指定時需回覆訊息')
+        parser.add_argument('-d', type=str, metavar='時長', default='1w',
+                            help='接受單位為秒的整數，或是<整數><單位>的格式，例如：60s, 1min, 2h, 3d, 4w, 5m，永久為inf。預設：%(default)s')
+        parser.add_argument(
+            '-r', type=str, metavar='原因', default='未提供理由', help='預設：%(default)s')
+        parser.add_argument('-s', type=str, metavar='群組集合', default=self.GROUP_SET,
+                            help='執行禁言的群組集合，預設：%(default)s')
+        parser.add_argument('--dry-run', action='store_true', default=False, help='在日誌記錄但不執行禁言')
+        ok, args = self.EC.parse_command(parser, cmd)
+
+        if not ok:
+            self.EC.sendmessage(args, reply=self.message_id, parse_mode='')
+            return
+
+        ban_user_id = args.user
+        if ban_user_id is None and self.is_reply:
+            ban_user_id = self.reply_to_user_id
+        if ban_user_id is None:
+            self.EC.sendmessage('需要回覆訊息或用參數指定封鎖目標', reply=self.message_id)
+            return
+
+        ban_user_id = int(ban_user_id)
+        reason = args.r
+        duration = self.parse_duration(args.d)
+        if duration is None:
+            self.EC.sendmessage('指定的時長無效', reply=self.message_id)
+            return
+
+        if ban_user_id == self.EC.bot.id:
+            self.EC.sendmessage('你不能對機器人執行此操作', reply=self.message_id)
+            return
+
+        group_set = args.s
+        if group_set == self.GROUP_SET:
+            run_chats = self.global_ban_chat
+        else:
+            run_chats = []
+            self.EC.cur.execute("""SELECT `chat_id` FROM `group_setting` WHERE `key` = 'group_set' AND `value` = %s""",
+                                (group_set))
+            rows = self.EC.cur.fetchall()
+            for row in rows:
+                run_chats.append(int(row[0]))
+
+        if len(run_chats) == 0:
+            self.EC.sendmessage('找不到執行的群組集合 {}'.format(group_set), reply=self.message_id)
+            return
+
+        if args.dry_run:
+            failed = len(run_chats)
+            reason += ' (dry run)'
+        else:
+            failed = self.action_restrict_all_chat(ban_user_id, duration, run_chats)
+        self.action_log_admin(
+            '#禁言', self.user_id,
+            self.first_name,
+            'restricted', ban_user_id, reason,
+            self.duration_text(duration),
+            failed,
+            group_set,
+        )
+        self.EC.deletemessage(self.chat_id, self.message_id)
+
+    def cmd_globalunrestrict(self, action, cmd):
+        if not self.EC.check_permission(self.user_id, self.PERMISSION_GLOBALBAN, 0):
+            self.EC.log(
+                '[spam_ban] {} /globalunban no premission'.format(self.user_id))
+            self.EC.sendmessage('你沒有權限進行全域解除禁言的動作',
+                                reply=self.message_id)
+            return
+
+        parser = argparse.ArgumentParser(prog='/{0}'.format(action))
+        parser.add_argument(
+            'user', type=str, default=None, nargs='?', help='欲解除禁言用戶ID，不指定時需回覆訊息')
+        parser.add_argument(
+            '-r', type=str, metavar='原因', default='無原因', help='預設：%(default)s')
+        parser.add_argument('-s', type=str, metavar='群組集合', default=self.GROUP_SET,
+                            help='執行禁言的群組集合，預設：%(default)s')
+        parser.add_argument('--dry-run', action='store_true', default=False, help='在日誌記錄但不執行解除禁言')
+        ok, args = self.EC.parse_command(parser, cmd)
+
+        if not ok:
+            self.EC.sendmessage(args, reply=self.message_id, parse_mode='')
+            return
+
+        ban_user_id = args.user
+        if ban_user_id is None and self.is_reply:
+            ban_user_id = self.reply_to_user_id
+        if ban_user_id is None:
+            self.EC.sendmessage('需要回覆訊息或用參數指定解除禁言目標', reply=self.message_id)
+            return
+
+        ban_user_id = int(ban_user_id)
+        reason = args.r
+
+        if ban_user_id == self.EC.bot.id:
+            self.EC.sendmessage('你不能對機器人執行此操作', reply=self.message_id)
+            return
+
+        group_set = args.s
+        if group_set == self.GROUP_SET:
+            run_chats = self.global_ban_chat
+        else:
+            run_chats = []
+            self.EC.cur.execute("""SELECT `chat_id` FROM `group_setting` WHERE `key` = 'group_set' AND `value` = %s""",
+                                (group_set))
+            rows = self.EC.cur.fetchall()
+            for row in rows:
+                run_chats.append(int(row[0]))
+
+        if args.dry_run:
+            failed = len(group_set)
+            reason += ' (dry run)'
+        else:
+            failed = self.action_unrestrict_all_chat(ban_user_id, run_chats)
+        self.action_log_admin(
+            '#解', self.user_id,
+            self.first_name,
+            'unrestricted', ban_user_id, reason,
+            self.duration_text(0),
+            failed,
+            group_set,
         )
         self.EC.deletemessage(self.chat_id, self.message_id)
 
@@ -532,6 +673,37 @@ class Spam_ban(EthicsCommitteeExtension):
                 failed += 1
         return failed
 
+    def action_restrict_all_chat(self, user_id, duration, run_chats):
+        self.EC.log("[spam_ban] ban {} in {}".format(
+            user_id, ", ".join(map(str, run_chats))))
+        until_date = int(time.time() + duration)
+        failed = 0
+        for ban_chat_id in run_chats:
+            try:
+                self.EC.bot.restrict_chat_member(
+                    chat_id=ban_chat_id, user_id=user_id, until_date=until_date)
+            except telegram.error.BadRequest as e:
+                self.EC.log('[spam_ban] restrict {} in {} failed: {}'.format(
+                    user_id, ban_chat_id, e.message))
+                failed += 1
+        return failed
+
+    def action_unrestrict_all_chat(self, user_id, run_chats):
+        self.EC.log("[spam_ban] unrestrict {} in {}".format(
+            user_id, ", ".join(map(str, run_chats))))
+        failed = 0
+        for ban_chat_id in run_chats:
+            try:
+                self.EC.bot.restrict_chat_member(
+                    chat_id=ban_chat_id, user_id=user_id,
+                    can_send_messages=True, can_send_media_messages=True,
+                    can_send_other_messages=True, can_add_web_page_previews=True)
+            except telegram.error.BadRequest as e:
+                self.EC.log('[spam_ban] unrestrict {} in {} failed: {}'.format(
+                    user_id, ban_chat_id, e.message))
+                failed += 1
+        return failed
+
     def action_del_all_msg(self, user_id):
         self.message_deleted = True
 
@@ -560,8 +732,8 @@ class Spam_ban(EthicsCommitteeExtension):
         self.EC.sendmessage(text, reply=message_id)
         self.EC.sendmessage('/globalban {}'.format(self.user_id))
 
-    def action_log_admin(self, hashtag, admin_user_id, admin_name, action, ban_user_id, reason, duration, failed):
-        message = '{0} <a href="tg://user?id={1}">{2}</a>{9} {3} <a href="tg://user?id={4}">{4}</a> 期限為{6}，{7}成功，{8}失敗\n理由：{5}'.format(
+    def action_log_admin(self, hashtag, admin_user_id, admin_name, action, ban_user_id, reason, duration, failed, group_set):
+        message = '{0} <a href="tg://user?id={1}">{2}</a>{9} {3} <a href="tg://user?id={4}">{4}</a> 期限為{6}，於{10} {7}成功，{8}失敗\n理由：{5}'.format(
             hashtag,
             admin_user_id,
             admin_name,
@@ -572,6 +744,7 @@ class Spam_ban(EthicsCommitteeExtension):
             len(self.global_ban_chat) - failed,
             failed,
             self._log_format_chat_title(),
+            group_set,
         )
         self.EC.log("[spam_ban] message {}".format(message))
         self.EC.sendmessage(chat_id=self.log_chat_id,

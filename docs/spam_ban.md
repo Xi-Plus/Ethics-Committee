@@ -7,7 +7,7 @@
 ### /global_ban
 進行全域封鎖，需要權限`spam_ban_global_ban`
 ```
-usage: /globalban user [-d 時長] [-r 原因] [-h]
+usage: /global_ban [-h] [-d 時長] [-r 原因] [--dry-run] [user]
 
 positional arguments:
   user        欲封鎖用戶ID，不指定時需回覆訊息
@@ -29,7 +29,7 @@ optional arguments:
 ### /global_unban
 進行全域解除封鎖，需要權限`spam_ban_global_ban`
 ```
-usage: /global_unban user [-r 原因] [-h]
+usage: /global_unban [-h] [-r 原因] [--dry-run] [user]
 
 positional arguments:
   user        欲解除封鎖用戶ID，不指定時需回覆訊息
@@ -44,6 +44,49 @@ optional arguments:
 - `/global_unban -r 誤判`(Reply) - 解除封鎖被回應的用戶，理由為誤判
 - `/global_unban -r "block review"`(Reply) - 解除封鎖被回應的用戶，理由為block review
 - `/global_unban 12345 -r 誤判` - 解除封鎖ID為12345的用戶，理由為誤判
+
+### /global_restrict
+進行全域禁言，需要權限`spam_ban_global_ban`
+```
+usage: /global_restrict [-h] [-d 時長] [-r 原因] [-s 群組集合] [--dry-run] [user]
+
+positional arguments:
+  user        欲禁言用戶ID，不指定時需回覆訊息
+
+optional arguments:
+  -h, --help  show this help message and exit
+  -d 時長       接受單位為秒的整數，或是<整數><單位>的格式，例如：60s, 1min, 2h, 3d, 4w, 5m，永久為inf。預設：1w
+  -r 原因       預設：未提供理由
+  -s 群組集合     執行禁言的群組集合，預設：globalban
+  --dry-run   在日誌記錄但不執行禁言
+```
+範例：
+- `/global_restrict`(Reply) - 禁言被回應的用戶
+- `/global_restrict -r 違反導則`(Reply) - 禁言被回應的用戶，理由為違反導則
+- `/global_restrict -r "Gaming the system"`(Reply) - 禁言被回應的用戶，理由為Gaming the system
+- `/global_restrict 12345 -r 違反導則` - 禁言ID為12345的用戶，理由為違反導則
+- `/global_restrict -d 30d`(Reply) - 禁言被回應的用戶，期限為30天
+- `/global_restrict -d 2w`(Reply) - 禁言被回應的用戶，期限為2週
+
+### /global_unrestrict
+進行全域解除禁言，需要權限`spam_ban_global_ban`
+```
+usage: /global_unrestrict [-h] [-r 原因] [-s 群組集合] [--dry-run] [user]
+
+positional arguments:
+  user        欲解除禁言用戶ID，不指定時需回覆訊息
+
+optional arguments:
+  -h, --help  show this help message and exit
+  -r 原因       預設：無原因
+  -s 群組集合     執行禁言的群組集合，預設：globalban
+  --dry-run   在日誌記錄但不執行解除禁言
+```
+範例：
+- `/global_unrestrict`(Reply) - 解除禁言被回應的用戶
+- `/global_unrestrict -r 申訴`(Reply) - 解除禁言被回應的用戶，理由為申訴
+- `/global_unrestrict -r "block review"`(Reply) - 解除禁言被回應的用戶，理由為block review
+- `/global_unrestrict 12345 -r 申訴` - 解除禁言ID為12345的用戶，理由為申訴
 
 ### /grant_global_ban
 授予全域封鎖權限，需要權限`spam_ban_grant`
