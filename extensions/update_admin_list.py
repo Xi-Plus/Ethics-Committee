@@ -3,6 +3,7 @@ import os
 import sys
 import time
 
+import telegram
 sys.path.insert(0, os.path.realpath(
     os.path.dirname(os.path.realpath(__file__)) + "/../"))
 from Kamisu66 import EthicsCommittee
@@ -31,12 +32,18 @@ for row in rows:
     title = row[1]
     print(chat_id, title)
 
+    admins = None
     while True:
         try:
             admins = EC.bot.get_chat_administrators(chat_id)
             break
         except telegram.error.TimedOut as e:
             print(e.message)
+        except telegram.error.Unauthorized as e:
+            print(e.message)
+            break
+    if admins is None:
+        continue
 
     for a in admins:
         user_id = a.user.id
@@ -57,7 +64,7 @@ for row in rows:
 				%s, %s, %s,
 				%s, %s, %s,
 				%s, %s, %s,
-				%s) ON DUPLICATE KEY UPDATE 
+				%s) ON DUPLICATE KEY UPDATE
                 `creator` = %r,
 				`can_add_web_page_previews` = %s, `can_be_edited` = %s, `can_change_info` = %s,
 				`can_delete_messages` = %s, `can_edit_messages` = %s, `can_invite_users` = %s,
