@@ -65,6 +65,7 @@ class Spam_ban(EthicsCommitteeExtension):
     CMD_REMOVE_RULE_BAN_USERNAME = r'^remove_?spam_?rule_?ban_?username$'
     CMD_REMOVE_RULE_WARN_TEXT = r'^remove_?spam_?rule_?warn_?text$'
     CMD_REMOVE_RULE_WARN_USERNAME = r'^remove_?spam_?rule_?warn_?username$'
+    CMD_TEST_RULE = r'^/test_?spam_?rule '
 
     TEST_LIMIT = 1000
     RATE_LIMIT_WARN = 0.02
@@ -210,7 +211,7 @@ class Spam_ban(EthicsCommitteeExtension):
 
             textnorm = ''
             try:
-                textnorm = self._Equivset(text)
+                textnorm = self._Equivset(re.sub(self.CMD_TEST_RULE, '', text))
                 # EC.log("[spam_ban] Equivset ok {}".format(text2))
             except Exception:
                 # EC.log("[spam_ban] Equivset fail {}".format(text))
@@ -254,23 +255,21 @@ class Spam_ban(EthicsCommitteeExtension):
                                     self.action_log_bot(self.user_id, '傳送特定YouTube頻道連結',
                                                         self.duration_text(604800), failed)
 
-                    if self.chat_id in self.test_chat and re.search(r'/test', text):
-                        spam_type = []
-                        if self.check_regex(self.ban_username_regex, to_check_text):
-                            spam_type.append("ban_username")
-                        if self.check_regex(self.warn_username_regex, to_check_text):
-                            spam_type.append("warn_username")
-                        if self.check_regex(self.ban_text_regex, to_check_text):
-                            spam_type.append("ban_text")
-                        if self.check_regex(self.warn_text_regex, to_check_text):
-                            spam_type.append("warn_text")
-                        EC.log("[spam_ban] test pass text={} type={}".format(
-                            textnorm, ", ".join(spam_type)))
-                        EC.sendmessage(
-                            "textnorm = {}\nspam type = {}".format(
-                                textnorm,
-                                ", ".join(spam_type)),
-                            reply=self.message_id, parse_mode="")
+                    if self.chat_id in self.test_chat and re.search(self.CMD_TEST_RULE, text):
+                        self.EC.cur.execute(
+                            """SELECT `key`, `value` FROM `group_setting` WHERE `key` LIKE %s AND (%s REGEXP `value` OR %s REGEXP `value`)""",
+                            ('spam_ban_regex_%', re.sub(self.CMD_TEST_RULE, '', text), textnorm))
+                        rows = self.EC.cur.fetchall()
+                        response = '正規化文字：{}\n'.format(textnorm)
+                        if rows:
+                            response += '符合以下規則：\n'
+                            for row in rows:
+                                response += '{} （{}）\n'.format(row[1], row[0].replace('spam_ban_regex_', ''))
+                        else:
+                            response += '查無符合規則'
+
+                        EC.log("[spam_ban] test result: {}".format(response))
+                        EC.sendmessage(response, reply=self.message_id, parse_mode="")
 
                 if "username" in mode:
                     if self.chat_id in self.ban_username_chat and self.check_regex(self.ban_username_regex, to_check_text):

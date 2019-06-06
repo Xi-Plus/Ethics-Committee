@@ -165,6 +165,9 @@ optional arguments:
 ### /remove_spam_rule_warn_username
 移除用戶名警告規則，需要權限`spam_ban_rule`
 
+### /test_spam_rule
+測試文字是否符合規則
+
 ## 權限表
 - `spam_ban_global_ban` - 可封鎖和解除封鎖用戶，可由持有`spam_ban_grant`權限的用戶授予
 - `spam_ban_grant` - 可授予封鎖權限，目前無人可授予
