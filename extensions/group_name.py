@@ -2,6 +2,9 @@ from Kamisu66 import EthicsCommittee, EthicsCommitteeExtension
 
 
 class GroupName(EthicsCommitteeExtension):
+    def __init__(self, extra_group):
+        self.extra_group = extra_group
+
     def web(self):
         EC = EthicsCommittee(0, 0)
 
@@ -16,6 +19,14 @@ class GroupName(EthicsCommitteeExtension):
             if chat_id not in group_set:
                 group_set[chat_id] = []
             group_set[chat_id].append(row[1])
+        for sql, name in self.extra_group:
+            EC.cur.execute(sql)
+            rows = EC.cur.fetchall()
+            for row in rows:
+                chat_id = int(row[0])
+                if chat_id not in group_set:
+                    group_set[chat_id] = []
+                group_set[chat_id].append(name)
 
         EC.cur.execute(
             """SELECT `chat_id`, `title`, `username` FROM `group_name`
