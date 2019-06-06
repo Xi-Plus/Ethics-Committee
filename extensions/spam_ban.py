@@ -18,6 +18,7 @@ class Spam_ban(EthicsCommitteeExtension):
     PERMISSION_GLOBALBAN = MODULE_NAME + '_global_ban'
     PERMISSION_GRANT = MODULE_NAME + '_grant'
     PERMISSION_SETTING = MODULE_NAME + '_setting'
+    PERMISSION_RULE = MODULE_NAME + '_rule'
 
     SETTING_BAN_TEXT = MODULE_NAME + '_ban_text'
     SETTING_BAN_USERNAME = MODULE_NAME + '_ban_username'
@@ -56,6 +57,14 @@ class Spam_ban(EthicsCommitteeExtension):
     CMD_DISABLE_BAN_YOUTUBE_LINK = r'^disable_?ban_?youtube_?link$'
     CMD_DISABLE_WARN_FORWARD = r'^disable_?warn_?forward$'
     CMD_DISABLE_GLOBALBAN = r'^disable_?global_?ban$'
+    CMD_ADD_RULE_BAN_TEXT = r'^add_?spam_?rule_?ban_?text$'
+    CMD_ADD_RULE_BAN_USERNAME = r'^add_?spam_?rule_?ban_?username$'
+    CMD_ADD_RULE_WARN_TEXT = r'^add_?spam_?rule_?warn_?text$'
+    CMD_ADD_RULE_WARN_USERNAME = r'^add_?spam_?rule_?warn_?username$'
+    CMD_REMOVE_RULE_BAN_TEXT = r'^remove_?spam_?rule_?ban_?text$'
+    CMD_REMOVE_RULE_BAN_USERNAME = r'^remove_?spam_?rule_?ban_?username$'
+    CMD_REMOVE_RULE_WARN_TEXT = r'^remove_?spam_?rule_?warn_?text$'
+    CMD_REMOVE_RULE_WARN_USERNAME = r'^remove_?spam_?rule_?warn_?username$'
 
     EC = None
     chat_id = None
@@ -310,6 +319,30 @@ class Spam_ban(EthicsCommitteeExtension):
 
             if re.search(self.CMD_REVOKE, action):
                 self.cmd_revoke()
+
+            if re.search(self.CMD_ADD_RULE_BAN_TEXT, action):
+                self.cmd_add_rule(action, cmd, self.SETTING_REGEX_BAN_TEXT)
+
+            if re.search(self.CMD_ADD_RULE_BAN_USERNAME, action):
+                self.cmd_add_rule(action, cmd, self.SETTING_REGEX_BAN_USERNAME)
+
+            if re.search(self.CMD_ADD_RULE_WARN_TEXT, action):
+                self.cmd_add_rule(action, cmd, self.SETTING_REGEX_WARN_TEXT)
+
+            if re.search(self.CMD_ADD_RULE_WARN_USERNAME, action):
+                self.cmd_add_rule(action, cmd, self.SETTING_REGEX_WARN_USERNAME)
+
+            if re.search(self.CMD_REMOVE_RULE_BAN_TEXT, action):
+                self.cmd_remove_rule(action, cmd, self.SETTING_REGEX_BAN_TEXT)
+
+            if re.search(self.CMD_REMOVE_RULE_BAN_USERNAME, action):
+                self.cmd_remove_rule(action, cmd, self.SETTING_REGEX_BAN_USERNAME)
+
+            if re.search(self.CMD_REMOVE_RULE_WARN_TEXT, action):
+                self.cmd_remove_rule(action, cmd, self.SETTING_REGEX_WARN_TEXT)
+
+            if re.search(self.CMD_REMOVE_RULE_WARN_USERNAME, action):
+                self.cmd_remove_rule(action, cmd, self.SETTING_REGEX_WARN_USERNAME)
 
         if re.search(self.CMD_ENABLE_BAN_TEXT, action):
             self.cmd_setting_enable(self.SETTING_BAN_TEXT)
@@ -661,6 +694,64 @@ class Spam_ban(EthicsCommitteeExtension):
                                 parse_mode='')
         else:
             self.EC.sendmessage('本群並未啟用 {}'.format(setting),
+                                reply=self.message_id,
+                                parse_mode='')
+
+    def cmd_add_rule(self, action, cmd, rule_type):
+        if not self.EC.check_permission(self.user_id, self.PERMISSION_RULE, 0):
+            self.EC.log(
+                '[spam_ban] {} /{} no premission'.format(self.user_id, action))
+            self.EC.sendmessage('你沒有權限進行變更廣告規則的動作',
+                                reply=self.message_id)
+            return
+
+        parser = argparse.ArgumentParser(prog='/{0}'.format(action))
+        parser.add_argument(
+            'rule', type=str, help='規則的正規表達式')
+        ok, args = self.EC.parse_command(parser, cmd)
+
+        if not ok:
+            self.EC.sendmessage(args, reply=self.message_id, parse_mode='')
+            return
+
+        rule = args.rule
+
+        ok = self.EC.add_group_setting(0, rule_type, rule, check_dup=True)
+        if ok:
+            self.EC.sendmessage('成功加入規則 {}'.format(rule),
+                                reply=self.message_id,
+                                parse_mode='')
+        else:
+            self.EC.sendmessage('加入規則 {} 失敗'.format(rule),
+                                reply=self.message_id,
+                                parse_mode='')
+
+    def cmd_remove_rule(self, action, cmd, rule_type):
+        if not self.EC.check_permission(self.user_id, self.PERMISSION_RULE, 0):
+            self.EC.log(
+                '[spam_ban] {} /{} no premission'.format(self.user_id, action))
+            self.EC.sendmessage('你沒有權限進行變更廣告規則的動作',
+                                reply=self.message_id)
+            return
+
+        parser = argparse.ArgumentParser(prog='/{0}'.format(action))
+        parser.add_argument(
+            'rule', type=str, help='規則的正規表達式')
+        ok, args = self.EC.parse_command(parser, cmd)
+
+        if not ok:
+            self.EC.sendmessage(args, reply=self.message_id, parse_mode='')
+            return
+
+        rule = args.rule
+
+        ok = self.EC.remove_group_setting(0, rule_type, rule)
+        if ok:
+            self.EC.sendmessage('成功移除規則 {}'.format(rule),
+                                reply=self.message_id,
+                                parse_mode='')
+        else:
+            self.EC.sendmessage('移除規則 {} 失敗，可能是因為無此規則'.format(rule),
                                 reply=self.message_id,
                                 parse_mode='')
 
