@@ -138,7 +138,35 @@ optional arguments:
 ### /disable_global_ban
 將本群移出全域封鎖範圍，需要權限`spam_ban_setting`
 
+### /add_spam_rule_ban_text
+新增文字封鎖規則，需要權限`spam_ban_rule`
+> 用戶名封鎖、文字警告、用戶名警告自動繼承此規則
+
+### /add_spam_rule_ban_username
+新增用戶名封鎖規則，需要權限`spam_ban_rule`
+> 用戶名警告自動繼承此規則
+
+### /add_spam_rule_warn_text
+新增文字警告規則，需要權限`spam_ban_rule`
+> 用戶名警告自動繼承此規則
+
+### /add_spam_rule_warn_username
+新增用戶名警告規則，需要權限`spam_ban_rule`
+
+### /remove_spam_rule_ban_text
+移除文字封鎖規則，需要權限`spam_ban_rule`
+
+### /remove_spam_rule_ban_username
+移除用戶名封鎖規則，需要權限`spam_ban_rule`
+
+### /remove_spam_rule_warn_text
+移除文字警告規則，需要權限`spam_ban_rule`
+
+### /remove_spam_rule_warn_username
+移除用戶名警告規則，需要權限`spam_ban_rule`
+
 ## 權限表
 - `spam_ban_global_ban` - 可封鎖和解除封鎖用戶，可由持有`spam_ban_grant`權限的用戶授予
 - `spam_ban_grant` - 可授予封鎖權限，目前無人可授予
-- `spam_ban_setting` - 可設定機器人，目前無人可授予
+- `spam_ban_setting` - 可設定機器人監視的群組，目前無人可授予
+- `spam_ban_rule` - 可設定廣告規則，目前無人可授予
