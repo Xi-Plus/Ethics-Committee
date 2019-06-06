@@ -243,8 +243,13 @@ class EthicsCommittee:
         rows = self.cur.fetchall()
         return [row[0] for row in rows]
 
-    def add_group_setting(self, chat_id, key, value=''):
-        res = self.cur.execute("""INSERT INTO `group_setting` (`chat_id`, `key`, `value`) 
+    def add_group_setting(self, chat_id, key, value='', check_dup=False):
+        if check_dup:
+            rows = self.list_setting_in_group(chat_id, key, value)
+            if rows:
+                return True
+
+        res = self.cur.execute("""INSERT INTO `group_setting` (`chat_id`, `key`, `value`)
                                   VALUES (%s, %s, %s)""",
                                (chat_id, key, value))
         self.db.commit()
