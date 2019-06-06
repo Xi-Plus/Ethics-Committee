@@ -66,6 +66,10 @@ class Spam_ban(EthicsCommitteeExtension):
     CMD_REMOVE_RULE_WARN_TEXT = r'^remove_?spam_?rule_?warn_?text$'
     CMD_REMOVE_RULE_WARN_USERNAME = r'^remove_?spam_?rule_?warn_?username$'
 
+    TEST_LIMIT = 1000
+    RATE_LIMIT_WARN = 0.02
+    RATE_LIMIT_DISALLOW = 0.05
+
     EC = None
     chat_id = None
     user_id = None
@@ -706,8 +710,9 @@ class Spam_ban(EthicsCommitteeExtension):
             return
 
         parser = argparse.ArgumentParser(prog='/{0}'.format(action))
-        parser.add_argument(
-            'rule', type=str, help='規則的正規表達式')
+        parser.add_argument('rule', type=str, help='規則的正規表達式')
+        parser.add_argument('-f', action='store_true', dest='force', help='無視警告強制加入此規則')
+        parser.set_defaults(force=False)
         ok, args = self.EC.parse_command(parser, cmd)
 
         if not ok:
@@ -715,14 +720,40 @@ class Spam_ban(EthicsCommitteeExtension):
             return
 
         rule = args.rule
+        force = args.force
+
+        self.EC.cur.execute(
+            """SELECT COUNT(*) FROM (SELECT * FROM `message` ORDER BY `date` DESC LIMIT %s) temp WHERE `text` REGEXP %s""",
+            (self.TEST_LIMIT, rule))
+        count = int(self.EC.cur.fetchone()[0])
+        rate = count / self.TEST_LIMIT
+
+        if rate > self.RATE_LIMIT_DISALLOW:
+            self.EC.sendmessage(
+                '該規則在最近的{}則訊息中觸發了{}次（{}%），超過了{}%的限制，因此禁止加入該規則'.format(
+                    self.TEST_LIMIT, count, rate * 100, self.RATE_LIMIT_DISALLOW * 100),
+                reply=self.message_id, parse_mode='')
+            return
+
+        message_append = ''
+        if rate > self.RATE_LIMIT_WARN:
+            if force:
+                message_append = '\n警告：該規則在最近的{0}則訊息中觸發了{1:.1f}次（{2:.1f}%）'.format(
+                    self.TEST_LIMIT, count, rate * 100)
+            else:
+                self.EC.sendmessage(
+                    '該規則在最近的{0}則訊息中觸發了{1}次（{2:.1f}%），超過了{3:.1f}%的限制，若確定要加入該規則，請加入 -f 參數再試一次'.format(
+                        self.TEST_LIMIT, count, rate * 100, self.RATE_LIMIT_WARN * 100),
+                    reply=self.message_id, parse_mode='')
+                return
 
         ok = self.EC.add_group_setting(0, rule_type, rule, check_dup=True)
         if ok:
-            self.EC.sendmessage('成功加入規則 {}'.format(rule),
+            self.EC.sendmessage('成功加入規則 {}{}'.format(rule, message_append),
                                 reply=self.message_id,
                                 parse_mode='')
         else:
-            self.EC.sendmessage('加入規則 {} 失敗'.format(rule),
+            self.EC.sendmessage('加入規則 {} 失敗{}'.format(rule, message_append),
                                 reply=self.message_id,
                                 parse_mode='')
 
