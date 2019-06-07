@@ -6,7 +6,7 @@ import traceback
 
 from flask import Flask, request
 
-from config_extension import extensions, webs
+from config_extension import extensions, webs  # pylint: disable=E0401
 from Kamisu66 import EthicsCommittee
 
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))

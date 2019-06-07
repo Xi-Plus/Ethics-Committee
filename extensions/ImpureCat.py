@@ -5,7 +5,7 @@ import time
 
 sys.path.insert(0, os.path.realpath(
     os.path.dirname(os.path.realpath(__file__)) + "/../"))
-from config_variable import cfg
+from config_variable import cfg  # pylint: disable=E0401
 from Kamisu66 import EthicsCommittee
 
 print(cfg)

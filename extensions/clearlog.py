@@ -4,7 +4,7 @@ import os
 import sys
 import time
 
-from clearlog_config import limit
+from clearlog_config import limit  # pylint: disable=E0401
 sys.path.insert(0, os.path.realpath(os.path.dirname(os.path.realpath(__file__)) + "/../"))
 from Kamisu66 import EthicsCommittee
 

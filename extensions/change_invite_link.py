@@ -5,7 +5,7 @@ import sys
 
 import telegram
 
-from change_invite_link_config import change_groups
+from change_invite_link_config import change_groups  # pylint: disable=E0401
 sys.path.insert(0, os.path.realpath(
     os.path.dirname(os.path.realpath(__file__)) + '/../'))
 from Kamisu66 import EthicsCommittee
