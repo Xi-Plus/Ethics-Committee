@@ -5,7 +5,7 @@ import telegram
 from Kamisu66 import EthicsCommitteeExtension
 
 
-class BanMySelf(EthicsCommitteeExtension):
+class BanMySelf(EthicsCommitteeExtension):  # pylint: disable=W0223
     MODULE_NAME = 'ban_my_self'
 
     COMMAND = r'^/banmyself@Kamisu66EthicsCommitteeBot$'

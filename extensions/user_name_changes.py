@@ -1,7 +1,7 @@
 from Kamisu66 import EthicsCommittee, EthicsCommitteeExtension
 
 
-class UserNameChanges(EthicsCommitteeExtension):
+class UserNameChanges(EthicsCommitteeExtension):  # pylint: disable=W0223
     def web(self):
         EC = EthicsCommittee(0, 0)
         EC.cur.execute(

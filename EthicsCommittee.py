@@ -6,7 +6,7 @@ import traceback
 
 from flask import Flask, request
 
-from config_extension import extensions, webs
+from config_extension import extensions, webs  # pylint: disable=E0401
 from Kamisu66 import EthicsCommittee
 
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
@@ -20,7 +20,7 @@ def web():
         if request.args['q'] in webs:
             try:
                 return webs[request.args['q']].web()
-            except (AttributeError, NotImplementedError) as e:
+            except (AttributeError, NotImplementedError):
                 EC = EthicsCommittee(0, 0)
                 EC.log(traceback.format_exc())
                 return "This module doesn't have web."
@@ -41,7 +41,7 @@ def telegram():
             except NotImplementedError:
                 EC = EthicsCommittee(0, 0)
                 EC.log(traceback.format_exc())
-    except Exception as e:
+    except Exception:
         EC = EthicsCommittee(0, 0)
         EC.log(traceback.format_exc())
     return "OK"

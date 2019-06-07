@@ -5,7 +5,7 @@ import telegram
 from Kamisu66 import EthicsCommitteeExtension
 
 
-class SendPhotoChangeLogo(EthicsCommitteeExtension):
+class SendPhotoChangeLogo(EthicsCommitteeExtension):  # pylint: disable=W0223
     def __init__(self, enabled_chat_id):
         self.enabled_chat_id = enabled_chat_id
 

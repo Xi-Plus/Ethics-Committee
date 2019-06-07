@@ -3,7 +3,7 @@ import telegram
 from Kamisu66 import EthicsCommitteeExtension
 
 
-class RemoveKeyboard(EthicsCommitteeExtension):
+class RemoveKeyboard(EthicsCommitteeExtension):  # pylint: disable=W0223
     def main(self, EC):
         if not EC.update.message:
             return
@@ -15,7 +15,7 @@ class RemoveKeyboard(EthicsCommitteeExtension):
             response = '<a href="tg://user?id={0}">{0}</a>'.format(
                 EC.update.message.reply_to_message.from_user.id
             )
-            message = EC.update.message.reply_text(
+            EC.update.message.reply_text(
                 text=response,
                 quote=True,
                 parse_mode=telegram.ParseMode.HTML,

@@ -3,7 +3,7 @@ import os
 from Kamisu66 import EthicsCommitteeExtension
 
 
-class DownloadProfilePhoto(EthicsCommitteeExtension):
+class DownloadProfilePhoto(EthicsCommitteeExtension):  # pylint: disable=W0223
     def __init__(self, savepath):
         self.savepath = savepath
 

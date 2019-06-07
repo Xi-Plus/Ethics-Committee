@@ -7,7 +7,7 @@ import telegram
 from Kamisu66 import EthicsCommitteeExtension
 
 
-class Read_only(EthicsCommitteeExtension):
+class Read_only(EthicsCommitteeExtension):  # pylint: disable=W0223
     def __init__(self, deleteGroupIds, banGroupIds):
         self.deleteGroupIds = deleteGroupIds
         self.banGroupIds = banGroupIds

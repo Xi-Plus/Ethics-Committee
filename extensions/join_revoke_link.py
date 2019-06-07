@@ -1,7 +1,7 @@
 from Kamisu66 import EthicsCommitteeExtension
 
 
-class JoinRevokeLink(EthicsCommitteeExtension):
+class JoinRevokeLink(EthicsCommitteeExtension):  # pylint: disable=W0223
     def __init__(self, revoke_chat_ids):
         self.revoke_chat_ids = revoke_chat_ids
 
