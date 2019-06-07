@@ -23,7 +23,7 @@ for delconfig in cfg['ImpureCat']['delconfigs']:
     deltime = int(time.time() - delconfig[1])
     print(chat_id, deltime)
     EC.cur.execute("""SELECT * FROM `message`
-					WHERE `chat_id` = %s AND `date` < %s AND `date` > %s AND `deleted` = 0 ORDER BY `date`""",
+                    WHERE `chat_id` = %s AND `date` < %s AND `date` > %s AND `deleted` = 0 ORDER BY `date`""",
                    (chat_id, str(deltime), str(dellimit)))
     rows = EC.cur.fetchall()
     for row in rows:

@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
-import sys
-import os
-sys.path.insert(0, os.path.realpath(os.path.dirname(os.path.realpath(__file__))+"/../"))
 import datetime
+import os
+import sys
 import time
-from Kamisu66 import *
+
 from clearlog_config import limit
+sys.path.insert(0, os.path.realpath(os.path.dirname(os.path.realpath(__file__)) + "/../"))
+from Kamisu66 import EthicsCommittee
 
 EC = EthicsCommittee(0, 0)
 
 print(limit)
-timestamp = datetime.datetime.fromtimestamp(int(time.time()-limit)).strftime('%Y-%m-%d %H:%M:%S')
+timestamp = datetime.datetime.fromtimestamp(int(time.time() - limit)).strftime('%Y-%m-%d %H:%M:%S')
 
 rows = EC.cur.execute("""DELETE FROM log WHERE `time` < %s""", (timestamp))
 EC.db.commit()

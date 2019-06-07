@@ -1,7 +1,7 @@
 from Kamisu66 import EthicsCommittee, EthicsCommitteeExtension
 
 
-class GroupName(EthicsCommitteeExtension):
+class GroupName(EthicsCommitteeExtension):  # pylint: disable=W0223
     def __init__(self, extra_group):
         self.extra_group = extra_group
 

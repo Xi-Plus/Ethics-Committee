@@ -4,7 +4,7 @@ import traceback
 from Kamisu66 import EthicsCommitteeExtension
 
 
-class Record(EthicsCommitteeExtension):
+class Record(EthicsCommitteeExtension):  # pylint: disable=W0223
     def __init__(self, full_log_chat_id):
         self.full_log_chat_id = full_log_chat_id
 

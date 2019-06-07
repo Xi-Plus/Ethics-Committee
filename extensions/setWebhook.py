@@ -2,7 +2,6 @@
 import argparse
 import os
 import sys
-import urllib.request
 
 import requests
 

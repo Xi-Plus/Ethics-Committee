@@ -1,7 +1,7 @@
 from Kamisu66 import EthicsCommittee, EthicsCommitteeExtension
 
 
-class Admin_matrix(EthicsCommitteeExtension):
+class Admin_matrix(EthicsCommitteeExtension):  # pylint: disable=W0223
     def __init__(self, chat_id):
         self.chat_id_list = ', '.join([str(v) for v in chat_id])
 

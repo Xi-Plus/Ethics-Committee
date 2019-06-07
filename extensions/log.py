@@ -1,7 +1,7 @@
 from Kamisu66 import EthicsCommittee, EthicsCommitteeExtension
 
 
-class Log(EthicsCommitteeExtension):
+class Log(EthicsCommitteeExtension):  # pylint: disable=W0223
     def web(self):
         EC = EthicsCommittee(0, 0)
         EC.cur.execute(

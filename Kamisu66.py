@@ -16,6 +16,7 @@ class EthicsCommittee:
     def __init__(self, chat_id=None, user_id=None, update=None):
         from config_variable import cfg
         self.token = cfg['telegram']['token']
+        # self.bot = EthicsCommitteeTelegramBot(self.token)
         self.bot = telegram.Bot(self.token)
         self.botid = self.bot.id
         self.url = cfg['telegram']['url']
@@ -45,9 +46,9 @@ class EthicsCommittee:
                 query["chat_id"] = chat_id
             if parse_mode != "":
                 query["parse_mode"] = parse_mode
-            if type(reply) == str or type(reply) == int:
+            if isinstance(reply, (str, int)):
                 query["reply_to_message_id"] = reply
-            if reply_markup != None:
+            if reply_markup is not None:
                 query["reply_markup"] = reply_markup
             query["disable_web_page_preview"] = 1
             query["text"] = message
@@ -83,7 +84,7 @@ class EthicsCommittee:
             query["chat_id"] = self.chat_id
             if chat_id is not None:
                 query["chat_id"] = chat_id
-            if type(reply) == str or type(reply) == int:
+            if isinstance(reply, (str, int)):
                 query["reply_to_message_id"] = reply
             query["sticker"] = sticker
 
@@ -119,7 +120,7 @@ class EthicsCommittee:
 
             query = urllib.parse.urlencode(query)
             url = "https://api.telegram.org/bot" + self.token + "/sendChatAction?" + query
-            res = urllib.request.urlopen(url).read().decode("utf8")
+            urllib.request.urlopen(url).read().decode("utf8")
         except urllib.error.HTTPError as e:
             self.log("send msg error: code={} res={}".format(
                 e.code, e.read().decode("utf8")))
@@ -135,7 +136,7 @@ class EthicsCommittee:
                 query["chat_id"] = chat_id
             if parse_mode != "":
                 query["parse_mode"] = parse_mode
-            if reply_markup != None:
+            if reply_markup is not None:
                 query["reply_markup"] = reply_markup
             query["disable_web_page_preview"] = 1
             query["message_id"] = message_id
@@ -205,7 +206,7 @@ class EthicsCommittee:
         if chat_id is None:
             chat_id = self.chat_id
 
-        res = self.cur.execute("""INSERT IGNORE INTO `permissions` (`chat_id`, `user_id`, `user_right`) 
+        res = self.cur.execute("""INSERT IGNORE INTO `permissions` (`chat_id`, `user_id`, `user_right`)
                                   VALUES (%s, %s, %s)""",
                                (chat_id, user_id, user_right))
         self.db.commit()
@@ -217,7 +218,7 @@ class EthicsCommittee:
         if chat_id is None:
             chat_id = self.chat_id
 
-        res = self.cur.execute("""DELETE FROM `permissions` WHERE `chat_id` = %s 
+        res = self.cur.execute("""DELETE FROM `permissions` WHERE `chat_id` = %s
                                   AND `user_id` = %s AND `user_right` = %s""",
                                (chat_id, user_id, user_right))
         self.db.commit()
@@ -259,11 +260,11 @@ class EthicsCommittee:
 
     def remove_group_setting(self, chat_id, key, value=None):
         if value is None:
-            res = self.cur.execute("""DELETE FROM `group_setting` WHERE `chat_id` = %s 
+            res = self.cur.execute("""DELETE FROM `group_setting` WHERE `chat_id` = %s
                                     AND `key` = %s""",
                                    (chat_id, key))
         else:
-            res = self.cur.execute("""DELETE FROM `group_setting` WHERE `chat_id` = %s 
+            res = self.cur.execute("""DELETE FROM `group_setting` WHERE `chat_id` = %s
                                     AND `key` = %s AND `value` = %s""",
                                    (chat_id, key, value))
         self.db.commit()
@@ -328,5 +329,5 @@ class EthicsCommitteeExtension():
 
 def load_extensions(name):
     import importlib
-    import extensions
+    import extensions  # pylint: disable=E0401,W0611
     return importlib.import_module('.' + name, 'extensions').__mainclass__()

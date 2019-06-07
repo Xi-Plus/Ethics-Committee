@@ -3,7 +3,7 @@ import telegram
 from Kamisu66 import EthicsCommitteeExtension
 
 
-class Bot_added_notification(EthicsCommitteeExtension):
+class Bot_added_notification(EthicsCommitteeExtension):  # pylint: disable=W0223
     def __init__(self, notice_chat_id):
         self.notice_chat_id = notice_chat_id
 

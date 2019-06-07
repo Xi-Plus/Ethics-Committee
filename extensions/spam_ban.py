@@ -679,7 +679,7 @@ class Spam_ban(EthicsCommitteeExtension):
                                 reply=self.message_id,
                                 parse_mode='')
         else:
-            ok = self.EC.add_group_setting(self.chat_id, setting, 'enable')
+            self.EC.add_group_setting(self.chat_id, setting, 'enable')
             self.EC.sendmessage('本群已啟用 {}'.format(setting),
                                 reply=self.message_id,
                                 parse_mode='')
@@ -691,7 +691,7 @@ class Spam_ban(EthicsCommitteeExtension):
 
         rows = self.EC.list_setting_in_group(self.chat_id, setting)
         if rows:
-            ok = self.EC.remove_group_setting(self.chat_id, setting)
+            self.EC.remove_group_setting(self.chat_id, setting)
             self.EC.sendmessage('本群已停用 {}'.format(setting),
                                 reply=self.message_id,
                                 parse_mode='')
