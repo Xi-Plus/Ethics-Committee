@@ -1,10 +1,9 @@
-import json
-import traceback
+import time
 
 from Kamisu66 import EthicsCommitteeExtension
 
 
-class AntiFlood(EthicsCommitteeExtension):
+class AntiFlood(EthicsCommitteeExtension):  # pylint: disable=abstract-method
     def __init__(self, enable_chats):
         self.enable_chats = enable_chats
 
@@ -24,8 +23,7 @@ class AntiFlood(EthicsCommitteeExtension):
         user_id = user.id
         full_name = user.full_name
 
-        message = update.effective_message
-        date = int(message.date.timestamp())
+        date = int(time.time())
 
         for msglimit, timelimit in self.enable_chats[chat_id]:
             EC.cur.execute(
@@ -33,8 +31,8 @@ class AntiFlood(EthicsCommitteeExtension):
                 (chat_id, user_id, int(date - timelimit)))
             count = EC.cur.fetchone()[0]
 
-            EC.log("[anti_flood] {}({}) {}({}) limit: {} msg/{} s count: {} msg".format(chat_title,
-                                                                chat_id, full_name, user_id, msglimit, timelimit, count))
+            EC.log("[anti_flood] {}({}) {}({}) limit: {} msg/{} s count: {} msg".format(
+                chat_title, chat_id, full_name, user_id, msglimit, timelimit, count))
 
 
 def __mainclass__():
