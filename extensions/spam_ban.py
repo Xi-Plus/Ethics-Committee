@@ -85,6 +85,8 @@ class Spam_ban(EthicsCommitteeExtension):
     def __init__(self, warn_text, ban_youtube_link_regex, log_chat_id, warn_forward_new_chat_limit, warn_forward_chat_id, delete_limit):
         self.EC = EthicsCommittee(0, 0)
 
+        self.EC.cur.execute("""SET SESSION group_concat_max_len=1048576""")
+
         self.EC.cur.execute(
             """SELECT GROUP_CONCAT(`value` ORDER BY `value` SEPARATOR '|') FROM `group_setting` WHERE `key` = %s GROUP BY ''""",
             (self.SETTING_REGEX_BAN_TEXT))
