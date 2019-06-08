@@ -41,6 +41,7 @@ CREATE TABLE `group_setting` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 CREATE TABLE `log` (
+  `log_id` int(11) NOT NULL,
   `chat_id` bigint(20) NOT NULL,
   `message` text COLLATE utf8_bin NOT NULL,
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -109,6 +110,9 @@ ALTER TABLE `admins`
 ALTER TABLE `group_name`
   ADD PRIMARY KEY (`chat_id`);
 
+ALTER TABLE `log`
+  ADD PRIMARY KEY (`log_id`);
+
 ALTER TABLE `message_count`
   ADD PRIMARY KEY (`chat_id`,`user_id`,`type`);
 
@@ -117,6 +121,10 @@ ALTER TABLE `permissions`
 
 ALTER TABLE `user_name`
   ADD PRIMARY KEY (`user_id`);
+
+
+ALTER TABLE `log`
+  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -5,7 +5,7 @@ class Log(EthicsCommitteeExtension):  # pylint: disable=W0223
     def web(self):
         EC = EthicsCommittee(0, 0)
         EC.cur.execute(
-            """SELECT `message`, `time` FROM `log` ORDER BY `time` DESC LIMIT 100""")
+            """SELECT `message`, `time` FROM `log` ORDER BY `log_id` DESC LIMIT 100""")
         rows = EC.cur.fetchall()
         text = """<!DOCTYPE html>
             <html>
