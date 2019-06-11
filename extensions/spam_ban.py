@@ -141,7 +141,7 @@ class Spam_ban(EthicsCommitteeExtension):
                     [str(v) for v in (
                         self.ban_text_chat + self.ban_username_chat + self.warn_text_chat
                         + self.warn_username_chat + self.ban_photo_chat + self.ban_youtube_link_chat
-                        + self.warn_forward_chat + self.global_ban_chat)]
+                        + self.warn_forward_chat + self.global_ban_chat + self.global_ban_cmd_chat)]
                 )))
         rows = self.EC.cur.fetchall()
         self.group_name = {}
@@ -1043,6 +1043,13 @@ class Spam_ban(EthicsCommitteeExtension):
         users = EC.list_users_with_permission(self.PERMISSION_GLOBALBAN)
         html += "<tr><td>global_ban_admin</td><td>{}</td></td>".format(
             "<br>".join(map(str, users)))
+
+        hidden_chats = [row[0] for row in EC.list_group_with_setting('group_set', 'hidden')]
+        html += "<tr><td>global_ban_cmd</td><td>{}</td></td>".format(
+            "<br>".join(['{} ({})'.format(chat_id, self.group_name[chat_id]) for chat_id in filter(
+                lambda chat_id: chat_id not in hidden_chats, self.global_ban_cmd_chat
+            )])
+        )
 
         html += "<tr><td>log_chat_id</td><td>{}</td></td>".format(
             self.log_chat_id)
