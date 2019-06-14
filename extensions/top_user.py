@@ -17,7 +17,6 @@ class TopUser(EthicsCommitteeExtension):  # pylint: disable=W0223
             response = ''
             for user in row:
                 response += user[1] + ' : ' + str(user[0]) + '\n'
-            print(response)
             await message.reply(response)
 
 
