@@ -3,7 +3,7 @@ import telegram
 from Kamisu66 import EthicsCommitteeExtension
 
 
-class RemoveKeyboard(EthicsCommitteeExtension):  # pylint: disable=W0223
+class GetUserId(EthicsCommitteeExtension):  # pylint: disable=W0223
     def main(self, EC):
         if not EC.update.message:
             return
@@ -23,4 +23,4 @@ class RemoveKeyboard(EthicsCommitteeExtension):  # pylint: disable=W0223
 
 
 def __mainclass__():
-    return RemoveKeyboard
+    return GetUserId
