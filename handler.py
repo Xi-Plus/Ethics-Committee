@@ -1,6 +1,6 @@
 import logging
 
-from config_extension import extensions_new
+from config_extension import extensions_new  # pylint: disable=E0401
 from Kamisu66 import EthicsCommittee
 from telethon import events
 

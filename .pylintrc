@@ -158,6 +158,8 @@ disable=print-statement,
         wrong-import-position,
         attribute-defined-outside-init,
         duplicate-code,
+        signature-differs,
+        arguments-differ,
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -444,6 +446,7 @@ ignored-modules=requests,
                 telegram,
                 flask,
                 pymysql,
+                telethon,
 
 # Show a hint with possible names when a member name was not found. The aspect
 # of finding the hint is based on edit distance.

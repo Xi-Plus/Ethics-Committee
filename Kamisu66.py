@@ -351,7 +351,7 @@ class EthicsCommitteeExtension():
     def prepare(self, EC):
         self.EC = EC
 
-    def main(self):
+    def main(self, EC=None):  # Compatible with the old version
         raise NotImplementedError
 
     def web(self):

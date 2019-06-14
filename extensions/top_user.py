@@ -1,5 +1,4 @@
 from Kamisu66 import EthicsCommitteeExtension
-from telethon.tl.types import PeerUser
 
 
 class TopUser(EthicsCommitteeExtension):  # pylint: disable=W0223
