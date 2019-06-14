@@ -177,9 +177,11 @@ class EthicsCommittee:
                     chat_id, message_id, e.code, e.msg, datastr))
                 self.log(traceback.format_exc())
 
-    def addmessage(self, user_id, message_id, full_name, msg_type, text, date, reply_to_message_id, reply_to_user_id):
+    def addmessage(self, user_id, message_id, full_name, msg_type, text, date, reply_to_message_id, reply_to_user_id, chat_id=None):
+        if chat_id is None:
+            chat_id = self.chat_id
         self.cur.execute("""INSERT INTO `message` (`chat_id`, `user_id`, `message_id`, `full_name`, `type`, `text`, `date`, `reply_to_message_id`, `reply_to_user_id`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
-                         (str(self.chat_id), str(user_id), str(message_id), full_name, msg_type, text, str(date), reply_to_message_id, reply_to_user_id))
+                         (str(chat_id), str(user_id), str(message_id), full_name, msg_type, text, str(date), reply_to_message_id, reply_to_user_id))
         self.db.commit()
 
     def parse_command(self, parser, cmd, ignore_first=False):
