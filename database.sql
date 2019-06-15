@@ -55,8 +55,8 @@ CREATE TABLE `message` (
   `type` varchar(20) COLLATE utf8_bin NOT NULL,
   `text` text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `date` int(11) NOT NULL,
-  `reply_to_message_id` int(11) NOT NULL,
-  `reply_to_user_id` int(11) NOT NULL,
+  `reply_to_message_id` int(11) DEFAULT NULL,
+  `reply_to_user_id` int(11) DEFAULT NULL,
   `time` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `deleted` tinyint(1) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;

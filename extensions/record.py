@@ -32,8 +32,8 @@ class Record(EthicsCommitteeExtension):  # pylint: disable=W0223
         else:
             date = int(message.date.timestamp())
         message_id = message.message_id
-        reply_to_message_id = 0
-        reply_to_user_id = 0
+        reply_to_message_id = None
+        reply_to_user_id = None
         if message.reply_to_message:
             reply_to_message_id = message.reply_to_message.message_id
             reply_to_user_id = message.reply_to_message.from_user.id
