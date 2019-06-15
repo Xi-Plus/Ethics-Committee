@@ -1,4 +1,4 @@
-from Kamisu66 import EthicsCommitteeExtension
+from Kamisu66new import EthicsCommitteeExtension
 
 
 class TopUser(EthicsCommitteeExtension):  # pylint: disable=W0223

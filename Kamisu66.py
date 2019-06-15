@@ -10,16 +10,12 @@ import urllib.request
 
 import pymysql
 import telegram
-from telethon import TelegramClient
 
 
-class EthicsCommittee(TelegramClient):
-    def __init__(self, chat_id=None, user_id=None, update=None, new_client=False):
+class EthicsCommittee:
+    def __init__(self, chat_id=None, user_id=None, update=None):
         from config_variable import cfg  # pylint: disable=E0401
-        if new_client:
-            TelegramClient.__init__(self, 'bot', cfg['telegram']['api_id'], cfg['telegram']['api_hash'])
         self.token = cfg['telegram']['token']
-        # self.bot = EthicsCommitteeTelegramBot(self.token)
         self.bot = telegram.Bot(self.token)
         self.botid = self.bot.id
         self.url = cfg['telegram']['url']
@@ -40,27 +36,6 @@ class EthicsCommittee(TelegramClient):
             self.chat_id = self.update.effective_chat.id
             if self.update.effective_user is not None:
                 self.user_id = self.update.effective_user.id
-
-    # override
-    def start(self):
-        return super().start(bot_token=self.token)
-
-    # override
-    async def send_message(self, *args, **kwargs):
-        message = await super().send_message(*args, **kwargs)
-        self.addmessage(
-            user_id=message.sender_id,
-            message_id=message.id,
-            full_name=message.sender.first_name,
-            msg_type='text',
-            text=message.message,
-            date=message.date.timestamp(),
-            reply_to_message_id=0,
-            reply_to_user_id=0,
-            chat_id=message.chat_id,
-        )
-
-    # override end
 
     def sendmessage(self, message, parse_mode="Markdown", reply=False, reply_markup=None, chat_id=None):
         try:
@@ -346,12 +321,7 @@ class EthicsCommittee(TelegramClient):
 
 
 class EthicsCommitteeExtension():
-    EC = None
-
-    def prepare(self, EC):
-        self.EC = EC
-
-    def main(self, EC=None):  # Compatible with the old version
+    def main(self, EC):
         raise NotImplementedError
 
     def web(self):

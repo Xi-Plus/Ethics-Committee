@@ -1,5 +1,6 @@
 .vscode/
 config_extension.py
+config_extension_new.py
 config_variable.py
 extensions/*config.py
 *.pyc
