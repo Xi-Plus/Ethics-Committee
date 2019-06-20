@@ -87,7 +87,25 @@ class Spam_ban(EthicsCommitteeExtension):
 
         self.EC.cur.execute("""SET SESSION group_concat_max_len=1048576""")
 
-        self.update_rule()
+        self.EC.cur.execute(
+            """SELECT GROUP_CONCAT(`value` ORDER BY `value` SEPARATOR '|') FROM `group_setting` WHERE `key` = %s GROUP BY ''""",
+            (self.SETTING_REGEX_BAN_TEXT))
+        self.ban_text_regex = self.EC.cur.fetchone()[0]
+
+        self.EC.cur.execute(
+            """SELECT GROUP_CONCAT(`value` ORDER BY `value` SEPARATOR '|') FROM `group_setting` WHERE `key` IN (%s, %s) GROUP BY ''""",
+            (self.SETTING_REGEX_BAN_TEXT, self.SETTING_REGEX_BAN_USERNAME))
+        self.ban_username_regex = self.EC.cur.fetchone()[0]
+
+        self.EC.cur.execute(
+            """SELECT GROUP_CONCAT(`value` ORDER BY `value` SEPARATOR '|') FROM `group_setting` WHERE `key` IN (%s, %s) GROUP BY ''""",
+            (self.SETTING_REGEX_WARN_TEXT, self.SETTING_REGEX_BAN_TEXT))
+        self.warn_text_regex = self.EC.cur.fetchone()[0]
+
+        self.EC.cur.execute(
+            """SELECT GROUP_CONCAT(`value` ORDER BY `value` SEPARATOR '|') FROM `group_setting` WHERE `key` IN (%s, %s, %s, %s) GROUP BY ''""",
+            (self.SETTING_REGEX_WARN_TEXT, self.SETTING_REGEX_WARN_USERNAME, self.SETTING_REGEX_BAN_TEXT, self.SETTING_REGEX_BAN_USERNAME))
+        self.warn_username_regex = self.EC.cur.fetchone()[0]
 
         self.warn_text = warn_text
         self.ban_youtube_link_regex = ban_youtube_link_regex
@@ -129,27 +147,6 @@ class Spam_ban(EthicsCommitteeExtension):
         self.group_name = {}
         for row in rows:
             self.group_name[int(row[0])] = row[1]
-
-    def update_rule(self):
-        self.EC.cur.execute(
-            """SELECT GROUP_CONCAT(`value` ORDER BY `value` SEPARATOR '|') FROM `group_setting` WHERE `key` = %s GROUP BY ''""",
-            (self.SETTING_REGEX_BAN_TEXT))
-        self.ban_text_regex = self.EC.cur.fetchone()[0]
-
-        self.EC.cur.execute(
-            """SELECT GROUP_CONCAT(`value` ORDER BY `value` SEPARATOR '|') FROM `group_setting` WHERE `key` IN (%s, %s) GROUP BY ''""",
-            (self.SETTING_REGEX_BAN_TEXT, self.SETTING_REGEX_BAN_USERNAME))
-        self.ban_username_regex = self.EC.cur.fetchone()[0]
-
-        self.EC.cur.execute(
-            """SELECT GROUP_CONCAT(`value` ORDER BY `value` SEPARATOR '|') FROM `group_setting` WHERE `key` IN (%s, %s) GROUP BY ''""",
-            (self.SETTING_REGEX_WARN_TEXT, self.SETTING_REGEX_BAN_TEXT))
-        self.warn_text_regex = self.EC.cur.fetchone()[0]
-
-        self.EC.cur.execute(
-            """SELECT GROUP_CONCAT(`value` ORDER BY `value` SEPARATOR '|') FROM `group_setting` WHERE `key` IN (%s, %s, %s, %s) GROUP BY ''""",
-            (self.SETTING_REGEX_WARN_TEXT, self.SETTING_REGEX_WARN_USERNAME, self.SETTING_REGEX_BAN_TEXT, self.SETTING_REGEX_BAN_USERNAME))
-        self.warn_username_regex = self.EC.cur.fetchone()[0]
 
     def main(self, EC):
         self.EC = EC
@@ -757,7 +754,6 @@ class Spam_ban(EthicsCommitteeExtension):
                                 .format(rule_type.replace('spam_ban_regex_', ''), rule, message_append),
                                 reply=self.message_id,
                                 parse_mode='')
-            self.update_rule()
         else:
             self.EC.sendmessage('加入{}規則 {} 失敗{}'
                                 .format(rule_type.replace('spam_ban_regex_', ''), rule, message_append),
@@ -789,7 +785,6 @@ class Spam_ban(EthicsCommitteeExtension):
                                 .format(rule_type.replace('spam_ban_regex_', ''), rule),
                                 reply=self.message_id,
                                 parse_mode='')
-            self.update_rule()
         else:
             self.EC.sendmessage('移除{}規則 {} 失敗，可能是因為無此規則'
                                 .format(rule_type.replace('spam_ban_regex_', ''), rule),
