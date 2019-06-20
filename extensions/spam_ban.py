@@ -753,12 +753,14 @@ class Spam_ban(EthicsCommitteeExtension):
 
         ok = self.EC.add_group_setting(0, rule_type, rule, check_dup=True)
         if ok:
-            self.EC.sendmessage('成功加入規則 {}{}'.format(rule, message_append),
+            self.EC.sendmessage('成功加入{}規則 {}{}'
+                                .format(rule_type.replace('spam_ban_regex_', ''), rule, message_append),
                                 reply=self.message_id,
                                 parse_mode='')
             self.update_rule()
         else:
-            self.EC.sendmessage('加入規則 {} 失敗{}'.format(rule, message_append),
+            self.EC.sendmessage('加入{}規則 {} 失敗{}'
+                                .format(rule_type.replace('spam_ban_regex_', ''), rule, message_append),
                                 reply=self.message_id,
                                 parse_mode='')
 
@@ -783,12 +785,14 @@ class Spam_ban(EthicsCommitteeExtension):
 
         ok = self.EC.remove_group_setting(0, rule_type, rule)
         if ok:
-            self.EC.sendmessage('成功移除規則 {}'.format(rule),
+            self.EC.sendmessage('成功移除{}規則 {}'
+                                .format(rule_type.replace('spam_ban_regex_', ''), rule),
                                 reply=self.message_id,
                                 parse_mode='')
             self.update_rule()
         else:
-            self.EC.sendmessage('移除規則 {} 失敗，可能是因為無此規則'.format(rule),
+            self.EC.sendmessage('移除{}規則 {} 失敗，可能是因為無此規則'
+                                .format(rule_type.replace('spam_ban_regex_', ''), rule),
                                 reply=self.message_id,
                                 parse_mode='')
 
