@@ -173,7 +173,7 @@ class Spam_ban(EthicsCommitteeExtension):
                         message["reply_to_message"]["from"]["last_name"]
 
             if 'text' in message and message['text'].startswith('/'):
-                cmd = shlex.split(message['text'])
+                cmd = shlex.split(message['text'], posix=False)
                 action = cmd[0]
                 cmd = cmd[1:]
                 action = action[1:]

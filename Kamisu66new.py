@@ -53,7 +53,7 @@ class EthicsCommittee(TelegramClient):
 
     def parse_command(self, parser, cmd, ignore_first=False):
         if isinstance(cmd, str):
-            cmd = shlex.split(cmd)
+            cmd = shlex.split(cmd, posix=False)
         elif isinstance(cmd, list):
             pass
         else:
