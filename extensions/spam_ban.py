@@ -748,6 +748,14 @@ class Spam_ban(EthicsCommitteeExtension):
                     reply=self.message_id, parse_mode='')
                 return
 
+        is_dup = self.EC.list_setting_in_group(0, rule_type, rule)
+        if is_dup:
+            self.EC.sendmessage('{}規則 {} 已存在{}'
+                                .format(rule_type.replace('spam_ban_regex_', ''), rule, message_append),
+                                reply=self.message_id,
+                                parse_mode='')
+            return
+
         ok = self.EC.add_group_setting(0, rule_type, rule, check_dup=True)
         if ok:
             self.EC.sendmessage('成功加入{}規則 {}{}'
