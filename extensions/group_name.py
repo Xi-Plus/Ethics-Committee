@@ -29,7 +29,8 @@ class GroupName(EthicsCommitteeExtension):  # pylint: disable=W0223
                 group_set[chat_id].append(name)
 
         EC.cur.execute(
-            """SELECT `chat_id`, `title`, `username` FROM `group_name`
+            """SELECT `chat_id`, `title`, `username`, (SELECT `time` FROM `message` WHERE `group_name`.`chat_id`=`message`.`chat_id` ORDER BY `date` DESC LIMIT 1) AS `last_message_time`
+            FROM `group_name`
             WHERE `chat_id` NOT IN (
                 SELECT `chat_id` FROM `group_setting` WHERE `key` = 'group_set' AND `value` = 'hidden'
             )
@@ -56,6 +57,7 @@ class GroupName(EthicsCommitteeExtension):  # pylint: disable=W0223
                 <th>chat_id</th>
                 <th>title</th>
                 <th>username</th>
+                <th>last_message_time</th>
                 <th>set</th>
             </tr>
             </thead>
@@ -68,10 +70,11 @@ class GroupName(EthicsCommitteeExtension):  # pylint: disable=W0223
             if chat_id in group_set:
                 gset = ', '.join(group_set[chat_id])
 
-            text += """<tr><td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td></tr>""".format(
+            text += """<tr><td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td><td>{4}</td></tr>""".format(
                 chat_id,
                 row[1],
                 row[2],
+                row[3],
                 gset,
             )
         text += """
