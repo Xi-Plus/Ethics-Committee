@@ -405,6 +405,7 @@ class Spam_ban(EthicsCommitteeExtension):
                             help='接受單位為秒的整數，或是<整數><單位>的格式，例如：60s, 1min, 2h, 3d, 4w, 5m，永久為inf。預設：%(default)s')
         parser.add_argument(
             '-r', type=str, metavar='原因', default='Spam', help='預設：%(default)s')
+        parser.add_argument('--no-del', action='store_true', default=False, help='不刪除訊息')
         parser.add_argument('--dry-run', action='store_true', default=False, help='在日誌記錄但不執行封鎖')
         ok, args = self.EC.parse_command(parser, cmd)
 
@@ -435,7 +436,8 @@ class Spam_ban(EthicsCommitteeExtension):
             reason += ' (dry run)'
         else:
             failed = self.action_ban_all_chat(ban_user_id, duration)
-        self.action_del_all_msg(ban_user_id)
+        if not args.no_del:
+            self.action_del_all_msg(ban_user_id)
         self.action_log_admin(
             '#封', self.user_id,
             self.first_name,
