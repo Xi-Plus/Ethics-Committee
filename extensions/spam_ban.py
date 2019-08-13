@@ -1037,16 +1037,16 @@ class Spam_ban(EthicsCommitteeExtension):
 
         html += '<tr><td>chats</td><td>{}</td></td>'.format(temp)
 
-        html += "<tr><td>ban_text_regex</td><td>{}</td></td>".format(
+        html += '<tr><td>ban_text_regex</td><td style="white-space: pre-wrap;">{}</td></td>'.format(
             self.ban_text_regex)
 
-        html += "<tr><td>ban_username_regex</td><td>{}</td></td>".format(
+        html += '<tr><td>ban_username_regex</td><td style="white-space: pre-wrap;">{}</td></td>'.format(
             self.ban_username_regex)
 
-        html += "<tr><td>warn_text_regex</td><td>{}</td></td>".format(
+        html += '<tr><td>warn_text_regex</td><td style="white-space: pre-wrap;">{}</td></td>'.format(
             self.warn_text_regex)
 
-        html += "<tr><td>warn_username_regex</td><td>{}</td></td>".format(
+        html += '<tr><td>warn_username_regex</td><td style="white-space: pre-wrap;">{}</td></td>'.format(
             self.warn_username_regex)
 
         html += "<tr><td>warn_text</td><td>{}</td></td>".format(self.warn_text)
