@@ -37,7 +37,7 @@ CREATE TABLE `group_name` (
 CREATE TABLE `group_setting` (
   `chat_id` bigint(20) NOT NULL,
   `key` varchar(64) COLLATE utf8_bin NOT NULL,
-  `value` mediumtext COLLATE utf8_bin NOT NULL
+  `value` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 CREATE TABLE `log` (
