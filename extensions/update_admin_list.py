@@ -42,6 +42,11 @@ for row in rows:
         except telegram.error.Unauthorized as e:
             print(e.message)
             break
+        except telegram.error.BadRequest as e:
+            print(e.message)
+            break
+        except Exception as e:
+            print(e.message)
     if admins is None:
         continue
 
