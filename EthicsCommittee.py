@@ -2,6 +2,7 @@
 import json
 import os
 import sys
+import time
 import traceback
 
 from flask import Flask, request
@@ -34,6 +35,8 @@ def web():
 def telegram():
     try:
         data = json.loads(request.data.decode("utf8"))
+        if int(data['message']['date']) < time.time() - 600:
+            return "OK"
         EC = EthicsCommittee(update=data)
         for extension in extensions:
             try:
