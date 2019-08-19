@@ -46,7 +46,7 @@ for row in rows:
             print(e.message)
             break
         except Exception as e:
-            print(e.message)
+            print(e)
     if admins is None:
         continue
 
