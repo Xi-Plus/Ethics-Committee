@@ -15,6 +15,7 @@ class JoinRevokeLink(EthicsCommitteeExtension):  # pylint: disable=W0223
         chat_id = EC.update.effective_chat.id
         if chat_id in self.revoke_chat_ids:
             EC.bot.export_chat_invite_link(chat_id=chat_id)
+            EC.log('[jrl] revoke link for {}'.format(chat_id))
 
 
 def __mainclass__():
