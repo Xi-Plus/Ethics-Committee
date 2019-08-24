@@ -293,8 +293,15 @@ class Spam_ban(EthicsCommitteeExtension):
 
                 if "forward" in mode and not self.message_deleted:
                     if user_msg_cnt <= 5:
-                        EC.sendmessage('https://t.me/{}/{}'.format(
-                            message["chat"]["username"], self.message_id), chat_id=self.warn_forward_chat_id, parse_mode="HTML")
+                        EC.sendmessage(
+                            'https://t.me/{}/{}\n{}'.format(
+                                message["chat"]["username"],
+                                self.message_id,
+                                self.user_id,
+                            ),
+                            chat_id=self.warn_forward_chat_id,
+                            parse_mode="HTML"
+                        )
                         EC.log("[spam_ban] forward {}".format(
                             json.dumps(message)))
                         if ("forward_from_chat" in message and self.chat_id in self.warn_forward_chat
