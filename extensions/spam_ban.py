@@ -813,7 +813,7 @@ class Spam_ban(EthicsCommitteeExtension):
                     chat_id=ban_chat_id, user_id=user_id, until_date=until_date)
             except Exception as e:
                 self.EC.log('[spam_ban] ban {} in {} failed: {}'.format(
-                    user_id, ban_chat_id, e.message))
+                    user_id, ban_chat_id, e))
                 failed += 1
         return failed
 
@@ -827,7 +827,7 @@ class Spam_ban(EthicsCommitteeExtension):
                     chat_id=ban_chat_id, user_id=user_id)
             except Exception as e:
                 self.EC.log('[spam_ban] unban {} in {} failed: {}'.format(
-                    user_id, ban_chat_id, e.message))
+                    user_id, ban_chat_id, e))
                 failed += 1
         return failed
 
