@@ -811,7 +811,7 @@ class Spam_ban(EthicsCommitteeExtension):
             try:
                 self.EC.bot.kick_chat_member(
                     chat_id=ban_chat_id, user_id=user_id, until_date=until_date)
-            except telegram.error.BadRequest as e:
+            except Exception as e:
                 self.EC.log('[spam_ban] ban {} in {} failed: {}'.format(
                     user_id, ban_chat_id, e.message))
                 failed += 1
@@ -825,7 +825,7 @@ class Spam_ban(EthicsCommitteeExtension):
             try:
                 self.EC.bot.unban_chat_member(
                     chat_id=ban_chat_id, user_id=user_id)
-            except telegram.error.BadRequest as e:
+            except Exception as e:
                 self.EC.log('[spam_ban] unban {} in {} failed: {}'.format(
                     user_id, ban_chat_id, e.message))
                 failed += 1
