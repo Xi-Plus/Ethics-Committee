@@ -1068,7 +1068,7 @@ class Spam_ban(EthicsCommitteeExtension):
         hidden_chats = [row[0] for row in EC.list_group_with_setting('group_set', 'hidden')]
         html += "<tr><td>global_ban_cmd</td><td>{}</td></td>".format(
             "<br>".join(['{} ({})'.format(chat_id, self.group_name[chat_id]) for chat_id in filter(
-                lambda chat_id: chat_id not in hidden_chats, self.global_ban_cmd_chat
+                lambda chat_id: chat_id < 0 and chat_id not in hidden_chats, self.global_ban_cmd_chat
             )])
         )
 
