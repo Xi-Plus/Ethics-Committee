@@ -33,56 +33,43 @@ text = ''
 if args.empty:
     text = '(empty)'
 else:
-    for site in setting['sites']:
-        domain = site[0]
-        sitename = site[1]
+    for group in setting['groups']:
+        print(group[0])
+        text += '{}:\n'.format(group[1])
+        for site in setting['sites']:
+            domain = site[0]
+            sitename = site[1]
 
-        print(sitename)
+            print(sitename)
 
-        text += sitename + \
-            ': <a href="https://{}/w/index.php?title=Special:ListUsers&group=sysop">A</a>:'.format(domain)
+            text2 = ''
 
-        api = 'https://{}/w/api.php'.format(domain)
+            api = 'https://{}/w/api.php'.format(domain)
 
-        # sysop
-        payload = {
-            "action": "query",
-            "format": "json",
-            "list": "allusers",
-            "augroup": "sysop"
-        }
-        res = r = requests.get(api, params=payload).json()
-        for user in res['query']['allusers']:
-            if user['name'] in TGNAME:
-                print('\t sysop', TGNAME[user['name']])
-                if TGNAME[user['name']].startswith('@'):
-                    text += ' ' + TGNAME[user['name']]
+            # sysop
+            payload = {
+                "action": "query",
+                "format": "json",
+                "list": "allusers",
+                "augroup": group[0]
+            }
+            res = r = requests.get(api, params=payload).json()
+            for user in res['query']['allusers']:
+                if user['name'] in TGNAME:
+                    print('\t', TGNAME[user['name']])
+                    if TGNAME[user['name']].startswith('@'):
+                        text2 += ' ' + TGNAME[user['name']]
+                    else:
+                        text2 += ' <a href="tg://user?id={}">{}</a>'.format(TGNAME[user['name']], user['name'])
                 else:
-                    text += ' <a href="tg://user?id={}">{}</a>'.format(TGNAME[user['name']], user['name'])
-            else:
-                print('\t sysop', user['name'])
+                    print('\t', user['name'])
 
-        text += ' / <a href="https://{}/w/index.php?title=Special:ListUsers&group=interface-admin">IA</a>:'.format(
-            domain)
-        # IA
-        payload = {
-            "action": "query",
-            "format": "json",
-            "list": "allusers",
-            "augroup": "interface-admin"
-        }
-        res = r = requests.get(api, params=payload).json()
-        for user in res['query']['allusers']:
-            if user['name'] in TGNAME:
-                print('\t IA', TGNAME[user['name']])
-                if TGNAME[user['name']].startswith('@'):
-                    text += ' ' + TGNAME[user['name']]
-                else:
-                    text += ' <a href="tg://user?id={}">{}</a>'.format(TGNAME[user['name']], user['name'])
-            else:
-                print('\t IA', user['name'])
+            if text2:
+                text += '<a href="https://{}/w/index.php?title=Special:ListUsers&group={}">{}</a>:{}\n'.format(
+                    domain, group[0], sitename, text2)
 
-        text += '\n'
+        if len(group) >= 3:
+            text += group[2]
 
 print(text)
 
