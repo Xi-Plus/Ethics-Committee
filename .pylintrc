@@ -160,6 +160,8 @@ disable=print-statement,
         duplicate-code,
         signature-differs,
         arguments-differ,
+        import-outside-toplevel,
+        consider-using-sys-exit,
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
