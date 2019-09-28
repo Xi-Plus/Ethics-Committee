@@ -34,7 +34,7 @@ class GroupName(EthicsCommitteeExtension):  # pylint: disable=W0223
             WHERE `chat_id` NOT IN (
                 SELECT `chat_id` FROM `group_setting` WHERE `key` = 'group_set' AND `value` = 'hidden'
             )
-            ORDER BY `title` DESC""")
+            ORDER BY `title` ASC""")
         rows = EC.cur.fetchall()
         text = """<!DOCTYPE html>
             <html>
