@@ -27,6 +27,86 @@ CREATE TABLE `admins` (
   `can_send_messages` tinyint(4) NOT NULL,
   `can_send_other_messages` tinyint(4) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+DELIMITER $$
+CREATE TRIGGER `admins_add` AFTER INSERT ON `admins` FOR EACH ROW INSERT INTO `admins_changes` (`chat_id`, `user_id`, `action`, `can_add_web_page_previews`, `can_be_edited`, `can_change_info`, `can_delete_messages`, `can_edit_messages`, `can_invite_users`, `can_pin_messages`, `can_post_messages`, `can_promote_members`, `can_restrict_members`, `can_send_media_messages`, `can_send_messages`, `can_send_other_messages`) VALUES (
+	NEW.`chat_id`, NEW.`user_id`, 'add',
+
+	 NEW.`can_add_web_page_previews`,
+	 NEW.`can_be_edited`,
+	 NEW.`can_change_info`,
+	 NEW.`can_delete_messages`,
+	 NEW.`can_edit_messages`,
+	 NEW.`can_invite_users`,
+	 NEW.`can_pin_messages`,
+	 NEW.`can_post_messages`,
+	 NEW.`can_promote_members`,
+	 NEW.`can_restrict_members`,
+	 NEW.`can_send_media_messages`,
+	 NEW.`can_send_messages`,
+	 NEW.`can_send_other_messages`
+	)
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `admins_remove` AFTER DELETE ON `admins` FOR EACH ROW INSERT INTO `admins_changes` (`chat_id`, `user_id`, `action`, `can_add_web_page_previews`, `can_be_edited`, `can_change_info`, `can_delete_messages`, `can_edit_messages`, `can_invite_users`, `can_pin_messages`, `can_post_messages`, `can_promote_members`, `can_restrict_members`, `can_send_media_messages`, `can_send_messages`, `can_send_other_messages`) VALUES (
+	OLD.`chat_id`, OLD.`user_id`, 'remove',
+
+	 OLD.`can_add_web_page_previews`,
+	 OLD.`can_be_edited`,
+	 OLD.`can_change_info`,
+	 OLD.`can_delete_messages`,
+	 OLD.`can_edit_messages`,
+	 OLD.`can_invite_users`,
+	 OLD.`can_pin_messages`,
+	 OLD.`can_post_messages`,
+	 OLD.`can_promote_members`,
+	 OLD.`can_restrict_members`,
+	 OLD.`can_send_media_messages`,
+	 OLD.`can_send_messages`,
+	 OLD.`can_send_other_messages`
+	)
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `admins_update` AFTER UPDATE ON `admins` FOR EACH ROW INSERT INTO `admins_changes` (`chat_id`, `user_id`, `action`, `can_add_web_page_previews`, `can_be_edited`, `can_change_info`, `can_delete_messages`, `can_edit_messages`, `can_invite_users`, `can_pin_messages`, `can_post_messages`, `can_promote_members`, `can_restrict_members`, `can_send_media_messages`, `can_send_messages`, `can_send_other_messages`) VALUES (
+	OLD.`chat_id`, OLD.`user_id`, 'update',
+
+	IF (OLD.`can_add_web_page_previews` = NEW.`can_add_web_page_previews`, '',   CONCAT(OLD.`can_add_web_page_previews`, '->', NEW.`can_add_web_page_previews`)),
+	IF (OLD.`can_be_edited` = NEW.`can_be_edited`, '',   CONCAT(OLD.`can_be_edited`, '->', NEW.`can_be_edited`)),
+	IF (OLD.`can_change_info` = NEW.`can_change_info`, '',   CONCAT(OLD.`can_change_info`, '->', NEW.`can_change_info`)),
+	IF (OLD.`can_delete_messages` = NEW.`can_delete_messages`, '',   CONCAT(OLD.`can_delete_messages`, '->', NEW.`can_delete_messages`)),
+	IF (OLD.`can_edit_messages` = NEW.`can_edit_messages`, '',   CONCAT(OLD.`can_edit_messages`, '->', NEW.`can_edit_messages`)),
+	IF (OLD.`can_invite_users` = NEW.`can_invite_users`, '',   CONCAT(OLD.`can_invite_users`, '->', NEW.`can_invite_users`)),
+	IF (OLD.`can_pin_messages` = NEW.`can_pin_messages`, '',   CONCAT(OLD.`can_pin_messages`, '->', NEW.`can_pin_messages`)),
+	IF (OLD.`can_post_messages` = NEW.`can_post_messages`, '',   CONCAT(OLD.`can_post_messages`, '->', NEW.`can_post_messages`)),
+	IF (OLD.`can_promote_members` = NEW.`can_promote_members`, '',   CONCAT(OLD.`can_promote_members`, '->', NEW.`can_promote_members`)),
+	IF (OLD.`can_restrict_members` = NEW.`can_restrict_members`, '',   CONCAT(OLD.`can_restrict_members`, '->', NEW.`can_restrict_members`)),
+	IF (OLD.`can_send_media_messages` = NEW.`can_send_media_messages`, '',   CONCAT(OLD.`can_send_media_messages`, '->', NEW.`can_send_media_messages`)),
+	IF (OLD.`can_send_messages` = NEW.`can_send_messages`, '',   CONCAT(OLD.`can_send_messages`, '->', NEW.`can_send_messages`)),
+	IF (OLD.`can_send_other_messages` = NEW.`can_send_other_messages`, '',   CONCAT(OLD.`can_send_other_messages`, '->', NEW.`can_send_other_messages`))
+	)
+$$
+DELIMITER ;
+
+CREATE TABLE `admins_changes` (
+  `chat_id` bigint(20) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `action` varchar(10) COLLATE utf8_bin NOT NULL,
+  `can_add_web_page_previews` varchar(5) COLLATE utf8_bin NOT NULL,
+  `can_be_edited` varchar(5) COLLATE utf8_bin NOT NULL,
+  `can_change_info` varchar(5) COLLATE utf8_bin NOT NULL,
+  `can_delete_messages` varchar(5) COLLATE utf8_bin NOT NULL,
+  `can_edit_messages` varchar(5) COLLATE utf8_bin NOT NULL,
+  `can_invite_users` varchar(5) COLLATE utf8_bin NOT NULL,
+  `can_pin_messages` varchar(5) COLLATE utf8_bin NOT NULL,
+  `can_post_messages` varchar(5) COLLATE utf8_bin NOT NULL,
+  `can_promote_members` varchar(5) COLLATE utf8_bin NOT NULL,
+  `can_restrict_members` varchar(5) COLLATE utf8_bin NOT NULL,
+  `can_send_media_messages` varchar(5) COLLATE utf8_bin NOT NULL,
+  `can_send_messages` varchar(5) COLLATE utf8_bin NOT NULL,
+  `can_send_other_messages` varchar(5) COLLATE utf8_bin NOT NULL,
+  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 CREATE TABLE `group_name` (
   `chat_id` bigint(20) NOT NULL,
