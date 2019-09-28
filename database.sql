@@ -95,6 +95,20 @@ INSERT INTO `user_name_changes` (`user_id`, `old_name`, `new_name`) VALUES (NEW.
 END
 $$
 DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `delete_user_name` AFTER DELETE ON `user_name` FOR EACH ROW BEGIN
+INSERT INTO `user_name_changes` (`user_id`, `old_name`, `new_name`) VALUES (OLD.user_id, CONCAT( OLD.full_name," (",IFNULL(OLD.username, ''), ")"), '(deleted user)');
+
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `new_user_name` AFTER INSERT ON `user_name` FOR EACH ROW BEGIN
+INSERT INTO `user_name_changes` (`user_id`, `old_name`, `new_name`) VALUES (NEW.user_id, "(new user)", CONCAT( NEW.full_name," (",IFNULL(NEW.username, ''), ")"));
+
+END
+$$
+DELIMITER ;
 
 CREATE TABLE `user_name_changes` (
   `user_id` int(11) NOT NULL,
