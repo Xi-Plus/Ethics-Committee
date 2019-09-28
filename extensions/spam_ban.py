@@ -136,7 +136,7 @@ class Spam_ban(EthicsCommitteeExtension):
             int(row[0]) for row in self.EC.list_group_with_setting(self.SETTING_TEST)]
 
         self.EC.cur.execute(
-            """SELECT `chat_id`, `title` FROM `group_name` WHERE `chat_id` IN ('{}')""".format(
+            """SELECT `chat_id`, `title`, `username` FROM `group_name` WHERE `chat_id` IN ('{}')""".format(
                 "', '".join(
                     [str(v) for v in (
                         self.ban_text_chat + self.ban_username_chat + self.warn_text_chat
@@ -145,8 +145,10 @@ class Spam_ban(EthicsCommitteeExtension):
                 )))
         rows = self.EC.cur.fetchall()
         self.group_name = {}
+        self.group_username = {}
         for row in rows:
             self.group_name[int(row[0])] = row[1]
+            self.group_username[int(row[0])] = row[2]
 
     def main(self, EC):
         self.EC = EC
@@ -1027,22 +1029,25 @@ class Spam_ban(EthicsCommitteeExtension):
             </tr>
             """
 
-        chats = list(set(self.ban_username_chat + self.warn_username_chat + self.ban_text_chat
-                         + self.warn_text_chat + self.ban_youtube_link_chat + self.ban_photo_chat
-                         + self.warn_forward_chat + self.global_ban_chat))
-        for chat_id in chats:
+        chat_ids = list(set(self.ban_username_chat + self.warn_username_chat + self.ban_text_chat
+                            + self.warn_text_chat + self.ban_youtube_link_chat + self.ban_photo_chat
+                            + self.warn_forward_chat + self.global_ban_chat))
+        chats = [(
+            chat_id,
+            (self.group_name[chat_id] or '') if chat_id in self.group_name else '',
+            (self.group_username[chat_id] or '') if chat_id in self.group_username else '',
+        ) for chat_id in chat_ids]
+        chats.sort(key=lambda v: v[1])
+
+        for chat in chats:
             temp += '<tr>'
-            if chat_id in self.group_name:
-                temp += '<td>{} ({})</td>'.format(chat_id,
-                                                  self.group_name[chat_id])
-            else:
-                temp += '<td>{}</td>'.format(chat_id)
+            temp += '<td>{}</td>'.format(chat[1])
             for chat_setting in [self.ban_text_chat, self.ban_username_chat,
                                  self.warn_text_chat, self.warn_username_chat,
                                  self.ban_youtube_link_chat, self.ban_photo_chat,
                                  self.warn_forward_chat, self.global_ban_chat]:
                 temp += '<td>'
-                if chat_id in chat_setting:
+                if chat[0] in chat_setting:
                     temp += '&#10003;'
                 temp += '</td>'
             temp += '</tr>'
@@ -1073,7 +1078,7 @@ class Spam_ban(EthicsCommitteeExtension):
 
         hidden_chats = [row[0] for row in EC.list_group_with_setting('group_set', 'hidden')]
         html += "<tr><td>global_ban_cmd</td><td>{}</td></td>".format(
-            "<br>".join(['{} ({})'.format(chat_id, self.group_name[chat_id]) for chat_id in filter(
+            "<br>".join(['{}'.format(self.group_name[chat_id]) for chat_id in filter(
                 lambda chat_id: chat_id < 0 and chat_id not in hidden_chats, self.global_ban_cmd_chat
             )])
         )
