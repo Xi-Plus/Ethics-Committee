@@ -162,6 +162,24 @@ CREATE TABLE `permissions` (
   `user_id` int(11) NOT NULL,
   `user_right` varchar(50) COLLATE utf8_bin NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+DELIMITER $$
+CREATE TRIGGER `permissions_change_add` AFTER INSERT ON `permissions` FOR EACH ROW INSERT INTO `permissions_changes`
+(`chat_id`, `user_id`, `action`, `user_right`) VALUES (NEW.chat_id, NEW.user_id, 'add', NEW.user_right)
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `permissions_change_remove` AFTER DELETE ON `permissions` FOR EACH ROW INSERT INTO `permissions_changes`
+(`chat_id`, `user_id`, `action`, `user_right`) VALUES (OLD.chat_id, OLD.user_id, 'remove', OLD.user_right)
+$$
+DELIMITER ;
+
+CREATE TABLE `permissions_changes` (
+  `chat_id` bigint(20) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `action` varchar(10) COLLATE utf8_bin NOT NULL,
+  `user_right` varchar(50) COLLATE utf8_bin NOT NULL,
+  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 CREATE TABLE `user_name` (
   `user_id` int(11) NOT NULL,
