@@ -4,6 +4,7 @@ import os
 import sys
 import time
 import traceback
+import logging
 
 from flask import Flask, request
 from celery import Celery
@@ -13,10 +14,9 @@ from Kamisu66 import EthicsCommittee
 
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 
-broker_url = 'amqp://guest@localhost'
-
 app = Flask(__name__)
-celery = Celery(app.name, broker=broker_url)
+celery = Celery('EthicsCommittee')
+celery.config_from_object('config_variable')
 
 
 @app.route("/pyversion")
@@ -24,12 +24,14 @@ def pyversion():
     return sys.version
 
 
-@celery.task(bind=True)
+@celery.task(bind=True, name='EthicsCommittee.process', queue='EthicsCommittee')
 def process(self, text):
+    logging.info(text)
     try:
         data = json.loads(text)
         if 'message' in data and int(data['message']['date']) < time.time() - 600:
-            return "OK"
+            logging.warning('\tignore')
+            return
         EC = EthicsCommittee(update=data)
         for extension in extensions:
             try:
