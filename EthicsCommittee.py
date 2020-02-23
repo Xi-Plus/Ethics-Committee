@@ -44,6 +44,7 @@ def process(self, text):  # pylint: disable=W0613
         EC.log(traceback.format_exc())
     return None
 
+
 @app.route("/web")
 def web():
     if "q" in request.args:
