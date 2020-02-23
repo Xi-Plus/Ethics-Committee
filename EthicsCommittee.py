@@ -25,13 +25,13 @@ def pyversion():
 
 
 @celery.task(bind=True, name='EthicsCommittee.process', queue='EthicsCommittee')
-def process(self, text):
+def process(self, text):  # pylint: disable=W0613
     logging.info(text)
     try:
         data = json.loads(text)
         if 'message' in data and int(data['message']['date']) < time.time() - 600:
             logging.warning('\tignore')
-            return
+            return None
         EC = EthicsCommittee(update=data)
         for extension in extensions:
             try:
@@ -42,7 +42,7 @@ def process(self, text):
     except Exception:
         EC = EthicsCommittee(0, 0)
         EC.log(traceback.format_exc())
-
+    return None
 
 @app.route("/web")
 def web():
