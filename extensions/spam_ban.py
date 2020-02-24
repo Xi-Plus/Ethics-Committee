@@ -260,11 +260,17 @@ class Spam_ban(EthicsCommitteeExtension):
                                                         self.duration_text(604800), failed)
 
                     if self.chat_id in self.test_chat and re.search(self.CMD_TEST_RULE, text):
+                        text1 = re.sub(self.CMD_TEST_RULE, '', text)
+                        text2 = self._Equivset(text1)
                         self.EC.cur.execute(
-                            """SELECT `key`, `value` FROM `group_setting` WHERE `key` LIKE %s AND (%s REGEXP `value` OR %s REGEXP `value`)""",
-                            ('spam_ban_regex_%', re.sub(self.CMD_TEST_RULE, '', text), textnorm))
-                        rows = self.EC.cur.fetchall()
-                        response = '正規化文字：{}\n'.format(textnorm)
+                            """SELECT `key`, `value` FROM `group_setting` WHERE `key` LIKE %s AND""",
+                            ('spam_ban_regex_%'))
+                        all_rules = self.EC.cur.fetchall()
+                        rows = []
+                        for row in all_rules:
+                            if re.search(row[1], text1) or re.search(row[1], text2):
+                                rows.append(row)
+                        response = '測試文字：{} 正規化文字：{}\n'.format(text1, text2)
                         if rows:
                             response += '符合以下規則：\n'
                             for row in rows:
