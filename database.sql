@@ -123,7 +123,7 @@ CREATE TABLE `group_setting` (
 CREATE TABLE `log` (
   `log_id` int(11) NOT NULL,
   `chat_id` bigint(20) NOT NULL,
-  `message` text COLLATE utf8_bin NOT NULL,
+  `message` text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
