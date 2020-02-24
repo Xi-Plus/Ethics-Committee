@@ -6,7 +6,7 @@ class UserNameChanges(EthicsCommitteeExtension):  # pylint: disable=W0223
         EC = EthicsCommittee(0, 0)
         EC.cur.execute(
             """SELECT `user_id`, `old_name`, `new_name`, `time` FROM `user_name_changes`
-            ORDER BY `time` DESC""")
+            ORDER BY `time` DESC LIMIT 500""")
         rows = EC.cur.fetchall()
         text = """<!DOCTYPE html>
             <html>
