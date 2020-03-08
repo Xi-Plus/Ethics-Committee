@@ -263,7 +263,7 @@ class Spam_ban(EthicsCommitteeExtension):
                         text1 = re.sub(self.CMD_TEST_RULE, '', text)
                         text2 = self._Equivset(text1)
                         self.EC.cur.execute(
-                            """SELECT `key`, `value` FROM `group_setting` WHERE `key` LIKE %s AND""",
+                            """SELECT `key`, `value` FROM `group_setting` WHERE `key` LIKE %s""",
                             ('spam_ban_regex_%'))
                         all_rules = self.EC.cur.fetchall()
                         rows = []
