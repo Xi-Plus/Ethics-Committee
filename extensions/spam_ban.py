@@ -452,6 +452,7 @@ class Spam_ban(EthicsCommitteeExtension):
             self.EC.sendmessage('你不能對機器人執行此操作', reply=self.message_id)
             return
 
+        self.EC.deletemessage(self.chat_id, self.message_id)
         if args.dry_run:
             failed = len(self.global_ban_chat)
             reason += ' (dry run)'
@@ -467,7 +468,6 @@ class Spam_ban(EthicsCommitteeExtension):
             failed,
             self.GROUP_SET,
         )
-        self.EC.deletemessage(self.chat_id, self.message_id)
 
     def cmd_globalunban(self, action, cmd):
         if not self.EC.check_permission(self.user_id, self.PERMISSION_GLOBALBAN, 0):
@@ -503,6 +503,7 @@ class Spam_ban(EthicsCommitteeExtension):
             self.EC.sendmessage('你不能對機器人執行此操作', reply=self.message_id)
             return
 
+        self.EC.deletemessage(self.chat_id, self.message_id)
         if args.dry_run:
             failed = len(self.global_ban_chat)
             reason += ' (dry run)'
@@ -516,7 +517,6 @@ class Spam_ban(EthicsCommitteeExtension):
             failed,
             self.GROUP_SET,
         )
-        self.EC.deletemessage(self.chat_id, self.message_id)
 
     def cmd_globalrestrict(self, action, cmd):
         if not self.EC.check_permission(self.user_id, self.PERMISSION_GLOBALBAN, 0):
@@ -574,6 +574,7 @@ class Spam_ban(EthicsCommitteeExtension):
             self.EC.sendmessage('找不到執行的群組集合 {}'.format(group_set), reply=self.message_id)
             return
 
+        self.EC.deletemessage(self.chat_id, self.message_id)
         if args.dry_run:
             failed = len(run_chats)
             reason += ' (dry run)'
@@ -587,7 +588,6 @@ class Spam_ban(EthicsCommitteeExtension):
             failed,
             group_set,
         )
-        self.EC.deletemessage(self.chat_id, self.message_id)
 
     def cmd_globalunrestrict(self, action, cmd):
         if not self.EC.check_permission(self.user_id, self.PERMISSION_GLOBALBAN, 0):
@@ -636,6 +636,7 @@ class Spam_ban(EthicsCommitteeExtension):
             for row in rows:
                 run_chats.append(int(row[0]))
 
+        self.EC.deletemessage(self.chat_id, self.message_id)
         if args.dry_run:
             failed = len(group_set)
             reason += ' (dry run)'
@@ -649,7 +650,6 @@ class Spam_ban(EthicsCommitteeExtension):
             failed,
             group_set,
         )
-        self.EC.deletemessage(self.chat_id, self.message_id)
 
     def cmd_grant(self):
         if not self.EC.check_permission(self.user_id, self.PERMISSION_GRANT, 0):
