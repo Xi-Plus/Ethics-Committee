@@ -113,9 +113,11 @@ class SendPhotoChangeLogo(EthicsCommitteeExtension):
         <table>
         <tr>
         <th>chat</th>
-        <th>grant permission</th>
-        <th>revoke permission</th>
-        <th>change logo</th>
+        <th>cmd grant permission</th>
+        <th>cmd revoke permission</th>
+        <th>cmd change logo</th>
+        <th>right grant</th>
+        <th>right change logo</th>
         </tr>
         """
         for chat_id in self.settings:
@@ -134,6 +136,23 @@ class SendPhotoChangeLogo(EthicsCommitteeExtension):
             for cmd in setting['logo']:
                 html += """<li>{0}</li>""".format(cmd)
             html += """<ul></td>"""
+
+            html += """<td><ul>"""
+            EC.cur.execute(
+                """SELECT `user_id` FROM `permissions` WHERE `chat_id` = %s AND `user_right` = %s ORDER BY `user_id` ASC""", (chat_id, self.PERMISSION_GRANT))
+            rows = EC.cur.fetchall()
+            for row in rows:
+                html += """<li>{0}</li>""".format(row[0])
+            html += """<ul></td>"""
+
+            html += """<td><ul>"""
+            EC.cur.execute(
+                """SELECT `user_id` FROM `permissions` WHERE `chat_id` = %s AND `user_right` = %s ORDER BY `user_id` ASC""", (chat_id, self.PERMISSION_CHANGELOGO))
+            rows = EC.cur.fetchall()
+            for row in rows:
+                html += """<li>{0}</li>""".format(row[0])
+            html += """<ul></td>"""
+
             html += """</tr>"""
         html += """</table>"""
 
