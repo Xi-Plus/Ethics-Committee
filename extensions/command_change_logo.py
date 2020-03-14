@@ -113,11 +113,9 @@ class SendPhotoChangeLogo(EthicsCommitteeExtension):
         <table>
         <tr>
         <th>chat</th>
-        <th>cmd grant permission</th>
-        <th>cmd revoke permission</th>
-        <th>cmd change logo</th>
-        <th>right grant</th>
-        <th>right change logo</th>
+        <th>command</th>
+        <th>permission grant</th>
+        <th>permission change_logo</th>
         </tr>
         """
         for chat_id in self.settings:
@@ -126,31 +124,38 @@ class SendPhotoChangeLogo(EthicsCommitteeExtension):
             setting = self.settings[chat_id]
 
             html += """<tr>"""
-            html += """<td>{0}<br>{1}</td><td>{2}</td><td>{3}</td>""".format(
+            html += """<td>{0}<br>{1}</td>""".format(
                 EC.get_group_name(chat_id),
                 chat_id,
+            )
+            html += """<td>"""
+            html += """grant permission<br><ul><li>{0}</li></ul>""".format(
                 setting['permissions']['grant'],
+            )
+            html += """revoke permission<br><ul><li>{0}</li></ul>""".format(
                 setting['permissions']['revoke'],
             )
-            html += """<td><ul>"""
+            html += """change logo<br><ul>"""
             for cmd in setting['logo']:
                 html += """<li>{0}</li>""".format(cmd)
+            html += """<ul>"""
+
+            html += """</td>"""
+
+            html += """<td><ul>"""
+            EC.cur.execute(
+                """SELECT `permissions`.`user_id`, `full_name` FROM `permissions` LEFT JOIN `user_name` ON `permissions`.`user_id` = `user_name`.`user_id` WHERE `chat_id` = %s AND `user_right` = %s ORDER BY `permissions`.`user_id` ASC""", (chat_id, self.PERMISSION_GRANT))
+            rows = EC.cur.fetchall()
+            for row in rows:
+                html += """<li>{0}（{1}）</li>""".format(row[0], row[1])
             html += """<ul></td>"""
 
             html += """<td><ul>"""
             EC.cur.execute(
-                """SELECT `user_id` FROM `permissions` WHERE `chat_id` = %s AND `user_right` = %s ORDER BY `user_id` ASC""", (chat_id, self.PERMISSION_GRANT))
+                """SELECT `permissions`.`user_id`, `full_name` FROM `permissions` LEFT JOIN `user_name` ON `permissions`.`user_id` = `user_name`.`user_id` WHERE `chat_id` = %s AND `user_right` = %s ORDER BY `permissions`.`user_id` ASC""", (chat_id, self.PERMISSION_CHANGELOGO))
             rows = EC.cur.fetchall()
             for row in rows:
-                html += """<li>{0}</li>""".format(row[0])
-            html += """<ul></td>"""
-
-            html += """<td><ul>"""
-            EC.cur.execute(
-                """SELECT `user_id` FROM `permissions` WHERE `chat_id` = %s AND `user_right` = %s ORDER BY `user_id` ASC""", (chat_id, self.PERMISSION_CHANGELOGO))
-            rows = EC.cur.fetchall()
-            for row in rows:
-                html += """<li>{0}</li>""".format(row[0])
+                html += """<li>{0}（{1}）</li>""".format(row[0], row[1])
             html += """<ul></td>"""
 
             html += """</tr>"""
