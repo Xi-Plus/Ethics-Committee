@@ -85,6 +85,16 @@ class Spam_ban(EthicsCommitteeExtension):
     def __init__(self, warn_text, ban_youtube_link_regex, log_chat_id, warn_forward_new_chat_limit, warn_forward_chat_id, delete_limit):
         self.EC = EthicsCommittee(0, 0)
 
+        self._load_setting_from_database()
+
+        self.warn_text = warn_text
+        self.ban_youtube_link_regex = ban_youtube_link_regex
+        self.log_chat_id = log_chat_id
+        self.warn_forward_new_chat_limit = warn_forward_new_chat_limit
+        self.warn_forward_chat_id = warn_forward_chat_id
+        self.delete_limit = delete_limit
+
+    def _load_setting_from_database(self):
         self.EC.cur.execute("""SET SESSION group_concat_max_len=1048576""")
 
         self.EC.cur.execute(
@@ -106,13 +116,6 @@ class Spam_ban(EthicsCommitteeExtension):
             """SELECT GROUP_CONCAT(`value` ORDER BY `value` SEPARATOR '|') FROM `group_setting` WHERE `key` IN (%s, %s, %s, %s) GROUP BY ''""",
             (self.SETTING_REGEX_WARN_TEXT, self.SETTING_REGEX_WARN_USERNAME, self.SETTING_REGEX_BAN_TEXT, self.SETTING_REGEX_BAN_USERNAME))
         self.warn_username_regex = self.EC.cur.fetchone()[0]
-
-        self.warn_text = warn_text
-        self.ban_youtube_link_regex = ban_youtube_link_regex
-        self.log_chat_id = log_chat_id
-        self.warn_forward_new_chat_limit = warn_forward_new_chat_limit
-        self.warn_forward_chat_id = warn_forward_chat_id
-        self.delete_limit = delete_limit
 
         self.ban_text_chat = [
             int(row[0]) for row in self.EC.list_group_with_setting(self.SETTING_BAN_TEXT)]
@@ -785,6 +788,7 @@ class Spam_ban(EthicsCommitteeExtension):
                                 .format(rule_type.replace('spam_ban_regex_', ''), rule, message_append),
                                 reply=self.message_id,
                                 parse_mode='')
+            self._load_setting_from_database()
         else:
             self.EC.sendmessage('加入{}規則 {} 失敗{}'
                                 .format(rule_type.replace('spam_ban_regex_', ''), rule, message_append),
@@ -816,6 +820,7 @@ class Spam_ban(EthicsCommitteeExtension):
                                 .format(rule_type.replace('spam_ban_regex_', ''), rule),
                                 reply=self.message_id,
                                 parse_mode='')
+            self._load_setting_from_database()
         else:
             self.EC.sendmessage('移除{}規則 {} 失敗，可能是因為無此規則'
                                 .format(rule_type.replace('spam_ban_regex_', ''), rule),
