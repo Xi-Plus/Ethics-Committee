@@ -240,10 +240,16 @@ class Spam_ban(EthicsCommitteeExtension):
                     if user_msg_cnt <= 5:
                         if self.chat_id in self.ban_text_chat and self.check_regex(self.ban_text_regex, to_check_text):
                             self.action_del_all_msg(self.user_id)
+                            single_ban_ok = None
                             if self.chat_id not in self.global_ban_chat:
-                                self.action_ban_a_chat(self.user_id, self.chat_id, 604800)
+                                single_ban_ok = self.action_ban_a_chat(self.user_id, self.chat_id, 604800)
                             successed, failed = self.action_ban_all_chat(
                                 self.user_id, 604800)
+                            if single_ban_ok is not None:
+                                if single_ban_ok:
+                                    successed += 1
+                                else:
+                                    failed += 1
                             self.action_log_bot(self.user_id, '宣傳文字',
                                                 self.duration_text(604800), successed, failed)
 
