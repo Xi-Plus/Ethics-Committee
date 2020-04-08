@@ -275,13 +275,14 @@ class Spam_ban(EthicsCommitteeExtension):
                     if self.chat_id in self.test_chat and re.search(self.CMD_TEST_RULE, text):
                         text1 = re.sub(self.CMD_TEST_RULE, '', text)
                         text2 = self._Equivset(text1)
+                        to_check_text = [text1, text2]
                         self.EC.cur.execute(
                             """SELECT `key`, `value` FROM `group_setting` WHERE `key` LIKE %s""",
                             ('spam_ban_regex_%'))
                         all_rules = self.EC.cur.fetchall()
                         rows = []
                         for row in all_rules:
-                            if re.search(row[1], text1) or re.search(row[1], text2):
+                            if self.check_regex(row[1], to_check_text):
                                 rows.append(row)
                         response = '測試文字：{} 正規化文字：{}\n'.format(text1, text2)
                         if rows:
@@ -1032,7 +1033,7 @@ class Spam_ban(EthicsCommitteeExtension):
 
     def check_regex(self, regex, texts):
         for text in texts:
-            if text.strip() != '' and re.search(regex, text, flags=re.I):
+            if text.strip() != '' and re.search(regex, text, flags=re.I | re.S):
                 return True
         return False
     # function end
