@@ -25,7 +25,7 @@ class CommonGroupsInfo(EthicsCommitteeExtension):  # pylint: disable=W0223
 
         response = None
         if rows:
-            response = '共同群組有'
+            response = '<a href="tg://user?id={0}">{0}</a>的共同群組有'.format(user_id)
             for i, chat in enumerate(rows[:3]):
                 if i > 0:
                     response += '、'
