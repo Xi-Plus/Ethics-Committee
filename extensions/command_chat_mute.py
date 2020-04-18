@@ -5,7 +5,7 @@ import telegram
 from Kamisu66 import EthicsCommitteeExtension
 
 
-class CommandChatMute(EthicsCommitteeExtension):
+class CommandChatMute(EthicsCommitteeExtension):  # pylint: disable=W0223
     MODULE_NAME = 'command_change_logo'
     PERMISSION_CHANGELOGO = MODULE_NAME + '_change_logo'
     PERMISSION_GRANT = MODULE_NAME + '_grant'
