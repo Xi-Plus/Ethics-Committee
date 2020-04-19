@@ -239,19 +239,7 @@ class Spam_ban(EthicsCommitteeExtension):
                 if "text" in mode:
                     if user_msg_cnt <= 5:
                         if self.chat_id in self.ban_text_chat and self.check_regex(self.ban_text_regex, to_check_text):
-                            self.action_del_all_msg(self.user_id)
-                            single_ban_ok = None
-                            if self.chat_id not in self.global_ban_chat:
-                                single_ban_ok = self.action_ban_a_chat(self.user_id, self.chat_id, 604800)
-                            successed, failed = self.action_ban_all_chat(
-                                self.user_id, 604800)
-                            if single_ban_ok is not None:
-                                if single_ban_ok:
-                                    successed += 1
-                                else:
-                                    failed += 1
-                            self.action_log_bot(self.user_id, '宣傳文字',
-                                                self.duration_text(604800), successed, failed)
+                            self.action_all_in_one(self.chat_id, self.user_id, self.message_id, '宣傳文字')
 
                         elif self.chat_id in self.warn_text_chat and self.check_regex(self.warn_text_regex, to_check_text):
                             self.action_warn(self.message_id)
@@ -264,13 +252,7 @@ class Spam_ban(EthicsCommitteeExtension):
                                     '[spam_ban] find youtube link {}'.format(m.group(1)))
                                 ythtml = requests.get(m.group(1)).text
                                 if re.search(self.ban_youtube_link_regex, ythtml):
-                                    self.action_del_all_msg(self.user_id)
-                                    if self.chat_id not in self.global_ban_chat:
-                                        self.action_ban_a_chat(self.user_id, self.chat_id, 604800)
-                                    successed, failed = self.action_ban_all_chat(
-                                        self.user_id, 604800)
-                                    self.action_log_bot(self.user_id, '傳送特定YouTube頻道連結',
-                                                        self.duration_text(604800), successed, failed)
+                                    self.action_all_in_one(self.chat_id, self.user_id, self.message_id, '傳送特定YouTube頻道連結')
 
                     if self.chat_id in self.test_chat and re.search(self.CMD_TEST_RULE, text):
                         text1 = re.sub(self.CMD_TEST_RULE, '', text)
@@ -297,12 +279,7 @@ class Spam_ban(EthicsCommitteeExtension):
 
                 if "username" in mode:
                     if self.chat_id in self.ban_username_chat and self.check_regex(self.ban_username_regex, to_check_text):
-                        self.action_del_all_msg(self.user_id)
-                        if self.chat_id not in self.global_ban_chat:
-                            self.action_ban_a_chat(self.user_id, self.chat_id, 604800)
-                        successed, failed = self.action_ban_all_chat(self.user_id, 604800)
-                        self.action_log_bot(self.user_id, '宣傳性用戶名',
-                                            self.duration_text(604800), successed, failed)
+                        self.action_all_in_one(self.chat_id, self.user_id, self.message_id, '宣傳性用戶名')
 
                     elif self.chat_id in self.warn_username_chat and self.check_regex(self.warn_username_regex, to_check_text):
                         self.action_warn(self.message_id)
@@ -310,12 +287,7 @@ class Spam_ban(EthicsCommitteeExtension):
                 if "photo" in mode:
                     if self.chat_id in self.ban_photo_chat:
                         if user_msg_cnt <= 5:
-                            if self.chat_id not in self.global_ban_chat:
-                                self.action_ban_a_chat(self.user_id, self.chat_id, 604800)
-                            successed, failed = self.action_ban_all_chat(
-                                self.user_id, 604800)
-                            self.action_log_bot(
-                                self.user_id, '發送圖片', self.duration_text(604800), successed, failed)
+                            self.action_all_in_one(self.chat_id, self.user_id, self.message_id, '發送圖片')
 
                 if "forward" in mode and not self.message_deleted:
                     if user_msg_cnt <= 5:
@@ -979,6 +951,20 @@ class Spam_ban(EthicsCommitteeExtension):
         self.EC.log("[spam_ban] message {}".format(message))
         self.EC.sendmessage(chat_id=self.log_chat_id,
                             message=message, parse_mode="HTML")
+
+    def action_all_in_one(self, chat_id, user_id, message_id, reason):
+        self.EC.deletemessage(chat_id, message_id)
+        single_ban_ok = None
+        if chat_id not in self.global_ban_chat:
+            single_ban_ok = self.action_ban_a_chat(user_id, chat_id, 604800)
+        successed, failed = self.action_ban_all_chat(user_id, 604800)
+        if single_ban_ok is not None:
+            if single_ban_ok:
+                successed += 1
+            else:
+                failed += 1
+        self.action_del_all_msg(user_id)
+        self.action_log_bot(user_id, reason, self.duration_text(604800), successed, failed)
 
     def _log_format_chat_title(self):
         if self.chat_id in self.global_ban_chat:
