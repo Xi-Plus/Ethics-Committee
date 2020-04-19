@@ -23,9 +23,9 @@ class CommonGroupsInfo(EthicsCommitteeExtension):  # pylint: disable=W0223
         )
         rows = EC.cur.fetchall()
 
-        response = None
+        response = '<a href="tg://user?id={0}">{0}</a>'.format(user_id)
         if rows:
-            response = '<a href="tg://user?id={0}">{0}</a>的共同群組有'.format(user_id)
+            response += '的共同群組有'
             for i, chat in enumerate(rows[:3]):
                 if i > 0:
                     response += '、'
@@ -33,7 +33,7 @@ class CommonGroupsInfo(EthicsCommitteeExtension):  # pylint: disable=W0223
             if len(rows) > 3:
                 response += '及其他{}個群組'.format(len(rows) - 3)
         else:
-            response = '無共同群組'
+            response += '無共同群組'
 
         return response
 
