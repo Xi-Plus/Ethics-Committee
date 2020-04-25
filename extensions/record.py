@@ -118,6 +118,16 @@ class Record(EthicsCommitteeExtension):  # pylint: disable=W0223
                     EC.addmessage(user_id, message_id, full_name, type_prefix + "location",
                                   json.dumps(message.location.to_dict()), date,
                                   reply_to_message_id, reply_to_user_id)
+                if message.dice:
+                    mtype.append("dice")
+                    EC.addmessage(user_id, message_id, full_name, type_prefix + "dice",
+                                  message.dice.value, date,
+                                  reply_to_message_id, reply_to_user_id)
+                if message.poll:
+                    mtype.append("poll")
+                    EC.addmessage(user_id, message_id, full_name, type_prefix + "poll",
+                                  json.dumps(message.poll.to_dict()), date,
+                                  reply_to_message_id, reply_to_user_id)
                 if message.new_chat_members:
                     mtype.append("new_chat_member")
                     EC.addmessage(user_id, message_id, full_name,
