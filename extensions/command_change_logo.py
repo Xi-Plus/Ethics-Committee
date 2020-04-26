@@ -88,8 +88,16 @@ class SendPhotoChangeLogo(EthicsCommitteeExtension):
                     EC.update.effective_chat.send_action(
                         telegram.ChatAction.UPLOAD_PHOTO)
 
-                    EC.bot.set_chat_photo(
-                        chat_id=EC.update.effective_chat.id, photo=open(logopath, 'rb'))
+                    try:
+                        EC.bot.set_chat_photo(
+                            chat_id=EC.update.effective_chat.id,
+                            photo=open(logopath, 'rb'),
+                        )
+                    except telegram.error.BadRequest as e:
+                        message.reply_text(
+                            text='更換圖片失敗：{}'.format(e),
+                            quote=True,
+                        )
                 else:
                     message.reply_text(
                         text='你沒有權限進行更換頭貼的動作',
