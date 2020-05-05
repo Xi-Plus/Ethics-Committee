@@ -29,14 +29,19 @@ class CommandChatMute(EthicsCommitteeExtension):  # pylint: disable=W0223
 
         if re.search(settings['mute'], text):
             if EC.check_permission(user_id, self.PERMISSION_CHANGELOGO, chat_id):
-                EC.update.effective_chat.set_permissions(
-                    telegram.ChatPermissions(
-                        can_send_messages=False
+                try:
+                    EC.update.effective_chat.set_permissions(
+                        telegram.ChatPermissions(
+                            can_send_messages=False
+                        )
                     )
-                )
-                message.reply_text(
-                    text='已全群禁言',
-                    quote=True)
+                    message.reply_text(
+                        text='已全群禁言',
+                        quote=True)
+                except telegram.error.BadRequest as e:
+                    message.reply_text(
+                        text='全群禁言失敗：{}'.format(e),
+                        quote=True)
             else:
                 message.reply_text(
                     text='你沒有權限進行全群禁言的動作',
@@ -45,19 +50,24 @@ class CommandChatMute(EthicsCommitteeExtension):  # pylint: disable=W0223
 
         if re.search(settings['unmute'], text):
             if EC.check_permission(user_id, self.PERMISSION_CHANGELOGO, chat_id):
-                EC.update.effective_chat.set_permissions(
-                    telegram.ChatPermissions(
-                        can_send_messages=True,
-                        can_send_media_messages=True,
-                        can_send_polls=True,
-                        can_send_other_messages=True,
-                        can_add_web_page_previews=True,
-                        can_invite_users=True,
+                try:
+                    EC.update.effective_chat.set_permissions(
+                        telegram.ChatPermissions(
+                            can_send_messages=True,
+                            can_send_media_messages=True,
+                            can_send_polls=True,
+                            can_send_other_messages=True,
+                            can_add_web_page_previews=True,
+                            can_invite_users=True,
+                        )
                     )
-                )
-                message.reply_text(
-                    text='已全群解除禁言',
-                    quote=True)
+                    message.reply_text(
+                        text='已全群解除禁言',
+                        quote=True)
+                except telegram.error.BadRequest as e:
+                    message.reply_text(
+                        text='全群解除禁言失敗：{}'.format(e),
+                        quote=True)
             else:
                 message.reply_text(
                     text='你沒有權限進行全群禁言的動作',
