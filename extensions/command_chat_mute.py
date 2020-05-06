@@ -52,14 +52,7 @@ class CommandChatMute(EthicsCommitteeExtension):  # pylint: disable=W0223
             if EC.check_permission(user_id, self.PERMISSION_CHANGELOGO, chat_id):
                 try:
                     EC.update.effective_chat.set_permissions(
-                        telegram.ChatPermissions(
-                            can_send_messages=True,
-                            can_send_media_messages=True,
-                            can_send_polls=True,
-                            can_send_other_messages=True,
-                            can_add_web_page_previews=True,
-                            can_invite_users=True,
-                        )
+                        telegram.ChatPermissions(**settings['permissions'])
                     )
                     message.reply_text(
                         text='已全群解除禁言',
