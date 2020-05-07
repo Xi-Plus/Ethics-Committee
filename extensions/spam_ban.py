@@ -460,12 +460,13 @@ class Spam_ban(EthicsCommitteeExtension):
 
         self.EC.deletemessage(self.chat_id, self.message_id)
         if args.dry_run:
+            successed = 0
             failed = len(self.global_ban_chat)
             reason += ' (dry run)'
         else:
             successed, failed = self.action_ban_all_chat(ban_user_id, duration)
-        if not args.no_del:
-            self.action_del_all_msg(ban_user_id)
+            if not args.no_del:
+                self.action_del_all_msg(ban_user_id)
         self.action_log_admin(
             '#封', self.user_id,
             self.first_name,
