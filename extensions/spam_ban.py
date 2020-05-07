@@ -71,6 +71,9 @@ class Spam_ban(EthicsCommitteeExtension):
     RATE_LIMIT_WARN = 0.02
     RATE_LIMIT_DISALLOW = 0.05
 
+    DEFAULT_REASON = 'Spam'
+    DEFAULT_DURATION = '1w'
+
     EC = None
     chat_id = None
     user_id = None
@@ -412,10 +415,14 @@ class Spam_ban(EthicsCommitteeExtension):
         parser = argparse.ArgumentParser(prog='/{0}'.format(action))
         parser.add_argument(
             'user', type=str, default=None, nargs='?', help='欲封鎖用戶ID，不指定時需回覆訊息')
-        parser.add_argument('-d', type=str, metavar='時長', default='1w',
-                            help='接受單位為秒的整數，或是<整數><單位>的格式，例如：60s, 1min, 2h, 3d, 4w, 5m，永久為inf。預設：%(default)s')
         parser.add_argument(
-            '-r', type=str, metavar='原因', default='Spam', help='預設：%(default)s')
+            '-d', type=str, metavar='時長',
+            help='接受單位為秒的整數，或是<整數><單位>的格式，例如：60s, 1min, 2h, 3d, 4w, 5m，永久為inf。預設：{}'.format(self.DEFAULT_DURATION)
+        )
+        parser.add_argument(
+            '-r', type=str, metavar='原因',
+            help='預設：{}'.format(self.DEFAULT_REASON)
+        )
         parser.add_argument('--no-del', action='store_true', default=False, help='不刪除訊息')
         parser.add_argument('--dry-run', action='store_true', default=False, help='在日誌記錄但不執行封鎖')
         ok, args = self.EC.parse_command(parser, cmd)
@@ -433,7 +440,16 @@ class Spam_ban(EthicsCommitteeExtension):
 
         ban_user_id = int(ban_user_id)
         reason = args.r
-        duration = self.parse_duration(args.d)
+        duration = args.d
+        if reason is None:
+            reason = self.DEFAULT_REASON
+        else:
+            if duration is None:
+                duration = 'inf'
+        if duration is None:
+            duration = self.DEFAULT_DURATION
+
+        duration = self.parse_duration(duration)
         if duration is None:
             self.EC.sendmessage('指定的時長無效', reply=self.message_id)
             return
