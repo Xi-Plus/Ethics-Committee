@@ -417,7 +417,7 @@ class Spam_ban(EthicsCommitteeExtension):
             'user', type=str, default=None, nargs='?', help='欲封鎖用戶ID，不指定時需回覆訊息')
         parser.add_argument(
             '-d', type=str, metavar='時長',
-            help='接受單位為秒的整數，或是<整數><單位>的格式，例如：60s, 1min, 2h, 3d, 4w, 5m，永久為inf。預設：{}'.format(self.DEFAULT_DURATION)
+            help='接受單位為秒的整數，或是<整數><單位>的格式，例如：60s, 1min, 2h, 3d, 4w, 5m，永久為inf。預設：{}，有給-r參數時為inf'.format(self.DEFAULT_DURATION)
         )
         parser.add_argument(
             '-r', type=str, metavar='原因',
