@@ -144,7 +144,7 @@ DELIMITER $$
 CREATE TRIGGER `count` AFTER INSERT ON `message` FOR EACH ROW BEGIN
 INSERT INTO `message_count` (`chat_id`, `user_id`, `type`, `count`) VALUES (NEW.chat_id, NEW.user_id, NEW.type, 1)
 
-ON DUPLICATE KEY UPDATE `count` = `count`+1;
+ON DUPLICATE KEY UPDATE `count` = `count`+1, `updated_at` = CURRENT_TIMESTAMP;
 
 END
 $$
@@ -154,7 +154,9 @@ CREATE TABLE `message_count` (
   `chat_id` bigint(20) NOT NULL,
   `user_id` int(11) NOT NULL,
   `type` varchar(20) COLLATE utf8_bin NOT NULL,
-  `count` int(11) NOT NULL DEFAULT '0'
+  `count` int(11) NOT NULL DEFAULT '0',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 CREATE TABLE `permissions` (
