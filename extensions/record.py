@@ -130,10 +130,23 @@ class Record(EthicsCommitteeExtension):  # pylint: disable=W0223
                                   reply_to_message_id, reply_to_user_id)
                 if message.new_chat_members:
                     mtype.append("new_chat_member")
-                    EC.addmessage(user_id, message_id, full_name,
-                                  type_prefix + "new_chat_member",
-                                  message.new_chat_members[0].id, date,
-                                  reply_to_message_id, reply_to_user_id)
+                    if user_id == message.new_chat_members[0].id:
+                        EC.addmessage(
+                            user_id, message_id, full_name,
+                            type_prefix + "new_chat_member",
+                            'Join by themself', date,
+                            reply_to_message_id, reply_to_user_id)
+                    else:
+                        EC.addmessage(
+                            user_id, message_id, full_name,
+                            type_prefix + "new_chat_member",
+                            'Invite {}'.format(message.new_chat_members[0].id), date,
+                            reply_to_message_id, reply_to_user_id)
+                        EC.addmessage(
+                            message.new_chat_members[0].id, message_id, message.new_chat_members[0].full_name,
+                            type_prefix + "new_chat_member",
+                            'Invited by {}'.format(user_id), date,
+                            reply_to_message_id, reply_to_user_id)
                 if message.left_chat_member:
                     mtype.append("left_chat_member")
                     EC.addmessage(user_id, message_id, full_name,
