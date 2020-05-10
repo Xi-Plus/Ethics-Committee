@@ -50,7 +50,7 @@ class CommonGroupsInfo(EthicsCommitteeExtension):  # pylint: disable=W0223
 
         if EC.update.message.new_chat_members:
             if self.setting[chat_id]['joincheck']:
-                user_id = EC.update.effective_user.id
+                user_id = EC.update.effective_message.new_chat_members[0].id
                 response = self._check_user(EC, chat_id, user_id)
 
         elif EC.update.message.text:
