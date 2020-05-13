@@ -181,16 +181,19 @@ class Spam_ban(EthicsCommitteeExtension):
                         message["reply_to_message"]["from"]["last_name"]
 
             if 'text' in message and message['text'].startswith('/'):
-                cmd = shlex.split(message['text'], posix=True)
-                action = cmd[0]
-                cmd = cmd[1:]
-                action = action[1:]
-                action = re.sub(r'@{}$'.format(
-                    re.escape(EC.bot.username)), '', action)
-                action = action.lower()
-                self.is_reply = 'reply_to_message' in message
+                try:
+                    cmd = shlex.split(message['text'], posix=True)
+                    action = cmd[0]
+                    cmd = cmd[1:]
+                    action = action[1:]
+                    action = re.sub(r'@{}$'.format(
+                        re.escape(EC.bot.username)), '', action)
+                    action = action.lower()
+                    self.is_reply = 'reply_to_message' in message
 
-                self.handle_cmd(action, cmd)
+                    self.handle_cmd(action, cmd)
+                except ValueError:
+                    pass
 
             if self.chat_id not in self.global_ban_chat + self.test_chat + self.global_ban_cmd_chat:
                 return
