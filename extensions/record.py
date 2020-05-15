@@ -1,4 +1,5 @@
 import json
+import time
 import traceback
 
 from Kamisu66 import EthicsCommitteeExtension
@@ -31,6 +32,7 @@ class Record(EthicsCommitteeExtension):  # pylint: disable=W0223
             date = int(message.edit_date.timestamp())
         else:
             date = int(message.date.timestamp())
+        date -= time.timezone
         message_id = message.message_id
         reply_to_message_id = None
         reply_to_user_id = None
