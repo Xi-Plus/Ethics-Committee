@@ -427,6 +427,7 @@ class Spam_ban(EthicsCommitteeExtension):
             help='預設：{}'.format(self.DEFAULT_REASON)
         )
         parser.add_argument('--no-del', action='store_true', default=False, help='不刪除訊息')
+        parser.add_argument('--no-ban', action='store_true', default=False, help='不進行封鎖')
         parser.add_argument('--dry-run', action='store_true', default=False, help='在日誌記錄但不執行封鎖')
         ok, args = self.EC.parse_command(parser, cmd)
 
@@ -467,7 +468,11 @@ class Spam_ban(EthicsCommitteeExtension):
             failed = len(self.global_ban_chat)
             reason += ' (dry run)'
         else:
-            successed, failed = self.action_ban_all_chat(ban_user_id, duration)
+            if not args.no_ban:
+                successed, failed = self.action_ban_all_chat(ban_user_id, duration)
+            else:
+                successed = 0
+                failed = len(self.global_ban_chat)
             if not args.no_del:
                 self.action_del_all_msg(ban_user_id)
         self.action_log_admin(
@@ -916,11 +921,13 @@ class Spam_ban(EthicsCommitteeExtension):
     def action_del_all_msg(self, user_id):
         self.message_deleted = True
 
-        self.EC.cur.execute("""SELECT `chat_id`, `message_id`, `type` FROM `message` WHERE `user_id` = %s AND `date` > %s""", (user_id, int(
-            time.time() - self.delete_limit)))
+        date_limit = int(time.time() - self.delete_limit)
+        self.EC.cur.execute(
+            """SELECT `chat_id`, `message_id`, `type` FROM `message` WHERE `user_id` = %s AND `date` > %s""",
+            (user_id, date_limit)
+        )
         rows = self.EC.cur.fetchall()
-        self.EC.log(
-            "[spam_ban] find {} messages to delete".format(len(rows)))
+        self.EC.log('[spam_ban] find {} messages from {} after {} to delete'.format(len(rows), user_id, date_limit))
         for row in rows:
             if int(row[0]) in self.global_ban_chat:
                 self.EC.log("[spam_ban] delete {} ({}) in {}".format(
