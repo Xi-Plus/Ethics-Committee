@@ -158,38 +158,33 @@ class Spam_ban(EthicsCommitteeExtension):
 
     def main(self, EC):
         self.EC = EC
+        self.update = update = EC.update
         data = EC.data
-        if "message" in data or "edited_message" in data:
-            if "message" in data:
-                message = data["message"]
-            elif "edited_message" in data:
-                message = data["edited_message"]
-            self.chat_id = message["chat"]["id"]
-            self.user_id = message["from"]["id"]
-            self.message_id = message["message_id"]
+        if update.message or update.edited_message:
+            if update.message:
+                message = update.message
+            elif update.edited_message:
+                message = update.edited_message
+            self.chat_id = update.effective_chat.id
+            self.user_id = update.effective_user.id
+            self.message_id = message.message_id
 
-            self.first_name = message["from"]["first_name"]
-            full_name = message["from"]["first_name"]
-            if "last_name" in message["from"]:
-                full_name += " " + message["from"]["last_name"]
-            if "reply_to_message" in message:
+            self.first_name = update.effective_user.first_name
+            full_name = update.effective_user.full_name
+            if message.reply_to_message:
                 self.is_reply = True
-                self.reply_to_user_id = message["reply_to_message"]["from"]["id"]
-                self.reply_to_full_name = message["reply_to_message"]["from"]["first_name"]
-                if "last_name" in message["reply_to_message"]["from"]:
-                    self.reply_to_full_name += ' ' + \
-                        message["reply_to_message"]["from"]["last_name"]
+                self.reply_to_user_id = message.reply_to_message.from_user.id
+                self.reply_to_full_name = message.reply_to_message.from_user.full_name
 
-            if 'text' in message and message['text'].startswith('/'):
+            if message.text and message.text.startswith('/'):
                 try:
-                    cmd = shlex.split(message['text'], posix=True)
+                    cmd = shlex.split(message.text, posix=True)
                     action = cmd[0]
                     cmd = cmd[1:]
                     action = action[1:]
                     action = re.sub(r'@{}$'.format(
                         re.escape(EC.bot.username)), '', action)
                     action = action.lower()
-                    self.is_reply = 'reply_to_message' in message
 
                     self.handle_cmd(action, cmd)
                 except ValueError:
@@ -200,24 +195,22 @@ class Spam_ban(EthicsCommitteeExtension):
 
             mode = []
             text = ""
-            if "text" in message:
-                text += message["text"]
+            if message.text:
+                text += message.text
                 mode.append("text")
-            if "photo" in message:
+            if message.photo:
                 mode.append("photo")
-            if "document" in message:
+            if message.document:
                 mode.append("photo")
-            if "caption" in message:
-                text += message["caption"]
+            if message.caption:
+                text += message.caption
                 mode.append("text")
-            if "new_chat_member" in message:
-                text += message["from"]["first_name"]
-                if "last_name" in message["from"]:
-                    text += " " + message["from"]["last_name"]
+            if message.new_chat_members and self.user_id == message.new_chat_members[0].id:
+                text += full_name
                 mode.append("username")
-            if "forward_from_chat" in message:
+            if message.forward_from_chat:
                 mode.append("forward")
-            if "forward_from" in message:
+            if message.forward_from:
                 mode.append("forward")
             if len(mode) == 0:
                 return
