@@ -159,7 +159,6 @@ class Spam_ban(EthicsCommitteeExtension):
     def main(self, EC):
         self.EC = EC
         self.update = update = EC.update
-        data = EC.data
         if update.message or update.edited_message:
             if update.message:
                 message = update.message
