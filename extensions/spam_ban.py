@@ -455,6 +455,8 @@ class Spam_ban(EthicsCommitteeExtension):
             self.EC.sendmessage('你不能對機器人執行此操作', reply=self.message_id)
             return
 
+        if self.is_reply:
+            self.EC.deletemessage(self.chat_id, self.update.message.reply_to_message.message_id)
         self.EC.deletemessage(self.chat_id, self.message_id)
         if args.dry_run:
             successed = 0
