@@ -174,6 +174,8 @@ class Spam_ban(EthicsCommitteeExtension):
                 self.is_reply = True
                 self.reply_to_user_id = message.reply_to_message.from_user.id
                 self.reply_to_full_name = message.reply_to_message.from_user.full_name
+            else:
+                self.is_reply = False
 
             if message.text and message.text.startswith('/'):
                 try:
