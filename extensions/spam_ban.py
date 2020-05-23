@@ -963,20 +963,21 @@ class Spam_ban(EthicsCommitteeExtension):
             failed,
             self._log_format_chat_title(),
             group_set,
-            '\n錯誤：{}'.format(error) if error else ''
+            '\n錯誤：{}'.format(error) if error else '',
         )
         self.EC.log("[spam_ban] message {}".format(message))
         self.EC.sendmessage(chat_id=self.log_chat_id,
                             message=message, parse_mode="HTML")
 
-    def action_log_bot(self, ban_user_id, reason, duration, successed, failed):
-        message = '#封 #自動 ECbot{0} banned <a href="tg://user?id={1}">{1}</a> 期限為{3}，{4}成功，{5}失敗\n理由：{2}'.format(
+    def action_log_bot(self, ban_user_id, reason, duration, successed, failed, error):
+        message = '#封 #自動 ECbot{0} banned <a href="tg://user?id={1}">{1}</a> 期限為{3}，{4}成功，{5}失敗\n理由：{2}{6}'.format(
             self._log_format_chat_title(),
             ban_user_id,
             reason,
             duration,
             successed,
             failed,
+            '\n錯誤：{}'.format(error) if error else '',
         )
         self.EC.log("[spam_ban] message {}".format(message))
         self.EC.sendmessage(chat_id=self.log_chat_id,
@@ -987,14 +988,14 @@ class Spam_ban(EthicsCommitteeExtension):
         single_ban_ok = None
         if chat_id not in self.global_ban_chat:
             single_ban_ok = self.action_ban_a_chat(user_id, chat_id, 604800)
-        successed, failed = self.action_ban_all_chat(user_id, 604800)
+        successed, failed, error = self.action_ban_all_chat(user_id, 604800)
         if single_ban_ok is not None:
             if single_ban_ok:
                 successed += 1
             else:
                 failed += 1
         self.action_del_all_msg(user_id)
-        self.action_log_bot(user_id, reason, self.duration_text(604800), successed, failed)
+        self.action_log_bot(user_id, reason, self.duration_text(604800), successed, failed, error)
 
     def _log_format_chat_title(self):
         if self.chat_id in self.global_ban_chat:
