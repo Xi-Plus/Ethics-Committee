@@ -462,13 +462,15 @@ class Spam_ban(EthicsCommitteeExtension):
         if args.dry_run:
             successed = 0
             failed = len(self.global_ban_chat)
+            error = ''
             reason += ' (dry run)'
         else:
             if not args.no_ban:
-                successed, failed = self.action_ban_all_chat(ban_user_id, duration)
+                successed, failed, error = self.action_ban_all_chat(ban_user_id, duration)
             else:
                 successed = 0
                 failed = len(self.global_ban_chat)
+                error = ''
             if not args.no_del:
                 self.action_del_all_msg(ban_user_id)
         self.action_log_admin(
@@ -479,6 +481,7 @@ class Spam_ban(EthicsCommitteeExtension):
             successed,
             failed,
             self.GROUP_SET,
+            error,
         )
 
     def cmd_globalunban(self, action, cmd):
@@ -848,20 +851,23 @@ class Spam_ban(EthicsCommitteeExtension):
         except Exception as e:
             self.EC.log('[spam_ban] ban {} in {} failed: {}'.format(
                 user_id, ban_chat_id, e))
-            return False
-        return True
+            return False, str(e)
+        return True, None
 
     def action_ban_all_chat(self, user_id, duration=604800):
         self.EC.log("[spam_ban] ban {} in {}".format(
             user_id, ", ".join(map(str, self.global_ban_chat))))
         successed = 0
         failed = 0
+        error = set()
         for ban_chat_id in self.global_ban_chat:
-            if self.action_ban_a_chat(user_id, ban_chat_id, duration=duration):
+            ok, msg = self.action_ban_a_chat(user_id, ban_chat_id, duration=duration)
+            if ok:
                 successed += 1
             else:
                 failed += 1
-        return successed, failed
+                error.add(msg)
+        return successed, failed, '、'.join(error)
 
     def action_unban_all_chat(self, user_id):
         self.EC.log("[spam_ban] unban {} in {}".format(
@@ -944,8 +950,8 @@ class Spam_ban(EthicsCommitteeExtension):
         self.EC.sendmessage(text, reply=message_id)
         self.EC.sendmessage('/globalban {}'.format(self.user_id))
 
-    def action_log_admin(self, hashtag, admin_user_id, admin_name, action, ban_user_id, reason, duration, successed, failed, group_set):
-        message = '{0} <a href="tg://user?id={1}">{2}</a>{9} {3} <a href="tg://user?id={4}">{4}</a> 期限為{6}，於{10} {7}成功，{8}失敗\n理由：{5}'.format(
+    def action_log_admin(self, hashtag, admin_user_id, admin_name, action, ban_user_id, reason, duration, successed, failed, group_set, error=''):
+        message = '{0} <a href="tg://user?id={1}">{2}</a>{9} {3} <a href="tg://user?id={4}">{4}</a> 期限為{6}，於{10} {7}成功，{8}失敗\n理由：{5}{11}'.format(
             hashtag,
             admin_user_id,
             admin_name,
@@ -957,6 +963,7 @@ class Spam_ban(EthicsCommitteeExtension):
             failed,
             self._log_format_chat_title(),
             group_set,
+            '\n錯誤：{}'.format(error) if error else ''
         )
         self.EC.log("[spam_ban] message {}".format(message))
         self.EC.sendmessage(chat_id=self.log_chat_id,
