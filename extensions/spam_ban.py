@@ -1087,12 +1087,13 @@ class Spam_ban(EthicsCommitteeExtension):
             <td>ban_photo</td>
             <td>warn_forward</td>
             <td>global_ban</td>
+            <td>global_ban_cmd</td>
             </tr>
             """
 
         chat_ids = list(set(self.ban_username_chat + self.warn_username_chat + self.ban_text_chat
                             + self.warn_text_chat + self.ban_youtube_link_chat + self.ban_photo_chat
-                            + self.warn_forward_chat + self.global_ban_chat))
+                            + self.warn_forward_chat + self.global_ban_chat + self.global_ban_cmd_chat))
         chats = [(
             chat_id,
             (self.group_name[chat_id] or '') if chat_id in self.group_name else '',
@@ -1100,13 +1101,17 @@ class Spam_ban(EthicsCommitteeExtension):
         ) for chat_id in chat_ids]
         chats.sort(key=lambda v: v[1])
 
+        hidden_chats = [row[0] for row in EC.list_group_with_setting('group_set', 'hidden')]
         for chat in chats:
+            if chat[0] in hidden_chats:
+                continue
             temp += '<tr>'
-            temp += '<td>{}</td>'.format(chat[1])
+            temp += '<td><span title="{}">{}</span></td>'.format(chat[0], chat[1])
             for chat_setting in [self.ban_text_chat, self.ban_username_chat,
                                  self.warn_text_chat, self.warn_username_chat,
                                  self.ban_youtube_link_chat, self.ban_photo_chat,
-                                 self.warn_forward_chat, self.global_ban_chat]:
+                                 self.warn_forward_chat, self.global_ban_chat,
+                                 self.global_ban_cmd_chat]:
                 temp += '<td>'
                 if chat[0] in chat_setting:
                     temp += '&#10003;'
@@ -1136,13 +1141,6 @@ class Spam_ban(EthicsCommitteeExtension):
         users = EC.list_users_with_permission(self.PERMISSION_GLOBALBAN)
         html += "<tr><td>global_ban_admin</td><td>{}</td></td>".format(
             "<br>".join(map(str, users)))
-
-        hidden_chats = [row[0] for row in EC.list_group_with_setting('group_set', 'hidden')]
-        html += "<tr><td>global_ban_cmd</td><td>{}</td></td>".format(
-            "<br>".join(['{}'.format(self.group_name[chat_id]) for chat_id in filter(
-                lambda chat_id: chat_id < 0 and chat_id not in hidden_chats, self.global_ban_cmd_chat
-            )])
-        )
 
         html += "<tr><td>log_chat_id</td><td>{}</td></td>".format(
             self.log_chat_id)
