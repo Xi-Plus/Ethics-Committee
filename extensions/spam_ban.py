@@ -1105,8 +1105,9 @@ class Spam_ban(EthicsCommitteeExtension):
         for chat in chats:
             if chat[0] in hidden_chats:
                 continue
+            title = chat[1] if chat[0] < 0 else str(chat[0])
             temp += '<tr>'
-            temp += '<td><span title="{}">{}</span></td>'.format(chat[0], chat[1])
+            temp += '<td><span title="{}">{}</span></td>'.format(chat[0], title)
             for chat_setting in [self.ban_text_chat, self.ban_username_chat,
                                  self.warn_text_chat, self.warn_username_chat,
                                  self.ban_youtube_link_chat, self.ban_photo_chat,
