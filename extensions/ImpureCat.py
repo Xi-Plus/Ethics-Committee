@@ -15,7 +15,7 @@ EC = EthicsCommittee(0, 0)
 dellimit = int(time.time() - 86400 * 2)
 
 EC.cur.execute("""DELETE FROM `message` WHERE `date` < %s""",
-               (int(time.time() - 86400 * 14)))
+               (int(time.time() - cfg['ImpureCat']['messageskeep'])))
 EC.db.commit()
 
 for delconfig in cfg['ImpureCat']['delconfigs']:
