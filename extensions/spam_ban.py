@@ -37,6 +37,7 @@ class Spam_ban(EthicsCommitteeExtension):
 
     GROUP_SET = 'globalban'
 
+    CMD_SINGLEBAN = r'^single_?ban$'
     CMD_GLOBALBAN = r'^global_?ban$'
     CMD_GLOBALUNBAN = r'^global_?unban$'
     CMD_GLOBALRESTRICT = r'^global_?restrict$'
@@ -321,6 +322,9 @@ class Spam_ban(EthicsCommitteeExtension):
             if re.search(self.CMD_GLOBALBAN, action):
                 self.cmd_globalban(action, cmd)
 
+            if re.search(self.CMD_SINGLEBAN, action):
+                self.cmd_globalban(action, cmd, self.chat_id)
+
             if re.search(self.CMD_GLOBALUNBAN, action):
                 self.cmd_globalunban(action, cmd)
 
@@ -402,7 +406,7 @@ class Spam_ban(EthicsCommitteeExtension):
         if re.search(self.CMD_DISABLE_GLOBALBAN, action):
             self.cmd_setting_disable(self.SETTING_GLOBAL_BAN)
 
-    def cmd_globalban(self, action, cmd):
+    def cmd_globalban(self, action, cmd, single=None):
         if not self.EC.check_permission(self.user_id, self.PERMISSION_GLOBALBAN, 0):
             self.EC.log(
                 '[spam_ban] {} /globalban no premission'.format(self.user_id))
@@ -459,16 +463,23 @@ class Spam_ban(EthicsCommitteeExtension):
         if self.is_reply:
             self.EC.deletemessage(self.chat_id, self.update.message.reply_to_message.message_id)
         self.EC.deletemessage(self.chat_id, self.message_id)
+        successed = 0
+        failed = 0
         if args.dry_run:
-            successed = 0
             failed = len(self.global_ban_chat)
             error = ''
             reason += ' (dry run)'
         else:
             if not args.no_ban:
-                successed, failed, error = self.action_ban_all_chat(ban_user_id, duration)
+                if single is None:
+                    successed, failed, error = self.action_ban_all_chat(ban_user_id, duration)
+                else:
+                    ok, error = self.action_ban_a_chat(ban_user_id, single, duration)
+                    if ok:
+                        successed += 1
+                    else:
+                        failed += 1
             else:
-                successed = 0
                 failed = len(self.global_ban_chat)
                 error = ''
             if not args.no_del:
@@ -480,7 +491,7 @@ class Spam_ban(EthicsCommitteeExtension):
             self.duration_text(duration),
             successed,
             failed,
-            self.GROUP_SET,
+            self.GROUP_SET if not single else str(single),
             error,
         )
 

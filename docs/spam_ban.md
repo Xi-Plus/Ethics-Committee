@@ -28,6 +28,11 @@ optional arguments:
 - `/global_ban -d 30d`(Reply) - 封鎖被回應的用戶，期限為30天
 - `/global_ban -d 2w`(Reply) - 封鎖被回應的用戶，期限為2週
 
+### /single_ban
+進行單一封鎖，需要權限`spam_ban_global_ban`
+
+同`/global_ban`
+
 ### /global_unban
 進行全域解除封鎖，需要權限`spam_ban_global_ban`
 ```
