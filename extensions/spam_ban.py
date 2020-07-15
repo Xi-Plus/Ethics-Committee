@@ -732,6 +732,7 @@ class Spam_ban(EthicsCommitteeExtension):
             self.EC.sendmessage('本群早已啟用 {}'.format(setting),
                                 reply=self.message_id,
                                 parse_mode='')
+            self._load_setting_from_database()
         else:
             self.EC.add_group_setting(self.chat_id, setting, 'enable')
             self.EC.sendmessage('本群已啟用 {}'.format(setting),
@@ -749,6 +750,7 @@ class Spam_ban(EthicsCommitteeExtension):
             self.EC.sendmessage('本群已停用 {}'.format(setting),
                                 reply=self.message_id,
                                 parse_mode='')
+            self._load_setting_from_database()
         else:
             self.EC.sendmessage('本群並未啟用 {}'.format(setting),
                                 reply=self.message_id,
