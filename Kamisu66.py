@@ -20,8 +20,8 @@ class EthicsCommittee:
         self.bot = telegram.Bot(self.token)
         self.botid = self.bot.id
         self.otherbot = {}
-        for chat_id in self.token_by_chat_id:
-            self.otherbot[chat_id] = telegram.Bot(self.token_by_chat_id[chat_id])
+        for temp_chat_id in self.token_by_chat_id:
+            self.otherbot[temp_chat_id] = telegram.Bot(self.token_by_chat_id[temp_chat_id])
         self.url = cfg['telegram']['url']
         self.max_connections = cfg['telegram']['max_connections']
         self.db = pymysql.connect(host=cfg['database']['host'],
