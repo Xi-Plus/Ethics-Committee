@@ -16,8 +16,12 @@ class EthicsCommittee:
     def __init__(self, chat_id=None, user_id=None, update=None):
         from config_variable import cfg  # pylint: disable=E0401
         self.token = cfg['telegram']['token']
+        self.token_by_chat_id = cfg['telegram']['token_by_chat_id']
         self.bot = telegram.Bot(self.token)
         self.botid = self.bot.id
+        self.otherbot = {}
+        for chat_id in self.token_by_chat_id:
+            self.otherbot[chat_id] = telegram.Bot(self.token_by_chat_id[chat_id])
         self.url = cfg['telegram']['url']
         self.max_connections = cfg['telegram']['max_connections']
         self.db = pymysql.connect(host=cfg['database']['host'],
@@ -36,6 +40,11 @@ class EthicsCommittee:
             self.chat_id = self.update.effective_chat.id
             if self.update.effective_user is not None:
                 self.user_id = self.update.effective_user.id
+
+    def bot_by_chat(self, chat_id):
+        if chat_id in self.token_by_chat_id:
+            return self.otherbot[chat_id]
+        return self.bot
 
     def sendmessage(self, message, parse_mode="Markdown", reply=False, reply_markup=None, chat_id=None):
         try:

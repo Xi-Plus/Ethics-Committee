@@ -859,7 +859,7 @@ class Spam_ban(EthicsCommitteeExtension):
     def action_ban_a_chat(self, user_id, ban_chat_id, duration=604800):
         until_date = int(time.time() + duration)
         try:
-            self.EC.bot.kick_chat_member(
+            self.EC.bot_by_chat(ban_chat_id).kick_chat_member(
                 chat_id=ban_chat_id, user_id=user_id, until_date=until_date)
         except Exception as e:
             self.EC.log('[spam_ban] ban {} in {} failed: {}'.format(
@@ -889,7 +889,7 @@ class Spam_ban(EthicsCommitteeExtension):
         failed = 0
         for ban_chat_id in self.global_ban_chat:
             try:
-                self.EC.bot.unban_chat_member(
+                self.EC.bot_by_chat(ban_chat_id).unban_chat_member(
                     chat_id=ban_chat_id, user_id=user_id)
                 successed += 1
             except Exception as e:
@@ -906,7 +906,7 @@ class Spam_ban(EthicsCommitteeExtension):
         failed = 0
         for ban_chat_id in run_chats:
             try:
-                self.EC.bot.restrict_chat_member(
+                self.EC.bot_by_chat(ban_chat_id).restrict_chat_member(
                     chat_id=ban_chat_id, user_id=user_id, until_date=until_date)
                 successed += 1
             except telegram.error.BadRequest as e:
@@ -922,7 +922,7 @@ class Spam_ban(EthicsCommitteeExtension):
         failed = 0
         for ban_chat_id in run_chats:
             try:
-                self.EC.bot.restrict_chat_member(
+                self.EC.bot_by_chat(ban_chat_id).restrict_chat_member(
                     chat_id=ban_chat_id, user_id=user_id,
                     can_send_messages=True, can_send_media_messages=True,
                     can_send_other_messages=True, can_add_web_page_previews=True)
