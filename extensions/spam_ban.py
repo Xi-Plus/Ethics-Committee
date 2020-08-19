@@ -424,9 +424,10 @@ class Spam_ban(EthicsCommitteeExtension):
             '-r', type=str, metavar='原因',
             help='預設：{}'.format(self.DEFAULT_REASON)
         )
-        parser.add_argument('--no-del', action='store_true', default=False, help='不刪除訊息')
+        parser.add_argument('--delete', action='store_true', default=False, help='要刪除訊息，無提供原因預設此項')
+        parser.add_argument('--no-del', action='store_true', default=False, help='不刪除訊息，有提供原因預設此項')
         parser.add_argument('--no-ban', action='store_true', default=False, help='不進行封鎖')
-        parser.add_argument('--dry-run', action='store_true', default=False, help='在日誌記錄但不執行封鎖')
+        parser.add_argument('--dry-run', action='store_true', default=False, help='在日誌記錄但不執行任何操作')
         ok, args = self.EC.parse_command(parser, cmd)
 
         if not ok:
@@ -443,13 +444,19 @@ class Spam_ban(EthicsCommitteeExtension):
         ban_user_id = int(ban_user_id)
         reason = args.r
         duration = args.d
+        is_del = True
         if reason is None:
             reason = self.DEFAULT_REASON
         else:
             if duration is None:
                 duration = 'inf'
+            is_del = False
         if duration is None:
             duration = self.DEFAULT_DURATION
+        if args.delete:
+            is_del = True
+        elif args.no_del:
+            is_del = False
 
         duration = self.parse_duration(duration)
         if duration is None:
@@ -482,7 +489,7 @@ class Spam_ban(EthicsCommitteeExtension):
             else:
                 failed = len(self.global_ban_chat)
                 error = ''
-            if not args.no_del:
+            if is_del:
                 self.action_del_all_msg(ban_user_id)
         self.action_log_admin(
             '#封', self.user_id,

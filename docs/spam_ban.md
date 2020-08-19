@@ -7,7 +7,7 @@
 ### /global_ban
 進行全域封鎖，需要權限`spam_ban_global_ban`
 ```
-usage: /global_ban [-h] [-d 時長] [-r 原因] [--no-del] [--no-ban] [--dry-run] [user]
+usage: /global_ban [-h] [-d 時長] [-r 原因] [--delete] [--no-del] [--no-ban] [--dry-run] [user]
 
 positional arguments:
   user        欲封鎖用戶ID，不指定時需回覆訊息
@@ -16,9 +16,10 @@ optional arguments:
   -h, --help  show this help message and exit
   -d 時長       接受單位為秒的整數，或是<整數><單位>的格式，例如：60s, 1min, 2h, 3d, 4w, 5m，永久為inf。預設：1w，有給-r參數時為inf
   -r 原因       預設：Spam
-  --no-del    不刪除訊息
+  --delete    要刪除訊息，無提供原因預設此項
+  --no-del    不刪除訊息，有提供原因預設此項
   --no-ban    不進行封鎖
-  --dry-run   在日誌記錄但不執行封鎖
+  --dry-run   在日誌記錄但不執行任何操作
 ```
 範例：
 - `/global_ban`(Reply) - 封鎖被回應的用戶
