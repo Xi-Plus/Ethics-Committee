@@ -74,6 +74,7 @@ class Spam_ban(EthicsCommitteeExtension):
 
     DEFAULT_REASON = 'Spam'
     DEFAULT_DURATION = '1w'
+    AUTO_DURATION = '1w'
 
     EC = None
     chat_id = None
@@ -1004,18 +1005,20 @@ class Spam_ban(EthicsCommitteeExtension):
                             message=message, parse_mode="HTML")
 
     def action_all_in_one(self, chat_id, user_id, message_id, reason):
+        duration = self.parse_duration(self.AUTO_DURATION)
+
         self.EC.deletemessage(chat_id, message_id)
         single_ban_ok = None
         if chat_id not in self.global_ban_chat:
-            single_ban_ok = self.action_ban_a_chat(user_id, chat_id, 604800)
-        successed, failed, error = self.action_ban_all_chat(user_id, 604800)
+            single_ban_ok = self.action_ban_a_chat(user_id, chat_id, duration)
+        successed, failed, error = self.action_ban_all_chat(user_id, duration)
         if single_ban_ok is not None:
             if single_ban_ok:
                 successed += 1
             else:
                 failed += 1
         self.action_del_all_msg(user_id)
-        self.action_log_bot(user_id, reason, self.duration_text(604800), successed, failed, error)
+        self.action_log_bot(user_id, reason, self.duration_text(duration), successed, failed, error)
 
     def _log_format_chat_title(self):
         if self.chat_id in self.global_ban_chat:
