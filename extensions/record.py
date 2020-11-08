@@ -40,16 +40,6 @@ class Record(EthicsCommitteeExtension):  # pylint: disable=W0223
             reply_to_message_id = message.reply_to_message.message_id
             reply_to_user_id = message.reply_to_message.from_user.id
 
-        EC.cur.execute("""INSERT INTO `user_name` (`user_id`, `full_name`, `username`)
-                        VALUES (%s, %s, %s)
-                        ON DUPLICATE KEY UPDATE `full_name` = %s, `username` = %s""",
-                       (user_id, full_name, username, full_name, username))
-        if chat_id < 0 and user:
-            EC.cur.execute("""INSERT INTO `group_name` (`chat_id`, `title`, `username`) VALUES (%s, %s, %s)
-                            ON DUPLICATE KEY UPDATE `title` = %s, `username` = %s""",
-                           (chat_id, chat_title, chat_username, chat_title, chat_username))
-        EC.db.commit()
-
         if chat_id in self.full_log_chat_id:
             EC.log("[record] " + json.dumps(update.to_dict()))
 
