@@ -14,17 +14,13 @@ class Record(EthicsCommitteeExtension):  # pylint: disable=W0223
 
         chat = update.effective_chat
         chat_id = chat.id
-        chat_title = chat.title
-        chat_username = chat.username
 
         user = update.effective_user
         if user:
             user_id = user.id
-            username = user.username
             full_name = user.full_name
         else:
             user_id = 0
-            username = ''
             full_name = ''
 
         message = update.effective_message
