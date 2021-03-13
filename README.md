@@ -2,5 +2,5 @@
 
 ## Run
 ```
-celery worker -A EthicsCommittee.celery --loglevel=info -Q EthicsCommittee
+celery -A EthicsCommittee.celery worker --loglevel=warning -Q EthicsCommittee -n EthicsCommittee
 ```
