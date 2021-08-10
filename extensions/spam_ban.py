@@ -204,6 +204,8 @@ class Spam_ban(EthicsCommitteeExtension):
             if message.photo:
                 mode.append("photo")
             if message.document:
+                text += message.document.file_name
+                mode.append("text")
                 mode.append("photo")
             if message.caption:
                 text += message.caption
