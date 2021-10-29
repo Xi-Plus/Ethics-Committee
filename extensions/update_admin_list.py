@@ -30,7 +30,7 @@ rows = EC.cur.fetchall()
 for row in rows:
     chat_id = row[0]
     title = row[1]
-    print(chat_id, title)
+    print(chat_id, title, end=' ')
 
     admins = None
     while True:
@@ -47,6 +47,7 @@ for row in rows:
             break
         except Exception as e:
             print(e)
+            break
     if admins is None:
         continue
 
@@ -96,7 +97,8 @@ for row in rows:
         )
         EC.db.commit()
 
-        print('\t', a.user.full_name)
+        print(a.user.full_name, end=' ')
+    print()
 
     time.sleep(1)
 
