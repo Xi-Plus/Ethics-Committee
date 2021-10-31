@@ -87,7 +87,7 @@ class Admin_matrix(EthicsCommitteeExtension):  # pylint: disable=W0223
             """
         for admin in admins:
             text += """<tr><td class="username"><span title="{0}">{1}</span></td>""".format(
-                admin[0], admin[1])
+                admin[0], admin[1] if admin[1] is not None else admin[0])
             for group in groups:
                 if (group[0], admin[0]) in creators:
                     text += """<td class="creator">"""
