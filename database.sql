@@ -115,7 +115,7 @@ CREATE TABLE `group_name` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 CREATE TABLE `group_setting` (
-  `chat_id` bigint(20) NOT NULL,
+  `chat_id` bigint(20) DEFAULT NULL,
   `key` varchar(64) COLLATE utf8_bin NOT NULL,
   `value` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
@@ -186,7 +186,8 @@ CREATE TABLE `permissions_changes` (
 CREATE TABLE `user_name` (
   `user_id` int(11) NOT NULL,
   `full_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
-  `username` varchar(255) COLLATE utf8_bin DEFAULT NULL
+  `username` varchar(255) COLLATE utf8_bin DEFAULT NULL,
+  `comment` text COLLATE utf8_bin
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 DELIMITER $$
 CREATE TRIGGER `change_user_name` AFTER UPDATE ON `user_name` FOR EACH ROW BEGIN
@@ -224,6 +225,9 @@ ALTER TABLE `admins`
 ALTER TABLE `group_name`
   ADD PRIMARY KEY (`chat_id`);
 
+ALTER TABLE `group_setting`
+  ADD KEY `group_setting_ibfk_1` (`chat_id`);
+
 ALTER TABLE `log`
   ADD PRIMARY KEY (`log_id`);
 
@@ -231,7 +235,8 @@ ALTER TABLE `message_count`
   ADD PRIMARY KEY (`chat_id`,`user_id`,`type`);
 
 ALTER TABLE `permissions`
-  ADD PRIMARY KEY (`chat_id`,`user_id`,`user_right`);
+  ADD PRIMARY KEY (`chat_id`,`user_id`,`user_right`),
+  ADD KEY `chat_id` (`chat_id`);
 
 ALTER TABLE `user_name`
   ADD PRIMARY KEY (`user_id`);
@@ -239,6 +244,16 @@ ALTER TABLE `user_name`
 
 ALTER TABLE `log`
   MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT;
+
+
+ALTER TABLE `admins`
+  ADD CONSTRAINT `admins_ibfk_1` FOREIGN KEY (`chat_id`) REFERENCES `group_name` (`chat_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE `group_setting`
+  ADD CONSTRAINT `group_setting_ibfk_1` FOREIGN KEY (`chat_id`) REFERENCES `group_name` (`chat_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE `permissions`
+  ADD CONSTRAINT `permissions_ibfk_1` FOREIGN KEY (`chat_id`) REFERENCES `group_name` (`chat_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
