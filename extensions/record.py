@@ -54,32 +54,33 @@ class Record(EthicsCommitteeExtension):  # pylint: disable=W0223
                 if message.sticker:
                     mtype.append("sticker")
                     EC.addmessage(user_id, message_id, full_name, type_prefix + "sticker",
-                                  message.sticker.file_id, date,
+                                  message.sticker.to_json(), date,
                                   reply_to_message_id, reply_to_user_id)
                 if message.document:
                     mtype.append("document")
                     EC.addmessage(user_id, message_id, full_name, type_prefix + "document",
-                                  message.document.file_id, date,
+                                  message.document.to_json(), date,
                                   reply_to_message_id, reply_to_user_id)
                 if message.audio:
                     mtype.append("audio")
                     EC.addmessage(user_id, message_id, full_name, type_prefix + "audio",
-                                  message.audio.file_id, date,
+                                  message.audio.to_json(), date,
                                   reply_to_message_id, reply_to_user_id)
                 if message.voice:
                     mtype.append("voice")
                     EC.addmessage(user_id, message_id, full_name, type_prefix + "voice",
-                                  message.voice.file_id, date,
+                                  message.voice.to_json(), date,
                                   reply_to_message_id, reply_to_user_id)
                 if message.photo:
                     mtype.append("photo")
+                    photo_text = json.dumps([photo.to_dict() for photo in message.photo], ensure_ascii=True)
                     EC.addmessage(user_id, message_id, full_name, type_prefix + "photo",
-                                  message.photo[-1].file_id, date,
+                                  photo_text, date,
                                   reply_to_message_id, reply_to_user_id)
                 if message.video:
                     mtype.append("video")
                     EC.addmessage(user_id, message_id, full_name, type_prefix + "video",
-                                  message.video.file_id, date,
+                                  message.video.to_json(), date,
                                   reply_to_message_id, reply_to_user_id)
                 if message.caption:
                     mtype.append("caption")
@@ -89,7 +90,7 @@ class Record(EthicsCommitteeExtension):  # pylint: disable=W0223
                 if message.video_note:
                     mtype.append("video_note")
                     EC.addmessage(user_id, message_id, full_name, type_prefix + "video_note",
-                                  message.video_note.file_id, date,
+                                  message.video_note.to_json(), date,
                                   reply_to_message_id, reply_to_user_id)
                 if message.contact:
                     mtype.append("contact")
@@ -157,7 +158,7 @@ class Record(EthicsCommitteeExtension):  # pylint: disable=W0223
                     mtype.append("new_chat_photo")
                     EC.addmessage(user_id, message_id, full_name,
                                   type_prefix + "new_chat_photo",
-                                  message.new_chat_photo[-1].file_id, date,
+                                  message.new_chat_photo[-1].to_json(), date,
                                   reply_to_message_id, reply_to_user_id)
                 if message.delete_chat_photo:
                     mtype.append("delete_chat_photo")
