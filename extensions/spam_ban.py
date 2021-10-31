@@ -1164,9 +1164,33 @@ class Spam_ban(EthicsCommitteeExtension):
         html += "<tr><td>ban_youtube_link_regex</td><td>{}</td></td>".format(
             self.ban_youtube_link_regex)
 
+        html += '<tr><td>admin</td><td>'
+
         users = EC.list_users_with_permission(self.PERMISSION_GLOBALBAN)
-        html += "<tr><td>global_ban_admin</td><td>{}</td></td>".format(
-            "<br>".join(map(str, users)))
+        html += 'Ban users<ul>'
+        for user in users:
+            html += '<li>{}</li>'.format(EC.get_user_fullname(user))
+        html += '</ul>'
+
+        users = EC.list_users_with_permission(self.PERMISSION_GRANT)
+        html += 'Grant "Ban" permission<ul>'
+        for user in users:
+            html += '<li>{}</li>'.format(EC.get_user_fullname(user))
+        html += '</ul>'
+
+        users = EC.list_users_with_permission(self.PERMISSION_SETTING)
+        html += 'Adjust group settings<ul>'
+        for user in users:
+            html += '<li>{}</li>'.format(EC.get_user_fullname(user))
+        html += '</ul>'
+
+        users = EC.list_users_with_permission(self.PERMISSION_RULE)
+        html += 'Adjust spam rules<ul>'
+        for user in users:
+            html += '<li>{}</li>'.format(EC.get_user_fullname(user))
+        html += '</ul>'
+
+        html += '</td></td>'
 
         html += "<tr><td>log_chat_id</td><td>{}</td></td>".format(
             self.log_chat_id)
