@@ -160,7 +160,7 @@ CREATE TABLE `message_count` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 CREATE TABLE `permissions` (
-  `chat_id` bigint(20) NOT NULL,
+  `chat_id` bigint(20) DEFAULT NULL,
   `user_id` int(11) NOT NULL,
   `user_right` varchar(50) COLLATE utf8_bin NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
@@ -176,7 +176,7 @@ $$
 DELIMITER ;
 
 CREATE TABLE `permissions_changes` (
-  `chat_id` bigint(20) NOT NULL,
+  `chat_id` bigint(20) DEFAULT NULL,
   `user_id` int(11) NOT NULL,
   `action` varchar(10) COLLATE utf8_bin NOT NULL,
   `user_right` varchar(50) COLLATE utf8_bin NOT NULL,
@@ -235,8 +235,7 @@ ALTER TABLE `message_count`
   ADD PRIMARY KEY (`chat_id`,`user_id`,`type`);
 
 ALTER TABLE `permissions`
-  ADD PRIMARY KEY (`chat_id`,`user_id`,`user_right`),
-  ADD KEY `chat_id` (`chat_id`);
+  ADD KEY `permissions_ibfk_1` (`chat_id`);
 
 ALTER TABLE `user_name`
   ADD PRIMARY KEY (`user_id`);
