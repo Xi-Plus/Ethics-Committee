@@ -255,6 +255,8 @@ class EthicsCommittee:
         return [row[0] for row in rows]
 
     def add_group_setting(self, chat_id, key, value='', check_dup=False):
+        if chat_id == 0:
+            chat_id = None
         if check_dup:
             rows = self.list_setting_in_group(chat_id, key, value)
             if rows:
@@ -269,28 +271,56 @@ class EthicsCommittee:
         return True
 
     def remove_group_setting(self, chat_id, key, value=None):
-        if value is None:
-            res = self.cur.execute("""DELETE FROM `group_setting` WHERE `chat_id` = %s
-                                    AND `key` = %s""",
-                                   (chat_id, key))
+        if chat_id == 0:
+            chat_id = None
+        if chat_id is None:
+            if value is None:
+                res = self.cur.execute(
+                    """DELETE FROM `group_setting` WHERE `chat_id` IS NULL AND `key` = %s""",
+                    (key)
+                )
+            else:
+                res = self.cur.execute(
+                    """DELETE FROM `group_setting` WHERE `chat_id` IS NULL AND `key` = %s AND `value` = %s""",
+                    (key, value)
+                )
         else:
-            res = self.cur.execute("""DELETE FROM `group_setting` WHERE `chat_id` = %s
-                                    AND `key` = %s AND `value` = %s""",
-                                   (chat_id, key, value))
+            if value is None:
+                res = self.cur.execute(
+                    """DELETE FROM `group_setting` WHERE `chat_id` = %s AND `key` = %s""",
+                    (chat_id, key)
+                )
+            else:
+                res = self.cur.execute(
+                    """DELETE FROM `group_setting` WHERE `chat_id` = %s AND `key` = %s AND `value` = %s""",
+                    (chat_id, key, value)
+                )
         self.db.commit()
         if res == 0:
             return False
         return True
 
     def list_setting_in_group(self, chat_id, key, value=None):
-        if value is None:
-            self.cur.execute(
-                """SELECT `value` FROM `group_setting` WHERE `chat_id` = %s AND `key` = %s""",
-                (chat_id, key))
+        if chat_id == 0:
+            chat_id = None
+        if chat_id is None:
+            if value is None:
+                self.cur.execute(
+                    """SELECT `value` FROM `group_setting` WHERE `chat_id` IS NULL AND `key` = %s""",
+                    (key))
+            else:
+                self.cur.execute(
+                    """SELECT `value` FROM `group_setting` WHERE `chat_id` IS NULL AND `key` = %s AND `value` = %s""",
+                    (key, value))
         else:
-            self.cur.execute(
-                """SELECT `value` FROM `group_setting` WHERE `chat_id` = %s AND `key` = %s AND `value` = %s""",
-                (chat_id, key, value))
+            if value is None:
+                self.cur.execute(
+                    """SELECT `value` FROM `group_setting` WHERE `chat_id` = %s AND `key` = %s""",
+                    (chat_id, key))
+            else:
+                self.cur.execute(
+                    """SELECT `value` FROM `group_setting` WHERE `chat_id` = %s AND `key` = %s AND `value` = %s""",
+                    (chat_id, key, value))
         rows = self.cur.fetchall()
         return rows
 
