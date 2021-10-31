@@ -30,7 +30,7 @@ rows = EC.cur.fetchall()
 for row in rows:
     chat_id = row[0]
     title = row[1]
-    print(chat_id, title, end=' ')
+    print(chat_id, title)
 
     admins = None
     while True:
@@ -38,19 +38,28 @@ for row in rows:
             admins = EC.bot.get_chat_administrators(chat_id)
             break
         except telegram.error.TimedOut as e:
-            print(e.message)
+            print('\tTimedOut', e.message)
         except telegram.error.Unauthorized as e:
-            print(e.message)
+            print('\tUnauthorized', e.message)
             break
         except telegram.error.BadRequest as e:
-            print(e.message)
+            print('\tBadRequest', e.message)
+            if e.message == 'Chat not found':
+                EC.cur.execute("""DELETE FROM `group_name` WHERE `chat_id` = %s""", (chat_id))
+                EC.db.commit()
+            break
+        except telegram.error.ChatMigrated as e:
+            print('\tChatMigrated', e.message)
+            EC.cur.execute("""DELETE FROM `group_name` WHERE `chat_id` = %s""", (chat_id))
+            EC.db.commit()
             break
         except Exception as e:
-            print(e)
+            print('\t', e)
             break
     if admins is None:
         continue
 
+    print('\t', end='')
     for a in admins:
         user_id = a.user.id
         if (chat_id, user_id) in oldadmins:
