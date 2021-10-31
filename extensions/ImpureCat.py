@@ -30,3 +30,5 @@ for delconfig in cfg['ImpureCat']['delconfigs']:
         message_id = row[2]
         print(row, message_id)
         EC.deletemessage(chat_id, message_id)
+
+del EC

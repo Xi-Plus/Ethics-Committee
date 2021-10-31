@@ -17,3 +17,5 @@ for table in tables:
     rows = EC.cur.execute("""DELETE FROM {} WHERE `time` < %s""".format(table), (timestamp))
     EC.db.commit()
     print("delete {} rows from {} table".format(rows, table))
+
+del EC
