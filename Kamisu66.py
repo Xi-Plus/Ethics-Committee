@@ -213,8 +213,11 @@ class EthicsCommittee:
                 return True, args
 
     def add_permission(self, user_id, user_right, chat_id=None):
-        if chat_id is None:
-            chat_id = self.chat_id
+        if chat_id == 0:
+            chat_id = None
+
+        if self.check_permission(user_id, user_right, chat_id):
+            return False
 
         res = self.cur.execute("""INSERT IGNORE INTO `permissions` (`chat_id`, `user_id`, `user_right`)
                                   VALUES (%s, %s, %s)""",
@@ -225,8 +228,11 @@ class EthicsCommittee:
         return True
 
     def remove_permission(self, user_id, user_right, chat_id=None):
-        if chat_id is None:
-            chat_id = self.chat_id
+        if chat_id == 0:
+            chat_id = None
+
+        if not self.check_permission(user_id, user_right, chat_id):
+            return False
 
         res = self.cur.execute("""DELETE FROM `permissions` WHERE `chat_id` = %s
                                   AND `user_id` = %s AND `user_right` = %s""",
@@ -237,10 +243,18 @@ class EthicsCommittee:
         return True
 
     def check_permission(self, user_id, user_right, chat_id=None):
+        if chat_id == 0:
+            chat_id = None
         if chat_id is None:
-            chat_id = 0
-        self.cur.execute("""SELECT 'true' FROM `permissions` WHERE `user_id` = %s AND `user_right` = %s AND `chat_id` = %s""",
-                         (user_id, user_right, chat_id))
+            self.cur.execute(
+                """SELECT 'true' FROM `permissions` WHERE `user_id` = %s AND `user_right` = %s AND `chat_id` IS NULL""",
+                (user_id, user_right)
+            )
+        else:
+            self.cur.execute(
+                """SELECT 'true' FROM `permissions` WHERE `user_id` = %s AND `user_right` = %s AND `chat_id` = %s""",
+                (user_id, user_right, chat_id)
+            )
         rows = self.cur.fetchall()
         return len(rows) > 0
 
@@ -342,6 +356,15 @@ class EthicsCommittee:
         row = self.cur.fetchone()
         if row is None:
             return str(chat_id)
+        return row[0]
+
+    def get_user_fullname(self, user_id):
+        self.cur.execute(
+            """SELECT `full_name` FROM `user_name` WHERE `user_id` = %s""",
+            (user_id))
+        row = self.cur.fetchone()
+        if row is None:
+            return str(user_id)
         return row[0]
 
     def addBotMessage(self, text, date=None):
