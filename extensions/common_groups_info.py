@@ -55,20 +55,23 @@ class CommonGroupsInfo(EthicsCommitteeExtension):  # pylint: disable=W0223
 
         elif EC.update.message.text:
             text = EC.update.message.text
-            if text.startswith('/commongroups'):
-                check_user_id = None
-                if EC.update.message.reply_to_message:
+            check_user_id = None
+            if EC.update.message.reply_to_message:
+                if re.search(self.setting[chat_id]['command_reply'], text):
                     check_user_id = EC.update.message.reply_to_message.from_user.id
                 else:
-                    m = re.search(r'^/commongroups (\d+)$', text)
-                    if m:
-                        check_user_id = int(m.group(1))
-
-                response = None
-                if check_user_id is None:
-                    response = '需回應一則訊息或是指定參數user id'
+                    return
+            else:
+                m = re.search(self.setting[chat_id]['command'], text)
+                if m:
+                    check_user_id = int(m.group(1))
                 else:
-                    response = self._check_user(EC, chat_id, check_user_id)
+                    return
+
+            if check_user_id is None:
+                response = '需回應一則訊息或是指定參數user id'
+            else:
+                response = self._check_user(EC, chat_id, check_user_id)
 
         if response:
             EC.update.message.reply_text(
