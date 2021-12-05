@@ -89,11 +89,16 @@ class UserNameChanges(EthicsCommitteeExtension):  # pylint: disable=W0223
             else:
                 if full_name != self.usernames[user_id][0]:
                     for notice_id in self.chat_ids['user_fullname']:
-                        EC.bot.send_message(
-                            chat_id=notice_id,
-                            text='<a href="tg://user?id={0}">{0}</a> updated his fullname from {1} to {2}'.format(user_id, self.usernames[user_id][0], full_name),
-                            parse_mode=telegram.ParseMode.HTML,
-                        )
+                        text = '<a href="tg://user?id={0}">{0}</a> updated his fullname from {1} to {2}'.format(user_id, self.usernames[user_id][0], full_name)
+                        try:
+                            EC.bot.send_message(
+                                chat_id=notice_id,
+                                text=text,
+                                parse_mode=telegram.ParseMode.HTML,
+                            )
+                        except Exception as e:
+                            EC.log(e)
+                            EC.log(text)
                     changed = True
                 if username != self.usernames[user_id][1]:
                     for notice_id in self.chat_ids['user_username']:
