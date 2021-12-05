@@ -11,7 +11,7 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `admins` (
   `chat_id` bigint(20) NOT NULL,
-  `user_id` int(11) NOT NULL,
+  `user_id` bigint(20) NOT NULL,
   `creator` tinyint(1) NOT NULL,
   `can_add_web_page_previews` tinyint(4) NOT NULL,
   `can_be_edited` tinyint(4) NOT NULL,
@@ -90,7 +90,7 @@ DELIMITER ;
 
 CREATE TABLE `admins_changes` (
   `chat_id` bigint(20) NOT NULL,
-  `user_id` int(11) NOT NULL,
+  `user_id` bigint(20) NOT NULL,
   `action` varchar(10) COLLATE utf8_bin NOT NULL,
   `can_add_web_page_previews` varchar(5) COLLATE utf8_bin NOT NULL,
   `can_be_edited` varchar(5) COLLATE utf8_bin NOT NULL,
@@ -129,14 +129,14 @@ CREATE TABLE `log` (
 
 CREATE TABLE `message` (
   `chat_id` bigint(20) NOT NULL,
-  `user_id` int(11) NOT NULL,
+  `user_id` bigint(20) NOT NULL,
   `message_id` int(11) NOT NULL,
   `full_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `type` varchar(20) COLLATE utf8_bin NOT NULL,
   `text` text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `date` int(11) NOT NULL,
   `reply_to_message_id` int(11) DEFAULT NULL,
-  `reply_to_user_id` int(11) DEFAULT NULL,
+  `reply_to_user_id` bigint(20) DEFAULT NULL,
   `time` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `deleted` tinyint(1) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
@@ -152,7 +152,7 @@ DELIMITER ;
 
 CREATE TABLE `message_count` (
   `chat_id` bigint(20) NOT NULL,
-  `user_id` int(11) NOT NULL,
+  `user_id` bigint(20) NOT NULL,
   `type` varchar(20) COLLATE utf8_bin NOT NULL,
   `count` int(11) NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -161,7 +161,7 @@ CREATE TABLE `message_count` (
 
 CREATE TABLE `permissions` (
   `chat_id` bigint(20) DEFAULT NULL,
-  `user_id` int(11) NOT NULL,
+  `user_id` bigint(20) NOT NULL,
   `user_right` varchar(50) COLLATE utf8_bin NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 DELIMITER $$
@@ -177,14 +177,14 @@ DELIMITER ;
 
 CREATE TABLE `permissions_changes` (
   `chat_id` bigint(20) DEFAULT NULL,
-  `user_id` int(11) NOT NULL,
+  `user_id` bigint(20) NOT NULL,
   `action` varchar(10) COLLATE utf8_bin NOT NULL,
   `user_right` varchar(50) COLLATE utf8_bin NOT NULL,
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 CREATE TABLE `user_name` (
-  `user_id` int(11) NOT NULL,
+  `user_id` bigint(20) NOT NULL,
   `full_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `username` varchar(255) COLLATE utf8_bin DEFAULT NULL,
   `comment` text COLLATE utf8_bin
@@ -212,7 +212,7 @@ $$
 DELIMITER ;
 
 CREATE TABLE `user_name_changes` (
-  `user_id` int(11) NOT NULL,
+  `user_id` bigint(20) NOT NULL,
   `old_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `new_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
