@@ -30,7 +30,7 @@ class BanMySelf(EthicsCommitteeExtension):  # pylint: disable=W0223
             if chatMember.status not in [chatMember.ADMINISTRATOR, chatMember.CREATOR]:
                 try:
                     until_date = until_date = int(time.time() + self.DURATION)
-                    EC.bot.kick_chat_member(
+                    EC.bot.ban_chat_member(
                         chat_id=update.effective_chat.id,
                         user_id=update.effective_user.id,
                         until_date=until_date,

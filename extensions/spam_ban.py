@@ -869,7 +869,7 @@ class Spam_ban(EthicsCommitteeExtension):
     def action_ban_a_chat(self, user_id, ban_chat_id, duration=604800):
         until_date = int(time.time() + duration)
         try:
-            self.EC.bot_by_chat(ban_chat_id).kick_chat_member(
+            self.EC.bot_by_chat(ban_chat_id).ban_chat_member(
                 chat_id=ban_chat_id, user_id=user_id, until_date=until_date)
         except Exception as e:
             self.EC.log('[spam_ban] ban {} in {} failed: {}'.format(
