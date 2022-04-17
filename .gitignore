@@ -1,6 +1,12 @@
 .vscode/
+vendor/
 config_extension.py
 config_extension_new.py
 config_variable.py
 extensions/*config.py
+extensions/data/
+extensions/load.py
+extensions/maintain.py
 *.pyc
+*.csv
+stdout.log
