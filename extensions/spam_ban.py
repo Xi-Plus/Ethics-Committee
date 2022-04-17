@@ -465,6 +465,9 @@ class Spam_ban(EthicsCommitteeExtension):
         if duration is None:
             self.EC.sendmessage('指定的時長無效', reply=self.message_id)
             return
+        if duration > 0 and (duration < 30 or duration > 31622400):
+            self.EC.sendmessage('時長不可小於30秒或大於366天，否則請指定為永久', reply=self.message_id)
+            return
 
         if ban_user_id == self.EC.bot.id:
             self.EC.sendmessage('你不能對機器人執行此操作', reply=self.message_id)
@@ -590,6 +593,9 @@ class Spam_ban(EthicsCommitteeExtension):
         duration = self.parse_duration(args.d)
         if duration is None:
             self.EC.sendmessage('指定的時長無效', reply=self.message_id)
+            return
+        if duration > 0 and (duration < 30 or duration > 31622400):
+            self.EC.sendmessage('時長不可小於30秒或大於366天，否則請指定為永久', reply=self.message_id)
             return
 
         if ban_user_id == self.EC.bot.id:
