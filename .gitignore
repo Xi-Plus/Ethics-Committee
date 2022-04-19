@@ -7,6 +7,7 @@ extensions/*config.py
 extensions/data/
 extensions/load.py
 extensions/maintain.py
+extensions/response.py
 *.pyc
 *.csv
 stdout.log
