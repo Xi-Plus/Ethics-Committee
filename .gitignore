@@ -11,3 +11,4 @@ extensions/response.py
 *.pyc
 *.csv
 stdout.log
+EthicsCommittee.wsgi
