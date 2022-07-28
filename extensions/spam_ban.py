@@ -233,7 +233,7 @@ class Spam_ban(EthicsCommitteeExtension):
 
             try:
                 EC.cur.execute(
-                    """SELECT SUM(`count`) AS `count` FROM `message_count` WHERE `user_id` = %s AND `type` != 'new_chat_member' AND `type` NOT LIKE 'edited_%%'""", (self.user_id))
+                    """SELECT SUM(`count`) AS `count` FROM `message_count` WHERE `user_id` = %s AND `type` = 'text'""", (self.user_id))
                 rows = EC.cur.fetchall()
                 if rows[0][0] is None:
                     user_msg_cnt = 0
