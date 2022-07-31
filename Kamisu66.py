@@ -61,8 +61,8 @@ class EthicsCommittee:
             query["disable_web_page_preview"] = 1
             query["text"] = message
 
-            query = urllib.parse.urlencode(query)
-            url = "https://api.telegram.org/bot" + self.token + "/sendMessage?" + query
+            querystr = urllib.parse.urlencode(query)
+            url = "https://api.telegram.org/bot" + self.token + "/sendMessage?" + querystr
             res = urllib.request.urlopen(url).read().decode("utf8")
             res = json.loads(res)
             if res["ok"]:
