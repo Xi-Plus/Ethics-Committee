@@ -76,7 +76,7 @@ class EthicsCommittee:
                     reply_to_user_id = res["result"]["reply_to_message"]["from"]["id"]
                 self.addmessage(self.botid, res["result"]["message_id"], from_first_name, "text",
                                 res["result"]["text"], res["result"]["date"], reply_to_message_id, reply_to_user_id,
-                                chat_id=query["chat_id"])
+                                query["chat_id"])
             return res
         except urllib.error.HTTPError as e:
             res = e.read().decode("utf8")
