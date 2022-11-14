@@ -210,9 +210,6 @@ class Spam_ban(EthicsCommitteeExtension):
             if message.caption:
                 text += message.caption
                 mode.append("text")
-            if message.new_chat_members and self.user_id == message.new_chat_members[0].id:
-                text += full_name
-                mode.append("username")
             if message.forward_from_chat:
                 mode.append("forward")
             if message.forward_from:
@@ -281,7 +278,8 @@ class Spam_ban(EthicsCommitteeExtension):
                         EC.log("[spam_ban] test result: {}".format(response))
                         EC.sendmessage(response, reply=self.message_id, parse_mode="")
 
-                if "username" in mode:
+                # Check username every time
+                if user_msg_cnt <= 5:
                     if self.chat_id in self.ban_username_chat and self.check_regex(self.ban_username_regex, to_check_text):
                         self.action_all_in_one(self.chat_id, self.user_id, self.message_id, '宣傳性用戶名')
 
