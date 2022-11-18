@@ -214,8 +214,6 @@ class Spam_ban(EthicsCommitteeExtension):
                 mode.append("forward")
             if message.forward_from:
                 mode.append("forward")
-            if len(mode) == 0:
-                return
 
             textnorm = ''
             try:
