@@ -219,10 +219,13 @@ CREATE TABLE `user_name_changes` (
 
 
 ALTER TABLE `admins`
-  ADD PRIMARY KEY (`chat_id`,`user_id`);
+  ADD PRIMARY KEY (`chat_id`,`user_id`),
+  ADD KEY `user_id` (`user_id`);
 
 ALTER TABLE `admins_changes`
-  ADD KEY `time` (`time`);
+  ADD KEY `time` (`time`),
+  ADD KEY `chat_id` (`chat_id`),
+  ADD KEY `user_id` (`user_id`);
 
 ALTER TABLE `group_name`
   ADD PRIMARY KEY (`chat_id`);
@@ -234,10 +237,12 @@ ALTER TABLE `log`
   ADD PRIMARY KEY (`log_id`);
 
 ALTER TABLE `message`
-  ADD KEY `date` (`date`);
+  ADD KEY `date` (`date`),
+  ADD KEY `user_id` (`user_id`);
 
 ALTER TABLE `message_count`
-  ADD PRIMARY KEY (`chat_id`,`user_id`,`type`);
+  ADD PRIMARY KEY (`chat_id`,`user_id`,`type`),
+  ADD KEY `user_id` (`user_id`);
 
 ALTER TABLE `permissions`
   ADD KEY `permissions_ibfk_1` (`chat_id`),
