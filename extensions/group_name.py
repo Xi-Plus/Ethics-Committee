@@ -12,7 +12,7 @@ class GroupName(EthicsCommitteeExtension):  # pylint: disable=W0223
         EC.cur.execute(
             """SELECT `chat_id`, `value` FROM `group_setting`
             WHERE `key` = 'group_set' AND `value` != 'hidden'
-            ORDER BY `value` ASC""")
+            """)
         rows = EC.cur.fetchall()
         for row in rows:
             chat_id = int(row[0])
@@ -68,7 +68,7 @@ class GroupName(EthicsCommitteeExtension):  # pylint: disable=W0223
 
             gset = ''
             if chat_id in group_set:
-                gset = ', '.join(group_set[chat_id])
+                gset = ', '.join(sorted(group_set[chat_id]))
 
             text += """<tr><td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td><td>{4}</td></tr>""".format(
                 chat_id,
