@@ -1076,6 +1076,8 @@ class Spam_ban(EthicsCommitteeExtension):
         return res
 
     def check_regex(self, regex, texts):
+        if isinstance(texts, str):
+            texts = [texts]
         for text in texts:
             if text.strip() != '' and re.search(regex, text, flags=re.I | re.S):
                 return True
