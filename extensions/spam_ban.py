@@ -253,7 +253,7 @@ class Spam_ban(EthicsCommitteeExtension):
                                 if re.search(self.ban_youtube_link_regex, ythtml):
                                     self.action_all_in_one(self.chat_id, self.user_id, self.message_id, '傳送特定YouTube頻道連結')
 
-                    if self.chat_id in self.test_chat and re.search(self.CMD_TEST_RULE, text):
+                    if self.chat_id in (self.test_chat + self.global_ban_cmd_chat) and re.search(self.CMD_TEST_RULE, text):
                         text1 = re.sub(self.CMD_TEST_RULE, '', text)
                         text2 = self._Equivset(text1)
                         to_check_text = [text1, text2]
