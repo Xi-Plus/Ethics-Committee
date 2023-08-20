@@ -276,6 +276,14 @@ class Spam_ban(EthicsCommitteeExtension):
                         EC.log("[spam_ban] test result: {}".format(response))
                         EC.sendmessage(response, reply=self.message_id, parse_mode="")
 
+                if message.new_chat_members:
+                    EC.log('[spam_ban new_user] new user, chat_id: {}, user_msg_cnt: {}, ban_username_chat: {}, full_name: {}'.format(
+                        self.chat_id,
+                        user_msg_cnt,
+                        ','.join(map(str, self.ban_username_chat)),
+                        full_name
+                    ))
+
                 # Check username every time
                 if user_msg_cnt <= 5:
                     if self.chat_id in self.ban_username_chat and self.check_regex(self.ban_username_regex, full_name):
