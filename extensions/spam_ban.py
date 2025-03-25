@@ -288,6 +288,10 @@ class Spam_ban(EthicsCommitteeExtension):
                 if user_msg_cnt <= 5:
                     if self.chat_id in self.ban_username_chat and self.check_regex(self.ban_username_regex, full_name):
                         self.action_all_in_one(self.chat_id, self.user_id, self.message_id, '宣傳性用戶名')
+                        EC.log('[spam_ban ban_username] chat_id: {}, full_name: {}'.format(
+                            self.chat_id,
+                            full_name,
+                        ))
 
                     elif self.chat_id in self.warn_username_chat and self.check_regex(self.warn_username_regex, full_name):
                         self.action_warn(self.message_id)
