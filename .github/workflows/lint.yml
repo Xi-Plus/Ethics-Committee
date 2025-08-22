@@ -11,9 +11,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install pycodestyle
-          pip install pylint
-          pip install pylint_runner
+          pip install pycodestyle pylint
 
       - name: pycodestyle
         run: |
@@ -23,5 +21,4 @@ jobs:
       - name: pylint
         run: |
           python -m pylint --version
-          pylint_runner --version
-          pylint_runner
+          pylint $(git ls-files '*.py') || pylint-exit --error-fail $?
