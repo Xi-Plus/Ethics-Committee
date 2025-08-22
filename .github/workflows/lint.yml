@@ -11,7 +11,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install pycodestyle pylint
+          pip install pycodestyle pylint pylint-exit
 
       - name: pycodestyle
         run: |
